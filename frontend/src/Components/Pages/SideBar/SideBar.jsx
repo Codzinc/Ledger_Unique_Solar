@@ -1,6 +1,6 @@
 import React from 'react'
 import { FaMoneyBill, FaProductHunt, FaRProject } from 'react-icons/fa'
-import { MdOutlineDashboard, MdPayment } from "react-icons/md";
+import { MdOutlineDashboard } from "react-icons/md";
 import { CiBadgeDollar } from "react-icons/ci";
 import logo from '../../../assets/logo1.png'
 import codzinc_logo from '../../../assets/codzinc_logo.png'
@@ -10,8 +10,7 @@ const menuItems = [
   { icon: <FaProductHunt />, label: 'Product' },
   { icon: <FaRProject />, label: 'Project' },
   { icon: <FaMoneyBill />, label: 'Expense' },
-  { icon: <MdPayment />, label: 'Payment' },
-  { icon: <CiBadgeDollar />, label: 'Salaries' },
+  { icon: <CiBadgeDollar />, label: 'Salary' },
 ]
 
 const SideBar = ({ activeTab, setActiveTab }) => {
@@ -20,7 +19,7 @@ const SideBar = ({ activeTab, setActiveTab }) => {
       {/* Logo */}
       <div className=" items-center mb-8 mt-2 flex gap-4 font-bold text-white text-2xl">
         <img src={logo} alt="App Logo" className="w-10 h-10" />
-        <h className='cursor-pointer'>Unique Solar </h>
+        <h1 className='cursor-pointer'>Unique Solar </h1>
       </div>
       {/* Menu */}
       <ul className="flex-1 space-y-2">

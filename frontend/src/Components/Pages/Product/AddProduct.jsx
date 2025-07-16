@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, X } from 'lucide-react';
+import { Plus, X, Calendar, Image as ImageIcon } from 'lucide-react';
 
 const AddProduct = ({ onAddProduct, onClose, nextSrNo }) => {
   const [formData, setFormData] = useState({
@@ -10,9 +10,9 @@ const AddProduct = ({ onAddProduct, onClose, nextSrNo }) => {
     salePrice: '',
     description: '',
     category: '',
-    inStock: true,
     quantity: '',
-   
+    dateAdded: new Date().toISOString().split('T')[0],
+    receiptImage: null, // NEW: Image state
   });
 
   const handleChange = (e) => {
@@ -23,9 +23,23 @@ const AddProduct = ({ onAddProduct, onClose, nextSrNo }) => {
     }));
   };
 
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setFormData(prev => ({
+        ...prev,
+        receiptImage: reader.result
+      }));
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    
+
     const purchPrice = parseFloat(formData.purchPrice);
     const salePrice = parseFloat(formData.salePrice);
     const profit = salePrice - purchPrice;
@@ -41,10 +55,9 @@ const AddProduct = ({ onAddProduct, onClose, nextSrNo }) => {
       profit,
       description: formData.description,
       category: formData.category,
-      inStock: formData.inStock,
       quantity: formData.quantity,
-     
-      dateAdded: new Date().toISOString().split('T')[0]
+      dateAdded: formData.dateAdded,
+      receiptImage: formData.receiptImage, // NEW: include uploaded image
     };
 
     onAddProduct(newProduct);
@@ -54,6 +67,7 @@ const AddProduct = ({ onAddProduct, onClose, nextSrNo }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+        {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
             <Plus className="w-6 h-6 text-blue-600" />
@@ -67,56 +81,54 @@ const AddProduct = ({ onAddProduct, onClose, nextSrNo }) => {
           </button>
         </div>
 
+        {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Product */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Product *
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Product *</label>
               <input
                 type="text"
                 name="product"
                 value={formData.product}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg  transition-all"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg transition-all"
                 placeholder="Enter product name"
               />
             </div>
 
+            {/* Brand */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Brand *
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Brand *</label>
               <input
                 type="text"
                 name="brand"
-                value={formData.brand }
+                value={formData.brand}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg  transition-all"
-                placeholder="Enter company name"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Customer Name *
-              </label>
-              <input
-                type="text"
-                name="cName"
-                value={formData.cName }
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg  transition-all"
-                placeholder="Enter company name"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg transition-all"
+                placeholder="Enter brand name"
               />
             </div>
 
+            {/* Customer Name */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Purchase *
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Customer Name *</label>
+              <input
+                type="text"
+                name="cName"
+                value={formData.cName}
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg transition-all"
+                placeholder="Enter customer name"
+              />
+            </div>
+
+            {/* Purchase Price */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Purchase *</label>
               <input
                 type="number"
                 name="purchPrice"
@@ -125,15 +137,14 @@ const AddProduct = ({ onAddProduct, onClose, nextSrNo }) => {
                 required
                 step="0.01"
                 min="0"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg  transition-all"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg transition-all"
                 placeholder="0.00"
               />
             </div>
 
+            {/* Sale Price */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Sale *
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Sale *</label>
               <input
                 type="number"
                 name="salePrice"
@@ -142,85 +153,105 @@ const AddProduct = ({ onAddProduct, onClose, nextSrNo }) => {
                 required
                 step="0.01"
                 min="0"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg  transition-all"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg transition-all"
                 placeholder="0.00"
               />
             </div>
 
+            {/* Category */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Category *
-              </label>
-              <select
+              <label className="block text-sm font-medium text-gray-700 mb-2">Category *</label>
+              <input
+                type="text"
                 name="category"
                 value={formData.category}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg  transition-all"
-              >
-                <option value="Solar Panels">Select category</option>
-                <option value="Solar Panels">Solar Panels</option>
-                <option value="Inverters">Inverters</option>
-                <option value="Batteries">Batteries</option>
-                <option value="Controllers">Controllers</option>
-                <option value="Mounting">Mounting</option>
-                <option value="Water Heaters">Water Heaters</option>
-              </select>
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg transition-all"
+                placeholder="Enter category"
+              />
             </div>
 
+            {/* Quantity */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Quantity
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Quantity</label>
               <input
                 type="number"
                 name="quantity"
                 value={formData.quantity}
                 onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg  transition-all"
-                placeholder="0.00"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg transition-all"
+                placeholder="0"
               />
             </div>
 
-           
+            {/* Date Picker */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <Calendar className="w-4 h-4 inline mr-2" />
+                Date *
+              </label>
+              <input
+                type="date"
+                name="dateAdded"
+                value={formData.dateAdded}
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg transition-all"
+              />
+            </div>
+
+            {/* Upload Receipt Image */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <ImageIcon className="w-4 h-4 inline mr-2" />
+                Upload Receipt Image
+              </label>
+              <div className="flex items-center gap-4">
+                <label className="px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-200 transition-all">
+                  Upload Image
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                  />
+                </label>
+                {formData.receiptImage && (
+                  <span className="text-sm text-gray-600">Image selected</span>
+                )}
+              </div>
+              {formData.receiptImage && (
+                <div className="mt-2">
+                  <img
+                    src={formData.receiptImage}
+                    alt="Receipt Preview"
+                    className="h-24 object-contain rounded-md border"
+                  />
+                </div>
+              )}
+            </div>
           </div>
 
+          {/* Description */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Description
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
             <textarea
               name="description"
               value={formData.description}
               onChange={handleChange}
               rows={4}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg  transition-all resize-none"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg transition-all resize-none"
               placeholder="Enter product description"
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Stock Status
-            </label>
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                name="inStock"
-                checked={formData.inStock}
-                onChange={handleChange}
-                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-              />
-              <label className="ml-2 text-sm text-gray-700">In Stock</label>
-            </div>
-          </div>
-
+          {/* Footer */}
           <div className="flex items-center justify-between pt-4 border-t border-gray-200">
             <div className="text-sm text-gray-600">
-              Profit will be calculated automatically: {formData.salePrice && formData.purchPrice ? 
-                `$${(parseFloat(formData.salePrice) - parseFloat(formData.purchPrice)).toFixed(2)}` : 
-                '$0.00'
-              }
+              Profit: {formData.salePrice && formData.purchPrice
+                ? `$${(parseFloat(formData.salePrice) - parseFloat(formData.purchPrice)).toFixed(2)}`
+                : '$0.00'}
             </div>
             <div className="flex gap-3">
               <button
@@ -232,7 +263,7 @@ const AddProduct = ({ onAddProduct, onClose, nextSrNo }) => {
               </button>
               <button
                 type="submit"
-                className="px-6 py-2  text-white rounded-lg  bg-[#181829] cursor-pointer  hover:text-[#181829]  hover:bg-[#d8f276] transition-colors flex items-center gap-2"
+                className="px-6 py-2 text-white rounded-lg bg-[#181829] cursor-pointer hover:text-[#181829] hover:bg-[#d8f276] transition-colors flex items-center gap-2"
               >
                 <Plus className="w-4 h-4" />
                 Add Product

@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Package, Building, DollarSign, TrendingUp, Calendar, Shield, Zap, Ruler, Tag } from 'lucide-react';
+import { X, Package, Building, DollarSign, TrendingUp, Calendar, Receipt, Zap, Ruler, Tag } from 'lucide-react';
 
 const ProductDetail = ({ product, onClose, onEdit }) => {
   if (!product) return null;
@@ -35,17 +35,13 @@ const ProductDetail = ({ product, onClose, onEdit }) => {
                   <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
                     {product.category}
                   </span>
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                    product.inStock ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                  }`}>
-                    {product.inStock ? 'In Stock' : 'Out of Stock'}
-                  </span>
+                 
                 </div>
                 <p className="text-gray-600 leading-relaxed">{product.description}</p>
               </div>
               <div className="text-right">
                 <div className="bg-white rounded-lg p-4 shadow-sm">
-                  <p className="text-sm text-gray-600 mb-1">Total Profit</p>
+                  <p className="text-sm text-gray-600 mb-1 whitespace-nowrap">Total Profit</p>
                   <p className={`text-3xl font-bold ${product.profit > 0 ? 'text-green-600' : 'text-red-600'}`}>
                     ${product.profit.toLocaleString()}
                   </p>
@@ -63,6 +59,15 @@ const ProductDetail = ({ product, onClose, onEdit }) => {
                 <h4 className="font-semibold text-gray-800">Customer Name</h4>
               </div>
               <p className="text-lg font-medium text-gray-900">{product.cName}</p>
+            </div>
+
+             {/* Company Info */}
+            <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+              <div className="flex items-center gap-3 mb-3">
+                <Building className="w-5 h-5 text-pink-600" />
+                <h4 className="font-semibold text-gray-800">Brand</h4>
+              </div>
+              <p className="text-lg font-medium text-gray-900">{product.brand}</p>
             </div>
 
             {/* Purchase Price */}
@@ -92,7 +97,23 @@ const ProductDetail = ({ product, onClose, onEdit }) => {
               <p className="text-lg font-medium text-gray-900">{product.dateAdded}</p>
             </div>
 
-            
+             {/* Receipt */}
+            <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+              <div className="flex items-center gap-3 mb-3">
+                <Receipt className="w-5 h-5 text-indigo-600" />
+                <h4 className="font-semibold text-gray-800">Receipt Image</h4>
+              </div>
+               {product.receiptImage ? (
+    <img
+      src={product.receiptImage}
+      alt="Receipt"
+      className="w-full max-w-xs rounded-md border border-gray-300"
+    />
+  ) : (
+    <p className="text-sm text-gray-500 italic">No receipt image uploaded</p>
+  )}
+            </div>
+
           </div>
 
           {/* Technical Specifications */}

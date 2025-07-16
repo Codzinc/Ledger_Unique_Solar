@@ -5,8 +5,7 @@ import Dashboard from './Components/Pages/Dashboard/Dashboard';
 import Product from './Components/Pages/Product/Product';
 import Project from './Components/Pages/Project/Project';
 import Expense from './Components/Pages/Expense/Expense';
-import Payment from './Components/Pages/Payment/Payment';
-import Salaries from './Components/Pages/Salaries/Salaries';
+import Salary from './Components/Pages/Salaries/Salary';
 import Profile from './Components/Common/Profile';
 import { FaUserCircle } from 'react-icons/fa';
 import { HiMenuAlt3 } from 'react-icons/hi';
@@ -16,8 +15,7 @@ const tabComponents = {
   Product: <Product />,
   Project: <Project />,
   Expense: <Expense />,
-  Payment: <Payment />,
-  Salaries: <Salaries />,
+  Salary: <Salary />,
 };
 
 function App() {

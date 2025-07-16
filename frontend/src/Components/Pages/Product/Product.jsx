@@ -39,8 +39,6 @@ const Product = () => {
 
   return (
     <div className=''>
-      
-
       {/* Main Content */}
       <ProductList
         products={products}

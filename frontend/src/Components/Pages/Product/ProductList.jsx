@@ -53,9 +53,9 @@ const ProductList = ({
           <div>
             <h2 className="text-2xl font-bold text-[#181829] flex items-center gap-3">
               <Package className="w-7 h-7 text-[#d8f276]" />
-              Product Inventory
+              Product 
             </h2>
-            <p className="text-gray-600 mt-1">Manage your solar products efficiently</p>
+            <p className="text-gray-600 mt-1">Manage your products efficiently</p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative">
@@ -163,11 +163,7 @@ const ProductList = ({
                             <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
                               {product.category}
                             </span>
-                            <span className={`px-2 py-1 rounded-full text-xs ${
-                              product.inStock ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                            }`}>
-                              {product.inStock ? 'In Stock' : 'Out of Stock'}
-                            </span>
+                            
                           </div>
                         </div>
                       </div>
