@@ -17,7 +17,7 @@ const ProjectChecklist = ({ checklist, handleChecklistChange }) => (
             type="checkbox"
             checked={checklist[key]}
             onChange={() => handleChecklistChange(key)}
-            className="w-4 h-4 text-[#181829] border-gray-300 rounded focus:ring-[#181829]"
+            className="w-4 h-4 text-[#181829] border-gray-300 rounded "
           />
           <span>{label}</span>
         </label>

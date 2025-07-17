@@ -17,7 +17,7 @@ const INSTALLATION_PRICES = {
 const UniqueSolarForm = ({ onBack, onSubmit, initialData }) => {
   const [formData, setFormData] = useState(initialData || {
     customerName: '',
-    contactno: '',
+    contact_no: '',
     address: '',
     date: '',
     validUntil: '',

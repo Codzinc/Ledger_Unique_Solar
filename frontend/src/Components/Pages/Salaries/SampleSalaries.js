@@ -2,7 +2,7 @@ export const SampleSalaries = [
   {
     id: '1',
     srNo: 1,
-    month: 'Jan-25',
+    date: '2025-01-15',
     employeeName: 'Ali Raza',
     designation: 'Solar Engineer',
     salary: 34000,
@@ -14,7 +14,7 @@ export const SampleSalaries = [
   {
     id: '2',
     srNo: 2,
-    month: 'Jan-25',
+    date: '2025-01-15',
     employeeName: 'Sara Khan',
     designation: 'Sales Manager',
     salary: 28000,
@@ -26,7 +26,7 @@ export const SampleSalaries = [
   {
     id: '3',
     srNo: 3,
-    month: 'Jan-25',
+    date: '2025-01-15',
     employeeName: 'Ahmed Hassan',
     designation: 'Installation Technician',
     salary: 22000,
@@ -38,7 +38,7 @@ export const SampleSalaries = [
   {
     id: '4',
     srNo: 4,
-    month: 'Jan-25',
+    date: '2025-01-15',
     employeeName: 'Fatima Sheikh',
     designation: 'Project Manager',
     salary: 35000,
@@ -50,7 +50,7 @@ export const SampleSalaries = [
   {
     id: '5',
     srNo: 5,
-    month: 'Jan-25',
+    date: '2025-01-15',
     employeeName: 'Muhammad Usman',
     designation: 'Electrical Engineer',
     salary: 30000,
@@ -62,7 +62,7 @@ export const SampleSalaries = [
   {
     id: '6',
     srNo: 6,
-    month: 'Dec-24',
+    date: '2024-12-15',
     employeeName: 'Aisha Malik',
     designation: 'Customer Service Rep',
     salary: 18000,
@@ -74,7 +74,7 @@ export const SampleSalaries = [
   {
     id: '7',
     srNo: 7,
-    month: 'Dec-24',
+    date: '2024-12-15',
     employeeName: 'Hassan Ali',
     designation: 'Quality Inspector',
     salary: 25000,
@@ -86,7 +86,7 @@ export const SampleSalaries = [
   {
     id: '8',
     srNo: 8,
-    month: 'Dec-24',
+    date: '2024-12-15',
     employeeName: 'Zainab Ahmed',
     designation: 'Marketing Specialist',
     salary: 26000,

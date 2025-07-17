@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MoreVertical, Eye, Edit, Trash2, Plus, Search, Package, TrendingUp } from 'lucide-react';
+import { MoreVertical, Eye, Edit, Trash2, Plus, Search, Package, TrendingUp, Calendar } from 'lucide-react';
 
 const ProductList = ({
   products,
@@ -10,12 +10,26 @@ const ProductList = ({
 }) => {
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedDate, setSelectedDate] = useState('');
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
-  const filteredProducts = products.filter(product =>
+  // Function to filter products by selected month and year
+  const filterByDate = (products) => {
+    if (!selectedDate) return products;
+    
+    const [year, month] = selectedDate.split('-');
+    return products.filter(product => {
+      const productDate = new Date(product.dateAdded);
+      return productDate.getFullYear() === parseInt(year) && 
+             productDate.getMonth() === parseInt(month) - 1;
+    });
+  };
+
+  const filteredProducts = filterByDate(products.filter(product =>
     product.product.toLowerCase().includes(searchTerm.toLowerCase()) ||
     product.cName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     product.category.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  ));
 
   const totals = filteredProducts.reduce(
     (acc, product) => ({
@@ -45,6 +59,17 @@ const ProductList = ({
     }
   };
 
+  // Function to handle month-year selection
+  const handleDateChange = (e) => {
+    setSelectedDate(e.target.value);
+    setShowDatePicker(false);
+  };
+
+  // Function to clear date filter
+  const clearDateFilter = () => {
+    setSelectedDate('');
+  };
+
   return (
     <div className="bg-white rounded-xl shadow-lg">
       {/* Header */}
@@ -67,6 +92,28 @@ const ProductList = ({
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-full sm:w-64"
               />
+            </div>
+            <div className="relative">
+              <div className="flex gap-2">
+                <div className="relative">
+                  <input
+                    type="month"
+                    value={selectedDate}
+                    onChange={handleDateChange}
+                    className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg cursor-pointer"
+                  />
+                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                </div>
+                {selectedDate && (
+                  <button
+                    onClick={clearDateFilter}
+                    className="px-2 py-1 text-gray-500 hover:text-gray-700"
+                    title="Clear date filter"
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
             </div>
             <button
               onClick={onAddProduct}
@@ -226,6 +273,32 @@ const ProductList = ({
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      </div>
+
+      {/* Date Filter Section */}
+      <div className="p-6 border-t border-gray-200">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h3 className="text-lg font-semibold text-[#181829]">Filter by Date</h3>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative">
+              <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type="month"
+                value={selectedDate}
+                onChange={handleDateChange}
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-full sm:w-64"
+              />
+            </div>
+            <button
+              onClick={clearDateFilter}
+              className="bg-red-500 cursor-pointer text-white hover:text-red-500 px-4 py-2 rounded-lg hover:bg-red-100 transition-colors flex items-center gap-2 whitespace-nowrap"
+            >
+              Clear Filter
+            </button>
           </div>
         </div>
       </div>

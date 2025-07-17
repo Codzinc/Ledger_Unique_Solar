@@ -9,13 +9,15 @@ import ActionButtons from './Zarorrat_SubComp/ActionButtons';
 const ZarorratForm = ({ onBack, onSubmit, initialData }) => {
   const [formData, setFormData] = useState(initialData || {
     customerName: '',
-    contactno: '',
+    contact_no: '',
     address: '',
     date: '',
     validUntil: '',
     notes: '',
     amount: '',
-    advanceReceived: ''
+    advanceReceived: '',
+    projectType: '',
+    status: 'DRAFT'
   });
 
   const [selectedServices, setSelectedServices] = useState({});
@@ -72,7 +74,9 @@ const ZarorratForm = ({ onBack, onSubmit, initialData }) => {
                 selectedServices,
                 amount: totalAmount,
                 advanceReceived,
-                pending: pendingAmount
+                pending: pendingAmount,
+                projectType: formData.projectType || 'Service Call',
+                status: formData.status || 'DRAFT'
               };
               onSubmit(submitData);
             }}

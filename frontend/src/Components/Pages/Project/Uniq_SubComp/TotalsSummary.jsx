@@ -25,7 +25,7 @@ const TotalsSummary = ({ subtotal, installationCost, formData, handleInputChange
             value={formData.tax}
             onChange={handleInputChange}
             placeholder="0.00"
-            className="w-20 px-2 py-1 border border-gray-300 rounded text-right focus:ring-2 focus:ring-[#181829] focus:border-[#181829]"
+            className="w-20 px-2 py-1 border border-gray-300 rounded text-right "
           />
           <span>%</span>
         </div>

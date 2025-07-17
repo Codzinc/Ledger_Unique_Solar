@@ -11,7 +11,7 @@ const InputField = ({ label, name, type = 'text', className = '', value, onChang
         name={name}
         value={value}
         onChange={onChange}
-        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#181829] focus:border-[#181829] hover:border-gray-400 transition-colors bg-white"
+        className="w-full px-3 py-2 border border-gray-300 rounded-lg  transition-colors bg-white"
         {...props}
       >
         {props.options?.map(option => (
@@ -26,7 +26,7 @@ const InputField = ({ label, name, type = 'text', className = '', value, onChang
         name={name}
         value={value}
         onChange={onChange}
-        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#181829] focus:border-[#181829] hover:border-gray-400 transition-colors"
+        className="w-full px-3 py-2 border border-gray-300 rounded-lg  transition-colors"
         {...props}
       />
     )}

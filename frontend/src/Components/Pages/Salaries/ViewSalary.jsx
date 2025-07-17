@@ -36,7 +36,7 @@ const ViewSalary = ({ salary, onClose, onEdit }) => {
                     {salary.designation}
                   </span>
                   <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">
-                    {salary.month}
+                    {new Date(salary.date).toLocaleDateString()}
                   </span>
                 </div>
                 <p className="text-gray-600 leading-relaxed">{salary.remarks}</p>
@@ -82,14 +82,14 @@ const ViewSalary = ({ salary, onClose, onEdit }) => {
               <p className="text-sm text-gray-600 mt-1">Monthly salary</p>
             </div>
 
-            {/* Month */}
+            {/* Date */}
             <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
               <div className="flex items-center gap-3 mb-3">
                 <Calendar className="w-5 h-5 text-orange-600" />
-                <h4 className="font-semibold text-gray-800">Month</h4>
+                <h4 className="font-semibold text-gray-800">Date</h4>
               </div>
-              <p className="text-lg font-medium text-gray-900">{salary.month}</p>
-              <p className="text-sm text-gray-600 mt-1">Salary period</p>
+              <p className="text-lg font-medium text-gray-900">{new Date(salary.date).toLocaleDateString()}</p>
+              <p className="text-sm text-gray-600 mt-1">Salary date</p>
             </div>
 
             {/* Date Paid */}
@@ -143,8 +143,8 @@ const ViewSalary = ({ salary, onClose, onEdit }) => {
                 <p className="text-xl font-bold text-blue-600">{salary.employeeName}</p>
               </div>
               <div className="text-center">
-                <p className="text-sm text-gray-600">Period</p>
-                <p className="text-xl font-bold text-purple-600">{salary.month}</p>
+                <p className="text-sm text-gray-600">Date</p>
+                <p className="text-xl font-bold text-purple-600">{new Date(salary.date).toLocaleDateString()}</p>
               </div>
               <div className="text-center">
                 <p className="text-sm text-gray-600">Amount</p>

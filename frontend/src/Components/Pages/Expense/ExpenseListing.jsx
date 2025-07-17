@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MoreVertical, Eye, Edit, Trash2, Plus, Search, DollarSign, TrendingDown, Filter, RotateCcw } from 'lucide-react';
+import { MoreVertical, Eye, Edit, Trash2, Plus, Search, DollarSign, TrendingDown, Filter, RotateCcw, Calendar } from 'lucide-react';
 import { expenseCategories, utilizers } from './SampleExpense';
 
 const ExpenseListing = ({
@@ -13,8 +13,14 @@ const ExpenseListing = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
   const [utilizerFilter, setUtilizerFilter] = useState('');
+  const [selectedDate, setSelectedDate] = useState('');
 
-  // Filter expenses based on search and filters
+  // Handle date filter change
+  const handleDateChange = (e) => {
+    setSelectedDate(e.target.value);
+  };
+
+  // Filter expenses based on search, category, utilizer, and date
   const filteredExpenses = expenses.filter(expense => {
     const matchesSearch = 
       expense.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -24,7 +30,15 @@ const ExpenseListing = ({
     const matchesCategory = !categoryFilter || expense.category === categoryFilter;
     const matchesUtilizer = !utilizerFilter || expense.utilizer === utilizerFilter;
     
-    return matchesSearch && matchesCategory && matchesUtilizer;
+    // Date filter
+    const matchesDate = !selectedDate || (() => {
+      const expenseDate = new Date(expense.date);
+      const [filterYear, filterMonth] = selectedDate.split('-');
+      return expenseDate.getFullYear() === parseInt(filterYear) &&
+             expenseDate.getMonth() === parseInt(filterMonth) - 1;
+    })();
+    
+    return matchesSearch && matchesCategory && matchesUtilizer && matchesDate;
   });
 
   const totalAmount = filteredExpenses.reduce((sum, expense) => sum + expense.amount, 0);
@@ -52,6 +66,7 @@ const ExpenseListing = ({
     setSearchTerm('');
     setCategoryFilter('');
     setUtilizerFilter('');
+    setSelectedDate('');
   };
 
   return (
@@ -102,7 +117,7 @@ const ExpenseListing = ({
             <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg  bg-[#181829]  text-white font-medium"
+              className="px-4 py-2 border border-gray-300 rounded-lg bg-[#181829] text-white font-medium"
             >
               <option value="">Category</option>
               {expenseCategories.map(category => (
@@ -113,13 +128,26 @@ const ExpenseListing = ({
             <select
               value={utilizerFilter}
               onChange={(e) => setUtilizerFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg  bg-[#181829]  text-white font-medium"
+              className="px-4 py-2 border border-gray-300 rounded-lg bg-[#181829] text-white font-medium"
             >
               <option value="">Utilizer</option>
               {utilizers.map(utilizer => (
                 <option key={utilizer} value={utilizer}>{utilizer}</option>
               ))}
             </select>
+
+            <div className="relative">
+              <div className="flex items-center">
+                <input
+                  type="month"
+                  value={selectedDate}
+                  onChange={handleDateChange}
+                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg bg-[#d8f276] text-white font-medium cursor-pointer"
+                  placeholder="Select month..."
+                />
+                <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-black" />
+              </div>
+            </div>
 
             <button
               onClick={handleResetFilters}

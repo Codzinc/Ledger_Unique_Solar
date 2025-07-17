@@ -15,7 +15,8 @@ const AddSalary = ({ onAddSalary, onClose, nextSrNo, editSalary = null }) => {
     employeeName: editSalary?.employeeName || '',
     designation: editSalary?.designation || '',
     salary: editSalary?.salary || '',
-    month: editSalary?.month || '',
+    date: editSalary?.date || new Date().toISOString().split('T')[0],
+    datePaid: editSalary?.datePaid || new Date().toISOString().split('T')[0],
     remarks: editSalary?.remarks || '',
     receiptImage: editSalary?.receiptImage || null,
   });
@@ -29,8 +30,12 @@ const AddSalary = ({ onAddSalary, onClose, nextSrNo, editSalary = null }) => {
       [name]: value
     }));
 
+    // Clear error when field is edited
     if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
+      setErrors(prev => ({
+        ...prev,
+        [name]: null
+      }));
     }
   };
 
@@ -50,10 +55,21 @@ const AddSalary = ({ onAddSalary, onClose, nextSrNo, editSalary = null }) => {
 
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.employeeName.trim()) newErrors.employeeName = 'Employee name is required';
-    if (!formData.designation.trim()) newErrors.designation = 'Designation is required';
-    if (!formData.salary || parseFloat(formData.salary) <= 0) newErrors.salary = 'Valid salary is required';
-    if (!formData.month) newErrors.month = 'Month/Year is required';
+    if (!formData.employeeName.trim()) {
+      newErrors.employeeName = 'Employee name is required';
+    }
+    if (!formData.designation.trim()) {
+      newErrors.designation = 'Designation is required';
+    }
+    if (!formData.salary || parseFloat(formData.salary) <= 0) {
+      newErrors.salary = 'Valid salary amount is required';
+    }
+    if (!formData.date) {
+      newErrors.date = 'Date is required';
+    }
+    if (!formData.datePaid) {
+      newErrors.datePaid = 'Payment date is required';
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -63,19 +79,14 @@ const AddSalary = ({ onAddSalary, onClose, nextSrNo, editSalary = null }) => {
     e.preventDefault();
     if (!validateForm()) return;
 
-    const salaryData = {
-      id: editSalary?.id || Date.now().toString(),
+    const newSalary = {
+      ...formData,
+      id: editSalary?.id || Math.random().toString(36).substr(2, 9),
       srNo: editSalary?.srNo || nextSrNo,
-      employeeName: formData.employeeName.trim(),
-      designation: formData.designation.trim(),
-      salary: parseFloat(formData.salary),
-      month: formData.month,
-      remarks: formData.remarks.trim(),
-      receiptImage: formData.receiptImage || null,
-      datePaid: editSalary?.datePaid || new Date().toISOString().split('T')[0]
+      salary: parseFloat(formData.salary)
     };
 
-    onAddSalary(salaryData, editSalary ? 'edit' : 'add');
+    onAddSalary(newSalary);
     onClose();
   };
 
@@ -162,18 +173,34 @@ const AddSalary = ({ onAddSalary, onClose, nextSrNo, editSalary = null }) => {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 <Calendar className="w-4 h-4 inline mr-2" />
-                Month/Year *
+                Salary Date *
               </label>
               <input
-                type="month"
-                name="month"
-                value={formData.month}
+                type="date"
+                name="date"
+                value={formData.date}
                 onChange={handleChange}
                 className={`w-full px-4 py-3 border rounded-lg transition-all ${
-                  errors.month ? 'border-red-500' : 'border-gray-300'
+                  errors.date ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
-              {errors.month && <p className="text-red-500 text-sm mt-1">{errors.month}</p>}
+              {errors.date && <p className="text-red-500 text-sm mt-1">{errors.date}</p>}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <Calendar className="w-4 h-4 inline mr-2" />
+                Payment Date *
+              </label>
+              <input
+                type="date"
+                name="datePaid"
+                value={formData.datePaid}
+                onChange={handleChange}
+                className={`w-full px-4 py-3 border rounded-lg transition-all ${
+                  errors.datePaid ? 'border-red-500' : 'border-gray-300'
+                }`}
+              />
+              {errors.datePaid && <p className="text-red-500 text-sm mt-1">{errors.datePaid}</p>}
             </div>
 
             {/* Receipt Upload */}

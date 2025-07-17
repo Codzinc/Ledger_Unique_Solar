@@ -15,6 +15,7 @@ const ProjectContent = () => {
   const [selectedProjectType, setSelectedProjectType] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedProject, setSelectedProject] = useState(null);
+  const [dateFilter, setDateFilter] = useState('');
   const [filters, setFilters] = useState({
     company: 'All Companies',
     projectType: 'All Types',
@@ -69,6 +70,10 @@ const ProjectContent = () => {
     handleBackToProjects();
   };
 
+  const handleDateFilterChange = (date) => {
+    setDateFilter(date);
+  };
+
   if (showProjectForm) {
     return (
       <div className="min-h-screen bg-gray-100">
@@ -96,6 +101,7 @@ const ProjectContent = () => {
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
           onAddProject={handleAddProject}
+          onDateFilterChange={handleDateFilterChange}
         />
         
         <ProjectStats stats={stats} />
@@ -109,6 +115,7 @@ const ProjectContent = () => {
           projects={projects}
           searchTerm={searchTerm}
           filters={filters}
+          dateFilter={dateFilter}
           onViewProject={handleViewProject}
           onEditProject={handleEditProject}
           onDeleteProject={handleDeleteProject}

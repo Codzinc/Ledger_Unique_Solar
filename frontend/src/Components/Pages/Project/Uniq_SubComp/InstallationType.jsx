@@ -37,7 +37,7 @@ const InstallationType = ({ formData, handleInputChange }) => (
                 value={value}
                 checked={formData.installationType === value}
                 onChange={handleInputChange}
-                className="mt-1 text-[#181829] focus:ring-[#181829]"
+                className="mt-1 text-[#181829] "
               />
               <div className="ml-3">
                 <span className="block font-medium text-gray-900">{label}</span>

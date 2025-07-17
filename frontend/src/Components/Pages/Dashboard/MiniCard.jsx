@@ -1,9 +1,13 @@
 import { FaDollarSign, FaChartLine, FaWallet } from 'react-icons/fa';
+import { SiReact } from 'react-icons/si';
+
+import { SiExpensify } from "react-icons/si";
 
 const iconMap = {
   Sales: <FaChartLine className="text-[#d8f276] text-[22px]" />,
   Profit: <FaDollarSign className="text-[#d8f276] text-[22px]" />,
   'Today Received': <FaWallet className="text-[#d8f276] text-[22px]" />,
+  Expense: <SiExpensify className="text-[#d8f276] text-[22px]" />,
 };
 
 const MiniCard = ({ title, amount, label, className = '' }) => {

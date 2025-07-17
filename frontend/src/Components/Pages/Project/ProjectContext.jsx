@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { sampleProjects } from './SampleProjects';
 
 const ProjectContext = createContext();
 
@@ -11,7 +12,7 @@ export const useProjects = () => {
 };
 
 export const ProjectProvider = ({ children }) => {
-  const [projects, setProjects] = useState([]);
+  const [projects, setProjects] = useState(sampleProjects);
   const [stats, setStats] = useState({
     totalProjects: 0,
     uniqueSolarProjects: 0,

@@ -26,13 +26,19 @@ const Dashboard = () => {
 
   {/* Payments and Mini Cards */}
   <div className="flex flex-col lg:flex-row gap-6">
-    <div className="flex-1"><MonthlyPaymentsChart /></div>
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      <MiniCard title="Sales" amount="$5,200" label="This Month" />
-      <MiniCard title="Profit" amount="$2,100" label="This Month" />
-      <MiniCard title="Today Received" amount="$2,100" />
-    </div>
+  {/* Left Side - Chart */}
+  <div className="w-full lg:w-1/2">
+    <MonthlyPaymentsChart />
   </div>
+
+  {/* Right Side - Mini Cards */}
+  <div className="w-full lg:w-1/2 grid grid-cols-2 sm:grid-cols-4 md:grid-cols-3 gap-3">
+    <MiniCard title="Sales" amount="$5,200" label="This Month" />
+    <MiniCard title="Profit" amount="$2,100" label="This Month" />
+    <MiniCard title="Today Received" amount="$2,100" />
+    <MiniCard title="Expense" amount="$2,100" />
+  </div>
+</div>
 </div>
 
       </div>

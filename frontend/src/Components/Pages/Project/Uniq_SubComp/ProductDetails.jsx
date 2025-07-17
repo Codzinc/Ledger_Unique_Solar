@@ -20,7 +20,7 @@ const ProductDetails = ({ products, handleProductChange, addProduct, removeProdu
             <select
               value={product.type}
               onChange={(e) => handleProductChange(product.id, 'type', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#181829] focus:border-[#181829] hover:border-gray-400 transition-colors"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg  hover:border-gray-400 transition-colors"
             >
               {['Solar Panel', 'Inverter', 'Others', 'Select Product'].map(type => (
                 <option key={type} value={type}>{type}</option>

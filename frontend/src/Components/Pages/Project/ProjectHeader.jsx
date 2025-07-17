@@ -1,7 +1,9 @@
-import React from 'react';
-import { Plus, Search, Building } from 'lucide-react';
+import React, { useState } from 'react';
+import { Plus, Search, Building, Calendar } from 'lucide-react';
 
-const ProjectHeader = ({ searchTerm, onSearchChange, onAddProject }) => {
+const ProjectHeader = ({ searchTerm, onSearchChange, onAddProject, onDateFilterChange }) => {
+  const [selectedDate, setSelectedDate] = useState('');
+
   return (
     <div className="bg-white rounded-xl shadow-lg mb-2">
       <div className="p-6 border-b border-gray-200">
@@ -23,6 +25,35 @@ const ProjectHeader = ({ searchTerm, onSearchChange, onAddProject }) => {
                 onChange={(e) => onSearchChange(e.target.value)}
                 className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-full sm:w-64"
               />
+            </div>
+            <div className="relative">
+              <div className="flex gap-2">
+                <div className="relative">
+                  <input
+                    type="month"
+                    value={selectedDate}
+                    onChange={(e) => {
+                      setSelectedDate(e.target.value);
+                      onDateFilterChange(e.target.value);
+                    }}
+                    className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg cursor-pointer"
+                    placeholder="Select month..."
+                  />
+                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                </div>
+                {selectedDate && (
+                  <button
+                    onClick={() => {
+                      setSelectedDate('');
+                      onDateFilterChange('');
+                    }}
+                    className="px-2 py-1 text-gray-500 hover:text-gray-700"
+                    title="Clear date filter"
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
             </div>
             <button
               onClick={onAddProject}
