@@ -1,18 +1,32 @@
-import React from 'react';
-import Section from './Section';
+import React from "react";
+import Section from "./Section";
 
-const TotalsSummary = ({ subtotal, installationCost, formData, handleInputChange, grandTotal }) => (
+const TotalsSummary = ({
+  subtotal,
+  installationCost,
+  formData,
+  handleInputChange,
+  grandTotal,
+}) => (
   <Section title="Totals Summary">
     <div className="bg-gray-50 p-6 rounded-lg space-y-4">
       <div className="flex justify-between items-center text-gray-600">
         <span>Subtotal:</span>
-        <span className="font-medium text-gray-900">₹{subtotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+        <span className="font-medium text-gray-900">
+          ₹
+          {subtotal.toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}
+        </span>
       </div>
-      
-      {formData.installationType !== 'none' && (
+
+      {formData.installationType !== "none" && (
         <div className="flex justify-between items-center text-gray-600">
           <span>Installation Cost:</span>
-          <span className="font-medium text-gray-900">₹{installationCost.toLocaleString()}</span>
+          <span className="font-medium text-gray-900">
+            ₹{installationCost.toLocaleString()}
+          </span>
         </div>
       )}
 
@@ -33,9 +47,15 @@ const TotalsSummary = ({ subtotal, installationCost, formData, handleInputChange
 
       <div className="border-t border-gray-200 pt-4 mt-4">
         <div className="flex justify-between items-center">
-          <span className="font-semibold text-lg text-gray-900">Grand Total:</span>
+          <span className="font-semibold text-lg text-gray-900">
+            Grand Total:
+          </span>
           <span className="font-bold text-lg text-[#181829]">
-            ₹{grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            ₹
+            {grandTotal.toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
           </span>
         </div>
       </div>

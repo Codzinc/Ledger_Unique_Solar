@@ -1,17 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
-  X, Plus, DollarSign, FileText, User, Tag, Calendar, Image as ImageIcon
-} from 'lucide-react';
-import { expenseCategories, utilizers } from './SampleExpense';
+  X,
+  Plus,
+  DollarSign,
+  FileText,
+  User,
+  Tag,
+  Calendar,
+  Image as ImageIcon,
+} from "lucide-react";
+import { expenseCategories, utilizers } from "./SampleExpense";
 
-const AddExpense = ({ onAddExpense, onClose, nextSrNo, editExpense = null }) => {
+const AddExpense = ({
+  onAddExpense,
+  onClose,
+  nextSrNo,
+  editExpense = null,
+}) => {
   const [formData, setFormData] = useState({
-    title: editExpense?.title || '',
-    category: editExpense?.category || '',
-    utilizer: editExpense?.utilizer || '',
-    amount: editExpense?.amount || '',
-    description: editExpense?.description || '',
-    date: editExpense?.date || new Date().toISOString().split('T')[0],
+    title: editExpense?.title || "",
+    category: editExpense?.category || "",
+    utilizer: editExpense?.utilizer || "",
+    amount: editExpense?.amount || "",
+    description: editExpense?.description || "",
+    date: editExpense?.date || new Date().toISOString().split("T")[0],
     receiptImage: editExpense?.receiptImage || null,
   });
 
@@ -19,15 +31,15 @@ const AddExpense = ({ onAddExpense, onClose, nextSrNo, editExpense = null }) => 
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
 
     if (errors[name]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [name]: ''
+        [name]: "",
       }));
     }
   };
@@ -38,9 +50,9 @@ const AddExpense = ({ onAddExpense, onClose, nextSrNo, editExpense = null }) => 
 
     const reader = new FileReader();
     reader.onloadend = () => {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        receiptImage: reader.result
+        receiptImage: reader.result,
       }));
     };
     reader.readAsDataURL(file);
@@ -48,13 +60,13 @@ const AddExpense = ({ onAddExpense, onClose, nextSrNo, editExpense = null }) => 
 
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.title.trim()) newErrors.title = 'Title is required';
-    if (!formData.category) newErrors.category = 'Category is required';
-    if (!formData.utilizer) newErrors.utilizer = 'Utilizer is required';
+    if (!formData.title.trim()) newErrors.title = "Title is required";
+    if (!formData.category) newErrors.category = "Category is required";
+    if (!formData.utilizer) newErrors.utilizer = "Utilizer is required";
     if (!formData.amount || parseFloat(formData.amount) <= 0) {
-      newErrors.amount = 'Valid amount is required';
+      newErrors.amount = "Valid amount is required";
     }
-    if (!formData.date) newErrors.date = 'Date is required';
+    if (!formData.date) newErrors.date = "Date is required";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -77,7 +89,7 @@ const AddExpense = ({ onAddExpense, onClose, nextSrNo, editExpense = null }) => 
       receiptImage: formData.receiptImage,
     };
 
-    onAddExpense(expenseData, editExpense ? 'edit' : 'add');
+    onAddExpense(expenseData, editExpense ? "edit" : "add");
     onClose();
   };
 
@@ -88,7 +100,7 @@ const AddExpense = ({ onAddExpense, onClose, nextSrNo, editExpense = null }) => 
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
             <DollarSign className="w-6 h-6 text-[#d8f276]" />
-            {editExpense ? 'Edit Expense' : 'Add New Expense'}
+            {editExpense ? "Edit Expense" : "Add New Expense"}
           </h2>
           <button
             onClick={onClose}
@@ -110,14 +122,17 @@ const AddExpense = ({ onAddExpense, onClose, nextSrNo, editExpense = null }) => 
               <input
                 type="text"
                 name="title"
+                required
                 value={formData.title}
                 onChange={handleChange}
                 className={`w-full px-4 py-3 border rounded-lg transition-all ${
-                  errors.title ? 'border-red-500' : 'border-gray-300'
+                  errors.title ? "border-red-500" : "border-gray-300"
                 }`}
                 placeholder="Enter expense title"
               />
-              {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
+              {errors.title && (
+                <p className="text-red-500 text-sm mt-1">{errors.title}</p>
+              )}
             </div>
 
             {/* Category */}
@@ -132,11 +147,13 @@ const AddExpense = ({ onAddExpense, onClose, nextSrNo, editExpense = null }) => 
                 value={formData.category}
                 onChange={handleChange}
                 className={`w-full px-4 py-3 border rounded-lg transition-all ${
-                  errors.category ? 'border-red-500' : 'border-gray-300'
+                  errors.category ? "border-red-500" : "border-gray-300"
                 }`}
                 placeholder="Add Category"
               />
-              {errors.category && <p className="text-red-500 text-sm mt-1">{errors.category}</p>}
+              {errors.category && (
+                <p className="text-red-500 text-sm mt-1">{errors.category}</p>
+              )}
             </div>
 
             {/* Utilizer */}
@@ -150,15 +167,19 @@ const AddExpense = ({ onAddExpense, onClose, nextSrNo, editExpense = null }) => 
                 value={formData.utilizer}
                 onChange={handleChange}
                 className={`w-full px-4 py-3 border rounded-lg transition-all ${
-                  errors.utilizer ? 'border-red-500' : 'border-gray-300'
+                  errors.utilizer ? "border-red-500" : "border-gray-300"
                 }`}
               >
                 <option value="">Select utilizer</option>
-                {utilizers.map(utilizer => (
-                  <option key={utilizer} value={utilizer}>{utilizer}</option>
+                {utilizers.map((utilizer) => (
+                  <option key={utilizer} value={utilizer}>
+                    {utilizer}
+                  </option>
                 ))}
               </select>
-              {errors.utilizer && <p className="text-red-500 text-sm mt-1">{errors.utilizer}</p>}
+              {errors.utilizer && (
+                <p className="text-red-500 text-sm mt-1">{errors.utilizer}</p>
+              )}
             </div>
 
             {/* Amount */}
@@ -172,14 +193,14 @@ const AddExpense = ({ onAddExpense, onClose, nextSrNo, editExpense = null }) => 
                 name="amount"
                 value={formData.amount}
                 onChange={handleChange}
-                step="0.01"
-                min="0"
                 className={`w-full px-4 py-3 border rounded-lg transition-all ${
-                  errors.amount ? 'border-red-500' : 'border-gray-300'
+                  errors.amount ? "border-red-500" : "border-gray-300"
                 }`}
                 placeholder="0.00"
               />
-              {errors.amount && <p className="text-red-500 text-sm mt-1">{errors.amount}</p>}
+              {errors.amount && (
+                <p className="text-red-500 text-sm mt-1">{errors.amount}</p>
+              )}
             </div>
 
             {/* Date Picker */}
@@ -194,10 +215,12 @@ const AddExpense = ({ onAddExpense, onClose, nextSrNo, editExpense = null }) => 
                 value={formData.date}
                 onChange={handleChange}
                 className={`w-full px-4 py-3 border rounded-lg transition-all ${
-                  errors.date ? 'border-red-500' : 'border-gray-300'
+                  errors.date ? "border-red-500" : "border-gray-300"
                 }`}
               />
-              {errors.date && <p className="text-red-500 text-sm mt-1">{errors.date}</p>}
+              {errors.date && (
+                <p className="text-red-500 text-sm mt-1">{errors.date}</p>
+              )}
             </div>
 
             {/* Receipt Image Upload */}
@@ -207,29 +230,29 @@ const AddExpense = ({ onAddExpense, onClose, nextSrNo, editExpense = null }) => 
                 Add Receipt Image
               </label>
               <div className="flex items-center gap-4">
-    <label className="px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-200 transition-all">
-      Upload Image
-      <input
-        type="file"
-        accept="image/*"
-        onChange={handleImageUpload}
-        className="hidden"
-      />
-    </label>
-    {formData.receiptImage && (
-      <span className="text-sm text-gray-600">Image selected</span>
-    )}
-  </div>
+                <label className="px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-200 transition-all">
+                  Upload Image
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                  />
+                </label>
+                {formData.receiptImage && (
+                  <span className="text-sm text-gray-600">Image selected</span>
+                )}
+              </div>
 
-  {formData.receiptImage && (
-    <div className="mt-2">
-      <img
-        src={formData.receiptImage}
-        alt="Receipt Preview"
-        className="h-24 object-contain rounded-md border"
-      />
-    </div>
-  )}
+              {formData.receiptImage && (
+                <div className="mt-2">
+                  <img
+                    src={formData.receiptImage}
+                    alt="Receipt Preview"
+                    className="h-24 object-contain rounded-md border"
+                  />
+                </div>
+              )}
             </div>
           </div>
 
@@ -262,7 +285,7 @@ const AddExpense = ({ onAddExpense, onClose, nextSrNo, editExpense = null }) => 
               className="px-6 py-2 bg-[#d8f276] text-[#181829] rounded-lg hover:bg-[#181829] hover:text-[#d8f276] transition-colors flex items-center gap-2"
             >
               <Plus className="w-4 h-4" />
-              {editExpense ? 'Update Expense' : 'Add Expense'}
+              {editExpense ? "Update Expense" : "Add Expense"}
             </button>
           </div>
         </form>

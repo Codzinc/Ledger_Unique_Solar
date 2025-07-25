@@ -4,7 +4,7 @@ import { sampleProjects, STATUS_CLASSES } from './SampleProjects';
 
 // Component for the table header
 const TableHeader = () => (
-  <thead className="bg-[#181829] text-white whitespace-nowrap sticky top-0 z-10 text-xs uppercase tracking-wider">
+  <thead className="bg-[#181829] text-white whitespace-nowrap text-xs uppercase tracking-wider">
     <tr>
       {['Project ID', 'Company', 'Customer Name', 'Contact No', 'Address', 'Date', 'Project Type', 'Status', 'Total Amount', 'Paid', 'Pending', 'Actions'].map((head, idx) => (
         <th key={idx} className={`px-6 py-4 ${head === 'Actions' ? 'text-right' : ''}`}>
@@ -121,8 +121,8 @@ const ProjectTable = ({ projects, searchTerm, filters, dateFilter, onViewProject
   );
 
   return (
-    <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-      <div className="overflow-x-auto">
+    <div className="bg-white rounded-xl shadow-lg overflow-hidden relative">
+      <div className="overflow-x-auto overflow-y-visible">
         <table className="min-w-full text-left">
           <TableHeader />
           <tbody className="divide-y divide-gray-200">

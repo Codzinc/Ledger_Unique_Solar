@@ -1,7 +1,24 @@
-import React from 'react';
-import { User, Phone, MapPin, Calendar, FileText, Activity } from 'lucide-react';
+import React from "react";
+import {
+  User,
+  Phone,
+  MapPin,
+  Calendar,
+  FileText,
+  Activity,
+} from "lucide-react";
 
-const ProjectInformation = ({ formData, handleInputChange }) => {
+const ProjectInformation = ({ formData, handleInputChange, formErrors }) => {
+  const inputClass = (field) =>
+    `w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#d8f276] focus:border-transparent ${
+      formErrors[field] ? "border-red-500" : "border-gray-300"
+    }`;
+
+  const errorMsg = (field) =>
+    formErrors[field] && (
+      <p className="text-sm text-red-600 mt-1">{formErrors[field]}</p>
+    );
+
   return (
     <div className="border-2 border-dashed border-gray-200 rounded-lg p-6">
       <h3 className="text-lg font-semibold text-[#181829] mb-4 flex items-center gap-2">
@@ -21,10 +38,10 @@ const ProjectInformation = ({ formData, handleInputChange }) => {
             name="customerName"
             value={formData.customerName}
             onChange={handleInputChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#d8f276] focus:border-transparent"
+            className={inputClass("customerName")}
             placeholder="Enter customer name"
-            required
           />
+          {errorMsg("customerName")}
         </div>
 
         {/* Contact Number */}
@@ -34,14 +51,14 @@ const ProjectInformation = ({ formData, handleInputChange }) => {
             Contact Number *
           </label>
           <input
-            type="tel"
+            type="number"
             name="contact_no"
-            value={formData.contactno}
+            value={formData.contact_no}
             onChange={handleInputChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#d8f276] focus:border-transparent"
+            className={inputClass("contact_no")}
             placeholder="Enter contact number"
-            required
           />
+          {errorMsg("contact_no")}
         </div>
 
         {/* Address */}
@@ -55,10 +72,10 @@ const ProjectInformation = ({ formData, handleInputChange }) => {
             name="address"
             value={formData.address}
             onChange={handleInputChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#d8f276] focus:border-transparent"
+            className={inputClass("address")}
             placeholder="Enter address"
-            required
           />
+          {errorMsg("address")}
         </div>
 
         {/* Project Date */}
@@ -72,9 +89,9 @@ const ProjectInformation = ({ formData, handleInputChange }) => {
             name="date"
             value={formData.date}
             onChange={handleInputChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#d8f276] focus:border-transparent"
-            required
+            className={inputClass("date")}
           />
+          {errorMsg("date")}
         </div>
 
         {/* Valid Until */}
@@ -88,9 +105,9 @@ const ProjectInformation = ({ formData, handleInputChange }) => {
             name="validUntil"
             value={formData.validUntil}
             onChange={handleInputChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#d8f276] focus:border-transparent"
-            required
+            className={inputClass("validUntil")}
           />
+          {errorMsg("validUntil")}
         </div>
 
         {/* Project Type */}
@@ -103,15 +120,14 @@ const ProjectInformation = ({ formData, handleInputChange }) => {
             name="projectType"
             value={formData.projectType}
             onChange={handleInputChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#d8f276] focus:border-transparent"
-            required
+            className={inputClass("projectType")}
           >
             <option value="">Select Project Type</option>
-            <option value="Solar Installation">Solar Installation</option>
-            <option value="Maintenance">Maintenance</option>
-            <option value="Repair">Repair</option>
-            <option value="Consultation">Consultation</option>
+            <option value="On-Grid">On-Grid</option>
+            <option value="Off-Grid">Off-Grid</option>
+            <option value="Hybrid">Hybrid</option>
           </select>
+          {errorMsg("projectType")}
         </div>
 
         {/* Status */}
@@ -124,15 +140,14 @@ const ProjectInformation = ({ formData, handleInputChange }) => {
             name="status"
             value={formData.status}
             onChange={handleInputChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#d8f276] focus:border-transparent"
-            required
+            className={inputClass("status")}
           >
-            <option value="DRAFT">Draft</option>
+            <option value="">Select status</option>
             <option value="PENDING">Pending</option>
             <option value="IN_PROGRESS">In Progress</option>
             <option value="COMPLETED">Completed</option>
-            <option value="CANCELLED">Cancelled</option>
           </select>
+          {errorMsg("status")}
         </div>
       </div>
     </div>

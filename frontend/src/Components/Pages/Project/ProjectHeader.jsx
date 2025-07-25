@@ -1,8 +1,13 @@
-import React, { useState } from 'react';
-import { Plus, Search, Building, Calendar } from 'lucide-react';
+import React, { useState } from "react";
+import { Plus, Search, Building, Calendar } from "lucide-react";
 
-const ProjectHeader = ({ searchTerm, onSearchChange, onAddProject, onDateFilterChange }) => {
-  const [selectedDate, setSelectedDate] = useState('');
+const ProjectHeader = ({
+  searchTerm,
+  onSearchChange,
+  onAddProject,
+  onDateFilterChange,
+}) => {
+  const [selectedDate, setSelectedDate] = useState("");
 
   return (
     <div className="bg-white rounded-xl shadow-lg mb-2">
@@ -13,7 +18,9 @@ const ProjectHeader = ({ searchTerm, onSearchChange, onAddProject, onDateFilterC
               <Building className="w-7 h-7 text-[#d8f276]" />
               Projects
             </h2>
-            <p className="text-gray-600 mt-1">Manage all your solar and service projects</p>
+            <p className="text-gray-600 mt-1">
+              Manage all your solar and service projects
+            </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative">
@@ -44,8 +51,8 @@ const ProjectHeader = ({ searchTerm, onSearchChange, onAddProject, onDateFilterC
                 {selectedDate && (
                   <button
                     onClick={() => {
-                      setSelectedDate('');
-                      onDateFilterChange('');
+                      setSelectedDate("");
+                      onDateFilterChange("");
                     }}
                     className="px-2 py-1 text-gray-500 hover:text-gray-700"
                     title="Clear date filter"

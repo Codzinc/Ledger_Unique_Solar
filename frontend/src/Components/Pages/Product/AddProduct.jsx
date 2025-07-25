@@ -135,9 +135,8 @@ const AddProduct = ({ onAddProduct, onClose, nextSrNo }) => {
                 value={formData.purchPrice}
                 onChange={handleChange}
                 required
-                step="0.01"
-                min="0"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg transition-all"
+                
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg transition-all"
                 placeholder="0.00"
               />
             </div>
@@ -151,9 +150,8 @@ const AddProduct = ({ onAddProduct, onClose, nextSrNo }) => {
                 value={formData.salePrice}
                 onChange={handleChange}
                 required
-                step="0.01"
-                min="0"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg transition-all"
+                
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg transition-all"
                 placeholder="0.00"
               />
             </div>

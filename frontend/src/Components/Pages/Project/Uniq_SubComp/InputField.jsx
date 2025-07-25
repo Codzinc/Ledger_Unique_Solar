@@ -1,12 +1,20 @@
-import React from 'react';
+import React from "react";
 
-const InputField = ({ label, name, type = 'text', className = '', value, onChange, ...props }) => (
+const InputField = ({
+  label,
+  name,
+  type = "text",
+  className = "",
+  value,
+  onChange,
+  ...props
+}) => (
   <div className={className}>
     <label className="block text-sm font-medium text-gray-700 mb-2">
       {label}
       {props.required && <span className="text-red-500 ml-1">*</span>}
     </label>
-    {type === 'select' ? (
+    {type === "select" ? (
       <select
         name={name}
         value={value}
@@ -14,7 +22,7 @@ const InputField = ({ label, name, type = 'text', className = '', value, onChang
         className="w-full px-3 py-2 border border-gray-300 rounded-lg  transition-colors bg-white"
         {...props}
       >
-        {props.options?.map(option => (
+        {props.options?.map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}
           </option>

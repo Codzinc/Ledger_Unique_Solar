@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import ProductDetail from './ProductDetail';
-import ProductList from './ProductList';
-import AddProduct from './AddProduct';
+import React, { useState } from "react";
+import ProductDetail from "./ProductDetail";
+import ProductList from "./ProductList";
+import AddProduct from "./AddProduct";
 
-import { SampleProducts } from './SampleProducts';
+import { SampleProducts } from "./SampleProducts";
 
 const Product = () => {
   const [products, setProducts] = useState(SampleProducts);
@@ -28,17 +28,19 @@ const Product = () => {
   };
 
   const handleDeleteProduct = (productId) => {
-    if (window.confirm('Are you sure you want to delete this product?')) {
-      setProducts(products.filter(product => product.id !== productId));
+    if (window.confirm("Are you sure you want to delete this product?")) {
+      setProducts(products.filter((product) => product.id !== productId));
     }
   };
 
   const getNextSrNo = () => {
-    return products.length > 0 ? Math.max(...products.map(p => p.srNo)) + 1 : 1;
+    return products.length > 0
+      ? Math.max(...products.map((p) => p.srNo)) + 1
+      : 1;
   };
 
   return (
-    <div className=''>
+    <div className="">
       {/* Main Content */}
       <ProductList
         products={products}

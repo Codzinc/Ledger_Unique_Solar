@@ -1,5 +1,5 @@
-import React from 'react';
-import SectionHeading from './SectionHeading';
+import React from "react";
+import SectionHeading from "./SectionHeading";
 
 const NotesAndAmount = ({ formData, handleInputChange }) => (
   <div>

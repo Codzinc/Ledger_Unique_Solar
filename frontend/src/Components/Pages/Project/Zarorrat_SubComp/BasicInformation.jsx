@@ -1,7 +1,17 @@
-import React from 'react';
-import { User, Phone, MapPin, Calendar, FileText, Activity } from 'lucide-react';
+import React from "react";
+import { User, Phone, MapPin, Calendar, Activity } from "lucide-react";
 
-const BasicInformation = ({ formData, handleInputChange }) => {
+const BasicInformation = ({ formData, handleInputChange, errors }) => {
+  const inputStyle = (fieldName) =>
+    `w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#d8f276] focus:border-transparent ${
+      errors?.[fieldName] ? "border-red-500" : "border-gray-300"
+    }`;
+
+  const errorText = (fieldName) =>
+    errors?.[fieldName] && (
+      <p className="text-red-500 text-sm mt-1">{errors[fieldName]}</p>
+    );
+
   return (
     <div className="border-2 border-dashed border-gray-200 rounded-lg p-6">
       <h3 className="text-lg font-semibold text-[#181829] mb-4 flex items-center gap-2">
@@ -21,10 +31,10 @@ const BasicInformation = ({ formData, handleInputChange }) => {
             name="customerName"
             value={formData.customerName}
             onChange={handleInputChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#d8f276] focus:border-transparent"
+            className={inputStyle("customerName")}
             placeholder="Enter customer name"
-            required
           />
+          {errorText("customerName")}
         </div>
 
         {/* Contact Number */}
@@ -36,12 +46,12 @@ const BasicInformation = ({ formData, handleInputChange }) => {
           <input
             type="tel"
             name="contact_no"
-            value={formData.contactno}
+            value={formData.contact_no}
             onChange={handleInputChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#d8f276] focus:border-transparent"
+            className={inputStyle("contact_no")}
             placeholder="Enter contact number"
-            required
           />
+          {errorText("contact_no")}
         </div>
 
         {/* Address */}
@@ -55,10 +65,10 @@ const BasicInformation = ({ formData, handleInputChange }) => {
             name="address"
             value={formData.address}
             onChange={handleInputChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#d8f276] focus:border-transparent"
+            className={inputStyle("address")}
             placeholder="Enter address"
-            required
           />
+          {errorText("address")}
         </div>
 
         {/* Project Date */}
@@ -72,9 +82,9 @@ const BasicInformation = ({ formData, handleInputChange }) => {
             name="date"
             value={formData.date}
             onChange={handleInputChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#d8f276] focus:border-transparent"
-            required
+            className={inputStyle("date")}
           />
+          {errorText("date")}
         </div>
 
         {/* Valid Until */}
@@ -88,30 +98,9 @@ const BasicInformation = ({ formData, handleInputChange }) => {
             name="validUntil"
             value={formData.validUntil}
             onChange={handleInputChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#d8f276] focus:border-transparent"
-            required
+            className={inputStyle("validUntil")}
           />
-        </div>
-
-        {/* Project Type */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            <FileText className="w-4 h-4 inline mr-2" />
-            Project Type <span className="text-red-500">*</span>
-          </label>
-          <select
-            name="projectType"
-            value={formData.projectType}
-            onChange={handleInputChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#d8f276] focus:border-transparent"
-            required
-          >
-            <option value="">Select Project Type</option>
-            <option value="Service Call">Service Call</option>
-            <option value="Maintenance">Maintenance</option>
-            <option value="Repair">Repair</option>
-            <option value="Installation">Installation</option>
-          </select>
+          {errorText("validUntil")}
         </div>
 
         {/* Status */}
@@ -124,15 +113,14 @@ const BasicInformation = ({ formData, handleInputChange }) => {
             name="status"
             value={formData.status}
             onChange={handleInputChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#d8f276] focus:border-transparent"
-            required
+            className={inputStyle("status")}
           >
-            <option value="DRAFT">Draft</option>
+            <option value="">Select status</option>
             <option value="PENDING">Pending</option>
             <option value="IN_PROGRESS">In Progress</option>
             <option value="COMPLETED">Completed</option>
-            <option value="CANCELLED">Cancelled</option>
           </select>
+          {errorText("status")}
         </div>
       </div>
     </div>
