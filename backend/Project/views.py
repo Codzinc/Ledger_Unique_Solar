@@ -230,7 +230,6 @@ class UniqueSolarProjectCreateView(APIView):
                     if isinstance(checklist_raw, str):
                         try:
                             checklist_ids = json.loads(checklist_raw)
-                            print(f"DEBUG: Parsed checklist_ids: {checklist_ids}")
                         except json.JSONDecodeError:
                             return Response({'error': 'Invalid JSON format for checklist_ids'}, status=status.HTTP_400_BAD_REQUEST)
                     elif isinstance(checklist_raw, list):
@@ -251,7 +250,6 @@ class UniqueSolarProjectCreateView(APIView):
                             else:
                                 parsed_checklist_ids.append(item)
                         checklist_ids = parsed_checklist_ids
-                        print(f"DEBUG: Parsed checklist_ids from list: {checklist_ids}")
                     else:
                         return Response({'error': 'Checklist IDs must be a JSON string or list'}, status=status.HTTP_400_BAD_REQUEST)
                     
@@ -267,13 +265,10 @@ class UniqueSolarProjectCreateView(APIView):
                             try:
                                 converted_ids.append(int(item))
                             except (ValueError, TypeError) as e:
-                                print(f"DEBUG: Failed to convert item {i}: {item} (type: {type(item)}) - Error: {e}")
                                 return Response({'error': f'Checklist ID at position {i} must be a valid integer. Got: {item}'}, status=status.HTTP_400_BAD_REQUEST)
                         
                         checklist_ids = converted_ids
-                        print(f"DEBUG: After integer conversion: {checklist_ids}")
                     except Exception as e:
-                        print(f"DEBUG: Unexpected error during conversion: {e}")
                         return Response({'error': f'Error converting checklist IDs to integers: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
                 
                 # Handle images
