@@ -3,6 +3,7 @@ from django.utils import timezone
 from django.core.validators import MinValueValidator
 from decimal import Decimal
 import uuid
+from django.core.exceptions import ValidationError
 
 # Create your models here.
 
@@ -94,38 +95,9 @@ class ZarorratProjectService(models.Model):
     class Meta:
         unique_together = ['project', 'service']
 
-class UniqueSolarProduct(models.Model):
-    """Model for Unique Solar products"""
-    PRODUCT_TYPE_CHOICES = [
-        ('solar_panel', 'Solar Panel'),
-        ('inverter', 'Inverter'),
 
-        ('others', 'Others'),
-    ]
-    
-    product_type = models.CharField(max_length=50, choices=PRODUCT_TYPE_CHOICES)
-    quantity = models.PositiveIntegerField(default=0)
-    unit_price = models.DecimalField(
-        max_digits=12, 
-        decimal_places=2,
-        validators=[MinValueValidator(Decimal('0.00'))],
-        default=0
-    )
-    line_total = models.DecimalField(
-        max_digits=12, 
-        decimal_places=2,
-        validators=[MinValueValidator(Decimal('0.00'))],
-        default=0
-    )
-    is_active = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    
-    def __str__(self):
-        return f"{self.get_product_type_display()} - {self.quantity} - {self.unit_price} - {self.line_total}"
-    
-    class Meta:
-        ordering = ['product_type', 'quantity', 'unit_price', 'line_total']
+
+
 
 class UniqueSolarProject(models.Model):
     """Model for Unique Solar projects"""
@@ -223,21 +195,15 @@ class UniqueSolarProject(models.Model):
     
     def calculate_totals(self):
         """Calculate subtotal, tax, and grand total"""
-        # Only calculate from products if instance has been saved (has primary key)
         if self.pk:
-            # Calculate subtotal from products
             self.subtotal = sum(item.line_total for item in self.products.all())
         else:
-            # For new instances, set subtotal to 0
             self.subtotal = Decimal('0.00')
         
-        # Calculate tax
         tax_amount = (self.subtotal * self.tax_percentage) / 100
         
-        # Calculate grand total
         self.grand_total = self.subtotal + tax_amount
         
-        # Calculate payment breakdown
         self.total_payment = self.grand_total
         self.completion_payment = self.total_payment - self.advance_payment
     
@@ -245,13 +211,10 @@ class UniqueSolarProject(models.Model):
         if not self.project_id:
             self.project_id = self.generate_project_id()
         
-        # Save first to ensure primary key is generated
         super().save(*args, **kwargs)
         
-        # Calculate totals after saving (when we have primary key)
         self.calculate_totals()
         
-        # Save again with calculated totals
         super().save(update_fields=['subtotal', 'grand_total', 'total_payment', 'completion_payment'])
     
     class Meta:
@@ -260,14 +223,21 @@ class UniqueSolarProject(models.Model):
         verbose_name_plural = "Unique Solar Projects"
 
 class UniqueSolarProjectProduct(models.Model):
+
+    PRODUCT_TYPE_CHOICES = [
+        ('solar_panel', 'Solar Panel'),
+        ('inverter', 'Inverter'),
+
+        ('others', 'Others'),
+    ]
     """Products associated with Unique Solar projects"""
     project = models.ForeignKey(
         UniqueSolarProject, 
         on_delete=models.CASCADE,
         related_name='products'
     )
-    product_type = models.CharField(max_length=50, choices=UniqueSolarProduct.PRODUCT_TYPE_CHOICES)
-    specify_product = models.CharField(max_length=200)
+    product_type = models.CharField(max_length=50, choices=PRODUCT_TYPE_CHOICES)
+    specify_product = models.CharField(max_length=200, blank=True, null=True)
     quantity = models.PositiveIntegerField(default=0)
     unit_price = models.DecimalField(
         max_digits=12, 
@@ -307,23 +277,32 @@ class UniqueSolarProjectImage(models.Model):
         upload_to='unique_solar_projects/',
         help_text="Project image or receipt"
     )
-    caption = models.CharField(
-        max_length=200, 
-        blank=True, 
-        null=True,
-        help_text="Optional caption for the image"
+    order = models.PositiveIntegerField(
+        default=0,
+        help_text="Order of the image (0-6, max 7 images per project)"
     )
-    order = models.PositiveIntegerField(default=0)
+
     created_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
         return f"{self.project.project_id} - Image {self.order}"
     
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            existing_count = UniqueSolarProjectImage.objects.filter(project=self.project).count()
+            if existing_count >= 7:
+                raise ValidationError("Maximum of 7 images allowed per project")
+            
+            self.order = existing_count
+        
+        super().save(*args, **kwargs)
+    
     class Meta:
         ordering = ['order']
         unique_together = ['project', 'order']
+        
 
-class UniqueSolarProjectChecklist(models.Model):
+class UniqueSolarChecklist(models.Model):
     """Checklist items for Unique Solar projects"""
    
     item_name = models.CharField(max_length=100)
@@ -336,119 +315,23 @@ class UniqueSolarProjectChecklist(models.Model):
     class Meta:
         ordering = ['id']
         
-# Legacy Project model for backward compatibility
-class Project(models.Model):
-    PROJECT_TYPE_CHOICES = [
-        ('unique_solar', 'Unique Solar'),
-        ('zroorat', 'Zroorat.com'),
-    ]
-    
-    STATUS_CHOICES = [
-        ('in_progress', 'In Progress'),
-        ('pending', 'Pending'),
-        ('complete', 'Complete'),
-    ]
-    
-    COMPANY_CHOICES = [
-        ('zroorat', 'Zroorat'),
-        ('unique', 'Unique'),
-    ]
-    
-    project_id = models.CharField(max_length=20, unique=True, blank=True)
-    company_id = models.CharField(max_length=10, choices=COMPANY_CHOICES)
-    customer_name = models.CharField(max_length=200)
-    contact_number = models.CharField(max_length=20)
-    address = models.TextField()
-    date = models.DateField(default=timezone.now)
-    project_type = models.CharField(max_length=50, blank=True, null=True, help_text="Project type (for Unique Solar projects)")
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
-    total_amount = models.DecimalField(
-        max_digits=12, 
-        decimal_places=2,
-        validators=[MinValueValidator(Decimal('0.01'))],
-        default=0
+class UniqueSolarProjectChecklist(models.Model):
+    """Checklist items for Unique Solar projects"""
+    project = models.ForeignKey(
+        UniqueSolarProject, 
+        on_delete=models.CASCADE,
+        related_name='checklist'
     )
-    paid = models.DecimalField(
-        max_digits=12, 
-        decimal_places=2,
-        validators=[MinValueValidator(Decimal('0.00'))],
-        default=0
-    )
-    pending = models.DecimalField(
-        max_digits=12, 
-        decimal_places=2,
-        validators=[MinValueValidator(Decimal('0.00'))],
-        default=0
-    )
-    project_type_category = models.CharField(
-        max_length=20, 
-        choices=PROJECT_TYPE_CHOICES,
-        help_text="Main project type category"
+    checklist = models.ForeignKey(
+        UniqueSolarChecklist,
+        on_delete=models.CASCADE,
+        related_name='projects'
     )
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
     
+
     def __str__(self):
-        return f"{self.project_id} - {self.customer_name}"
-    
-    def generate_project_id(self):
-        """Generate project ID based on project type and current year"""
-        current_year = timezone.now().year
-        
-        if self.project_type_category == 'unique_solar':
-            # Get the next unique ID for Unique Solar projects this year
-            last_project = Project.objects.filter(
-                project_type_category='unique_solar',
-                project_id__startswith=f'US-{current_year}-'
-            ).order_by('-project_id').first()
-            
-            if last_project:
-                try:
-                    last_number = int(last_project.project_id.split('-')[-1])
-                    next_number = last_number + 1
-                except (ValueError, IndexError):
-                    next_number = 1
-            else:
-                next_number = 1
-                
-            return f"US-{current_year}-{next_number}"
-        
-        elif self.project_type_category == 'zroorat':
-            # Get the next unique ID for Zroorat projects this year
-            last_project = Project.objects.filter(
-                project_type_category='zroorat',
-                project_id__startswith=f'ZR-{current_year}-'
-            ).order_by('-project_id').first()
-            
-            if last_project:
-                try:
-                    last_number = int(last_project.project_id.split('-')[-1])
-                    next_number = last_number + 1
-                except (ValueError, IndexError):
-                    next_number = 1
-            else:
-                next_number = 1
-                
-            return f"ZR-{current_year}-{next_number}"
-        
-        # Fallback for any other type
-        return f"PRJ-{current_year}-{uuid.uuid4().hex[:8].upper()}"
-    
-    @property
-    def pending_amount(self):
-        """Calculate pending amount automatically"""
-        return self.total_amount - self.paid
-    
-    def save(self, *args, **kwargs):
-        if not self.project_id:
-            self.project_id = self.generate_project_id()
-        
-        # Auto-calculate pending amount
-        self.pending = self.pending_amount
-        
-        super().save(*args, **kwargs)
-    
+        return f"{self.project.project_id} - {self.checklist.item_name}"
+
     class Meta:
-        ordering = ['-created_at']
-        verbose_name = "Project"
-        verbose_name_plural = "Projects"
+        unique_together = ['project', 'checklist']

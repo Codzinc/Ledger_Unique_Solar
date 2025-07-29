@@ -2,28 +2,27 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
+from rest_framework import serializers
 from django.shortcuts import get_object_or_404
+from django.db import transaction
+import json
 from .models import (
-    Project,
     ZarorratService,
     ZarorratProject,
-    ZarorratProjectService,
-    UniqueSolarProduct,
     UniqueSolarProject,
+    UniqueSolarChecklist,
     UniqueSolarProjectProduct,
     UniqueSolarProjectImage,
     UniqueSolarProjectChecklist
 )
 from .serializers import (
-    ProjectSerializer,
     ZarorratServiceSerializer,
     ZarorratProjectSerializer,
     ZarorratProjectServiceSerializer,
-    UniqueSolarProductSerializer,
     UniqueSolarProjectSerializer,
+    UniqueSolarChecklistSerializer,
     UniqueSolarProjectProductSerializer,
-    UniqueSolarProjectImageSerializer,
-    UniqueSolarProjectChecklistSerializer
+    UniqueSolarProjectImageSerializer
 )
 
 class ZarorratProjectPagination(PageNumberPagination):
@@ -31,66 +30,8 @@ class ZarorratProjectPagination(PageNumberPagination):
     page_size_query_param = 'page_size'
     max_page_size = 100
 
-# Legacy Project views
-class ProjectListView(APIView):
-    """
-    Legacy Project List View
-    
-    This view handles:
-    - GET: Retrieve all legacy projects
-    
-    Used for managing basic project information before the specialized
-    Zarorrat and Unique Solar project types were introduced.
-    """
-    def get(self, request):
-        projects = Project.objects.all()
-        serializer = ProjectSerializer(projects, many=True)
-        return Response(serializer.data)
 
-# class ProjectCreateView(APIView):
-#     """
-#     Legacy Project Create View
-    
-#     This view handles:
-#     - POST: Create a new legacy project
-    
-#     Used for creating new basic project information.
-#     """
-#     def post(self, request):
-#         serializer = ProjectSerializer(data=request.data)
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response(serializer.data, status=status.HTTP_201_CREATED)
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class ProjectDetailView(APIView):
-    """
-    Legacy Project Detail, Update, and Delete View
-    
-    This view handles:
-    - GET: Retrieve a specific legacy project by ID
-    - PUT/PATCH: Update a legacy project
-    - DELETE: Delete a legacy project
-    
-    Provides full CRUD operations for individual legacy projects.
-    """
-    def get(self, request, pk):
-        project = get_object_or_404(Project, pk=pk)
-        serializer = ProjectSerializer(project)
-        return Response(serializer.data)
-    
-    def put(self, request, pk):
-        project = get_object_or_404(Project, pk=pk)
-        serializer = ProjectSerializer(project, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    def delete(self, request, pk):
-        project = get_object_or_404(Project, pk=pk)
-        project.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
 # Zarorrat Service views
 class ZarorratServiceListView(APIView):
@@ -205,72 +146,7 @@ class ZarorratProjectServicesView(APIView):
         serializer = ZarorratProjectServiceSerializer(services, many=True)
         return Response(serializer.data)
 
-# Unique Solar Product views
-class UniqueSolarProductListView(APIView):
-    """
-    Unique Solar Product List View
-    
-    This view handles:
-    - GET: Retrieve all unique solar products with optional filtering
-    
-    Query Parameters:
-    - product_type: Filter products by type (e.g., 'panel', 'inverter', 'battery')
-    
-    Unique solar products are solar energy equipment and components
-    that can be used in solar projects.
-    """
-    def get(self, request):
-        queryset = UniqueSolarProduct.objects.all()
-        product_type = request.query_params.get('product_type', None)
-        if product_type:
-            queryset = queryset.filter(product_type=product_type)
-        serializer = UniqueSolarProductSerializer(queryset, many=True)
-        return Response(serializer.data)
 
-class UniqueSolarProductCreateView(APIView):
-    """
-    Unique Solar Product Create View
-    
-    This view handles:
-    - POST: Create a new unique solar product
-    
-    Used for creating new solar energy equipment and components.
-    """
-    def post(self, request):
-        serializer = UniqueSolarProductSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-class UniqueSolarProductDetailView(APIView):
-    """
-    Unique Solar Product Detail, Update, and Delete View
-    
-    This view handles:
-    - GET: Retrieve a specific unique solar product by ID
-    - PUT/PATCH: Update a unique solar product
-    - DELETE: Delete a unique solar product
-    
-    Provides full CRUD operations for individual unique solar products.
-    """
-    def get(self, request, pk):
-        product = get_object_or_404(UniqueSolarProduct, pk=pk)
-        serializer = UniqueSolarProductSerializer(product)
-        return Response(serializer.data)
-    
-    def put(self, request, pk):
-        product = get_object_or_404(UniqueSolarProduct, pk=pk)
-        serializer = UniqueSolarProductSerializer(product, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    def delete(self, request, pk):
-        product = get_object_or_404(UniqueSolarProduct, pk=pk)
-        product.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
 # Unique Solar Project views
 class UniqueSolarProjectListView(APIView):
@@ -305,16 +181,156 @@ class UniqueSolarProjectCreateView(APIView):
     Unique Solar Project Create View
     
     This view handles:
-    - POST: Create a new unique solar project
+    - POST: Create a new unique solar project with nested products, images, and checklist items
     
     Used for creating new comprehensive solar energy installations.
     """
     def post(self, request):
-        serializer = UniqueSolarProjectSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            with transaction.atomic():
+                data = request.data.copy()
+                
+                products_data = []
+                if 'products' in data:
+                    products_raw = data.pop('products')
+                    if isinstance(products_raw, str):
+                        try:
+                            products_data = json.loads(products_raw)
+                        except json.JSONDecodeError:
+                            return Response({'error': 'Invalid JSON format for products'}, status=status.HTTP_400_BAD_REQUEST)
+                    elif isinstance(products_raw, list):
+                        products_data = products_raw
+                    else:
+                        return Response({'error': 'Products must be a JSON string or list'}, status=status.HTTP_400_BAD_REQUEST)
+                    
+                    if not isinstance(products_data, list):
+                        return Response({'error': 'Products must be a list/array'}, status=status.HTTP_400_BAD_REQUEST)
+                    
+                    flattened_products = []
+                    for item in products_data:
+                        if isinstance(item, dict):
+                            flattened_products.append(item)
+                        elif isinstance(item, list):
+                            flattened_products.extend([i for i in item if isinstance(i, dict)])
+                        elif isinstance(item, str):
+                            try:
+                                parsed = json.loads(item)
+                                if isinstance(parsed, dict):
+                                    flattened_products.append(parsed)
+                                elif isinstance(parsed, list):
+                                    flattened_products.extend([i for i in parsed if isinstance(i, dict)])
+                            except json.JSONDecodeError:
+                                continue
+                    
+                    products_data = flattened_products
+                checklist_ids = []
+                if 'checklist_ids' in data:
+                    checklist_raw = data.pop('checklist_ids')
+          
+                    if isinstance(checklist_raw, str):
+                        try:
+                            checklist_ids = json.loads(checklist_raw)
+                            print(f"DEBUG: Parsed checklist_ids: {checklist_ids}")
+                        except json.JSONDecodeError:
+                            return Response({'error': 'Invalid JSON format for checklist_ids'}, status=status.HTTP_400_BAD_REQUEST)
+                    elif isinstance(checklist_raw, list):
+                        parsed_checklist_ids = []
+                        for item in checklist_raw:
+                            if isinstance(item, str):
+                                try:
+                                    parsed_item = json.loads(item)
+                                    if isinstance(parsed_item, list):
+                                        parsed_checklist_ids.extend(parsed_item)
+                                    else:
+                                        parsed_checklist_ids.append(parsed_item)
+                                except json.JSONDecodeError:
+                                    try:
+                                        parsed_checklist_ids.append(int(item))
+                                    except (ValueError, TypeError):
+                                        return Response({'error': f'Invalid checklist ID: {item}'}, status=status.HTTP_400_BAD_REQUEST)
+                            else:
+                                parsed_checklist_ids.append(item)
+                        checklist_ids = parsed_checklist_ids
+                        print(f"DEBUG: Parsed checklist_ids from list: {checklist_ids}")
+                    else:
+                        return Response({'error': 'Checklist IDs must be a JSON string or list'}, status=status.HTTP_400_BAD_REQUEST)
+                    
+                    if not isinstance(checklist_ids, list):
+                        checklist_ids = [checklist_ids]
+                    
+
+                    try:
+                        converted_ids = []
+                        for i, item in enumerate(checklist_ids):
+                            if item is None or item == '':
+                                continue 
+                            try:
+                                converted_ids.append(int(item))
+                            except (ValueError, TypeError) as e:
+                                print(f"DEBUG: Failed to convert item {i}: {item} (type: {type(item)}) - Error: {e}")
+                                return Response({'error': f'Checklist ID at position {i} must be a valid integer. Got: {item}'}, status=status.HTTP_400_BAD_REQUEST)
+                        
+                        checklist_ids = converted_ids
+                        print(f"DEBUG: After integer conversion: {checklist_ids}")
+                    except Exception as e:
+                        print(f"DEBUG: Unexpected error during conversion: {e}")
+                        return Response({'error': f'Error converting checklist IDs to integers: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
+                
+                # Handle images
+                images_data = []
+                if 'images' in request.FILES:
+                    for image_file in request.FILES.getlist('images'):
+                        images_data.append({'image': image_file})
+                
+                # Create the main project
+                serializer = UniqueSolarProjectSerializer(data=data)
+                if not serializer.is_valid():
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                
+                project = serializer.save()
+                
+                # Create products
+                for product_data in products_data:
+                    product_data['project'] = project.id
+                    product_serializer = UniqueSolarProjectProductSerializer(data=product_data)
+                    if not product_serializer.is_valid():
+                        raise serializers.ValidationError(f"Product validation error: {product_serializer.errors}")
+                    product_serializer.save()
+                
+                # Create images
+                for image_data in images_data:
+                    image_data['project'] = project.id
+                    image_serializer = UniqueSolarProjectImageSerializer(data=image_data)
+                    if not image_serializer.is_valid():
+                        raise serializers.ValidationError(f"Image validation error: {image_serializer.errors}")
+                    image_serializer.save()
+                
+                # Create checklist items
+                for checklist_id in checklist_ids:
+                    try:
+                        checklist = UniqueSolarChecklist.objects.get(id=checklist_id, is_active=True)
+                        UniqueSolarProjectChecklist.objects.create(
+                            project=project,
+                            checklist=checklist
+                        )
+                    except UniqueSolarChecklist.DoesNotExist:
+                        raise serializers.ValidationError(f"Checklist item with ID {checklist_id} not found or inactive")
+                
+                # Return the complete project data
+                complete_serializer = UniqueSolarProjectSerializer(project)
+                return Response(complete_serializer.data, status=status.HTTP_201_CREATED)
+                    
+        except serializers.ValidationError as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            import traceback
+            error_details = traceback.format_exc()
+            return Response({
+                'error': 'An unexpected error occurred',
+                'details': str(e),
+                'traceback': error_details
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 class UniqueSolarProjectDetailView(APIView):
     """
@@ -345,226 +361,9 @@ class UniqueSolarProjectDetailView(APIView):
         project.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-class UniqueSolarProjectProductsView(APIView):
-    """
-    Unique Solar Project Products View
-    
-    This view handles:
-    - GET: Retrieve all products associated with a specific unique solar project
-    - POST: Add a new product to a specific unique solar project
-    
-    Manages the relationship between solar projects and their associated products.
-    Each project can have multiple products (panels, inverters, batteries, etc.).
-    """
-    def get(self, request, pk):
-        project = get_object_or_404(UniqueSolarProject, pk=pk)
-        products = project.products.all()
-        serializer = UniqueSolarProjectProductSerializer(products, many=True)
-        return Response(serializer.data)
-    
-    def post(self, request, pk):
-        project = get_object_or_404(UniqueSolarProject, pk=pk)
-        serializer = UniqueSolarProjectProductSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(project=project)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-class UniqueSolarProjectImagesView(APIView):
-    """
-    Unique Solar Project Images View
-    
-    This view handles:
-    - GET: Retrieve all images associated with a specific unique solar project
-    - POST: Add a new image to a specific unique solar project
-    
-    Manages project documentation through images. This can include:
-    - Site photos before installation
-    - Progress photos during installation
-    - Final completion photos
-    - Technical diagrams and schematics
-    """
-    def get(self, request, pk):
-        project = get_object_or_404(UniqueSolarProject, pk=pk)
-        images = project.images.all()
-        serializer = UniqueSolarProjectImageSerializer(images, many=True)
-        return Response(serializer.data)
-    
-    def post(self, request, pk):
-        project = get_object_or_404(UniqueSolarProject, pk=pk)
-        serializer = UniqueSolarProjectImageSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(project=project)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-class UniqueSolarProjectChecklistView(APIView):
-    """
-    Unique Solar Project Checklist View
-    
-    This view handles:
-    - GET: Retrieve all checklist items associated with a specific unique solar project
-    - POST: Add a new checklist item to a specific unique solar project
-    
-    Manages project completion checklists. Checklist items can include:
-    - Pre-installation requirements
-    - Installation steps
-    - Safety checks
-    - Quality assurance items
-    - Post-installation verification
-    """
-    def get(self, request, pk):
-        project = get_object_or_404(UniqueSolarProject, pk=pk)
-        checklist_items = project.checklist_items.all()
-        serializer = UniqueSolarProjectChecklistSerializer(checklist_items, many=True)
-        return Response(serializer.data)
-    
-    def post(self, request, pk):
-        project = get_object_or_404(UniqueSolarProject, pk=pk)
-        serializer = UniqueSolarProjectChecklistSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(project=project)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-# Unique Solar Project Product views
-class UniqueSolarProjectProductListView(APIView):
-    """
-    Unique Solar Project Product List View
-    
-    This view handles:
-    - GET: Retrieve all project-product relationships with optional filtering
-    
-    Query Parameters:
-    - project: Filter by specific project ID
-    
-    Manages the many-to-many relationship between projects and products,
-    including quantities, specifications, and pricing for each product in a project.
-    """
-    def get(self, request):
-        queryset = UniqueSolarProjectProduct.objects.all()
-        project_id = request.query_params.get('project', None)
-        if project_id:
-            queryset = queryset.filter(project_id=project_id)
-        serializer = UniqueSolarProjectProductSerializer(queryset, many=True)
-        return Response(serializer.data)
-
-class UniqueSolarProjectProductCreateView(APIView):
-    """
-    Unique Solar Project Product Create View
-    
-    This view handles:
-    - POST: Create a new project-product relationship
-    
-    Used for creating new relationships between projects and products.
-    """
-    def post(self, request):
-        serializer = UniqueSolarProjectProductSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-class UniqueSolarProjectProductDetailView(APIView):
-    """
-    Unique Solar Project Product Detail, Update, and Delete View
-    
-    This view handles:
-    - GET: Retrieve a specific project-product relationship by ID
-    - PUT/PATCH: Update a project-product relationship
-    - DELETE: Delete a project-product relationship
-    
-    Provides full CRUD operations for individual project-product relationships,
-    allowing modification of quantities, specifications, or removal of products from projects.
-    """
-    def get(self, request, pk):
-        product = get_object_or_404(UniqueSolarProjectProduct, pk=pk)
-        serializer = UniqueSolarProjectProductSerializer(product)
-        return Response(serializer.data)
-    
-    def put(self, request, pk):
-        product = get_object_or_404(UniqueSolarProjectProduct, pk=pk)
-        serializer = UniqueSolarProjectProductSerializer(product, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    def delete(self, request, pk):
-        product = get_object_or_404(UniqueSolarProjectProduct, pk=pk)
-        product.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-# Unique Solar Project Image views
-class UniqueSolarProjectImageListView(APIView):
-    """
-    Unique Solar Project Image List View
-    
-    This view handles:
-    - GET: Retrieve all project images with optional filtering
-    
-    Query Parameters:
-    - project: Filter by specific project ID
-    
-    Manages project documentation images independently, allowing bulk operations
-    on project images across multiple projects.
-    """
-    def get(self, request):
-        queryset = UniqueSolarProjectImage.objects.all()
-        project_id = request.query_params.get('project', None)
-        if project_id:
-            queryset = queryset.filter(project_id=project_id)
-        serializer = UniqueSolarProjectImageSerializer(queryset, many=True)
-        return Response(serializer.data)
-
-class UniqueSolarProjectImageCreateView(APIView):
-    """
-    Unique Solar Project Image Create View
-    
-    This view handles:
-    - POST: Create a new project image
-    
-    Used for creating new project documentation images.
-    """
-    def post(self, request):
-        serializer = UniqueSolarProjectImageSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-class UniqueSolarProjectImageDetailView(APIView):
-    """
-    Unique Solar Project Image Detail, Update, and Delete View
-    
-    This view handles:
-    - GET: Retrieve a specific project image by ID
-    - PUT/PATCH: Update a project image (metadata, description, etc.)
-    - DELETE: Delete a project image
-    
-    Provides full CRUD operations for individual project images,
-    allowing updates to image metadata or removal of images.
-    """
-    def get(self, request, pk):
-        image = get_object_or_404(UniqueSolarProjectImage, pk=pk)
-        serializer = UniqueSolarProjectImageSerializer(image)
-        return Response(serializer.data)
-    
-    def put(self, request, pk):
-        image = get_object_or_404(UniqueSolarProjectImage, pk=pk)
-        serializer = UniqueSolarProjectImageSerializer(image, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    def delete(self, request, pk):
-        image = get_object_or_404(UniqueSolarProjectImage, pk=pk)
-        image.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
 # Unique Solar Project Checklist views
-class UniqueSolarProjectChecklistListView(APIView):
+class UniqueSolarChecklistListView(APIView):
     """
     Unique Solar Project Checklist List View
     
@@ -578,55 +377,9 @@ class UniqueSolarProjectChecklistListView(APIView):
     on checklist items across multiple projects.
     """
     def get(self, request):
-        queryset = UniqueSolarProjectChecklist.objects.all()
+        queryset = UniqueSolarChecklist.objects.all()
         project_id = request.query_params.get('project', None)
         if project_id:
             queryset = queryset.filter(project_id=project_id)
-        serializer = UniqueSolarProjectChecklistSerializer(queryset, many=True)
+        serializer = UniqueSolarChecklistSerializer(queryset, many=True)
         return Response(serializer.data)
-
-class UniqueSolarProjectChecklistCreateView(APIView):
-    """
-    Unique Solar Project Checklist Create View
-    
-    This view handles:
-    - POST: Create a new checklist item
-    
-    Used for creating new project checklist items.
-    """
-    def post(self, request):
-        serializer = UniqueSolarProjectChecklistSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-class UniqueSolarProjectChecklistDetailView(APIView):
-    """
-    Unique Solar Project Checklist Detail, Update, and Delete View
-    
-    This view handles:
-    - GET: Retrieve a specific checklist item by ID
-    - PUT/PATCH: Update a checklist item (status, notes, completion date, etc.)
-    - DELETE: Delete a checklist item
-    
-    Provides full CRUD operations for individual checklist items,
-    allowing updates to item status, completion, or removal of items.
-    """
-    def get(self, request, pk):
-        checklist_item = get_object_or_404(UniqueSolarProjectChecklist, pk=pk)
-        serializer = UniqueSolarProjectChecklistSerializer(checklist_item)
-        return Response(serializer.data)
-    
-    def put(self, request, pk):
-        checklist_item = get_object_or_404(UniqueSolarProjectChecklist, pk=pk)
-        serializer = UniqueSolarProjectChecklistSerializer(checklist_item, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    def delete(self, request, pk):
-        checklist_item = get_object_or_404(UniqueSolarProjectChecklist, pk=pk)
-        checklist_item.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)

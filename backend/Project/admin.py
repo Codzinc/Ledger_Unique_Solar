@@ -1,23 +1,15 @@
 from django.contrib import admin
 from .models import (
-    Project, 
     ZarorratService, 
     ZarorratProject, 
     ZarorratProjectService,
-    UniqueSolarProduct,
+    
     UniqueSolarProject,
     UniqueSolarProjectProduct,
     UniqueSolarProjectImage,
-    UniqueSolarProjectChecklist
+    UniqueSolarChecklist
 )
 
-@admin.register(Project)
-class ProjectAdmin(admin.ModelAdmin):
-    list_display = ['project_id', 'customer_name', 'company_id', 'project_type_category', 'status', 'total_amount', 'created_at']
-    list_filter = ['project_type_category', 'status', 'company_id', 'created_at']
-    search_fields = ['project_id', 'customer_name', 'contact_number']
-    readonly_fields = ['project_id', 'created_at', 'updated_at']
-    ordering = ['-created_at']
 
 @admin.register(ZarorratService)
 class ZarorratServiceAdmin(admin.ModelAdmin):
@@ -40,13 +32,6 @@ class ZarorratProjectServiceAdmin(admin.ModelAdmin):
     list_filter = ['created_at']
     search_fields = ['project__project_id', 'project__customer_name', 'service__name']
     ordering = ['-created_at']
-
-@admin.register(UniqueSolarProduct)
-class UniqueSolarProductAdmin(admin.ModelAdmin):
-    list_display = [ 'product_type', 'unit_price',  'is_active', 'created_at']
-    list_filter = ['product_type', 'is_active', 'created_at']
-    search_fields = ['product_type', 'quantity', 'unit_price', 'line_total']
-    ordering = ['product_type', 'quantity', 'unit_price', 'line_total']
 
 @admin.register(UniqueSolarProject)
 class UniqueSolarProjectAdmin(admin.ModelAdmin):
@@ -84,15 +69,15 @@ class UniqueSolarProjectProductAdmin(admin.ModelAdmin):
 
 @admin.register(UniqueSolarProjectImage)
 class UniqueSolarProjectImageAdmin(admin.ModelAdmin):
-    list_display = ['project', 'caption', 'order', 'created_at']
+    list_display = ['project', 'created_at']
     list_filter = ['created_at']
-    search_fields = ['project__project_id', 'project__customer_name', 'caption']
+    search_fields = ['project__project_id', 'project__customer_name', 'image']
     readonly_fields = ['created_at']
-    ordering = ['project', 'order']
+    ordering = ['project']
 
-@admin.register(UniqueSolarProjectChecklist)
-class UniqueSolarProjectChecklistAdmin(admin.ModelAdmin):
-    list_display = ['item_name', 'is_active', 'created_at']
+@admin.register(UniqueSolarChecklist)
+class UniqueSolarChecklistAdmin(admin.ModelAdmin):
+    list_display = ['id', 'item_name', 'is_active', 'created_at']
     list_filter = ['is_active', 'created_at']
     search_fields = [ 'item_name']
     readonly_fields = ['created_at']
