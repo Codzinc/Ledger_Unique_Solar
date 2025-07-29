@@ -1,6 +1,7 @@
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.pagination import PageNumberPagination
 from django.shortcuts import get_object_or_404
 from .models import (
     Project,
@@ -25,6 +26,11 @@ from .serializers import (
     UniqueSolarProjectChecklistSerializer
 )
 
+class ZarorratProjectPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
 # Legacy Project views
 class ProjectListView(APIView):
     """
@@ -41,21 +47,21 @@ class ProjectListView(APIView):
         serializer = ProjectSerializer(projects, many=True)
         return Response(serializer.data)
 
-class ProjectCreateView(APIView):
-    """
-    Legacy Project Create View
+# class ProjectCreateView(APIView):
+#     """
+#     Legacy Project Create View
     
-    This view handles:
-    - POST: Create a new legacy project
+#     This view handles:
+#     - POST: Create a new legacy project
     
-    Used for creating new basic project information.
-    """
-    def post(self, request):
-        serializer = ProjectSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#     Used for creating new basic project information.
+#     """
+#     def post(self, request):
+#         serializer = ProjectSerializer(data=request.data)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response(serializer.data, status=status.HTTP_201_CREATED)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class ProjectDetailView(APIView):
     """
@@ -107,50 +113,6 @@ class ZarorratServiceListView(APIView):
         serializer = ZarorratServiceSerializer(queryset, many=True)
         return Response(serializer.data)
 
-class ZarorratServiceCreateView(APIView):
-    """
-    Zarorrat Service Create View
-    
-    This view handles:
-    - POST: Create a new zarorrat service
-    
-    Used for creating new emergency/urgent services.
-    """
-    def post(self, request):
-        serializer = ZarorratServiceSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-class ZarorratServiceDetailView(APIView):
-    """
-    Zarorrat Service Detail, Update, and Delete View
-    
-    This view handles:
-    - GET: Retrieve a specific zarorrat service by ID
-    - PUT/PATCH: Update a zarorrat service
-    - DELETE: Delete a zarorrat service
-    
-    Provides full CRUD operations for individual zarorrat services.
-    """
-    def get(self, request, pk):
-        service = get_object_or_404(ZarorratService, pk=pk)
-        serializer = ZarorratServiceSerializer(service)
-        return Response(serializer.data)
-    
-    def put(self, request, pk):
-        service = get_object_or_404(ZarorratService, pk=pk)
-        serializer = ZarorratServiceSerializer(service, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    def delete(self, request, pk):
-        service = get_object_or_404(ZarorratService, pk=pk)
-        service.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
 # Zarorrat Project views
 class ZarorratProjectListView(APIView):
@@ -158,20 +120,29 @@ class ZarorratProjectListView(APIView):
     Zarorrat Project List View
     
     This view handles:
-    - GET: Retrieve all zarorrat projects with optional filtering
+    - GET: Retrieve all zarorrat projects with optional filtering and pagination
     
     Query Parameters:
     - status: Filter projects by status (e.g., 'pending', 'in_progress', 'completed')
+    - page: Page number for pagination (default: 1)
+    - page_size: Number of items per page (default: 10, max: 100)
     
     Zarorrat projects are emergency/urgent projects that require immediate attention.
     """
+    pagination_class = ZarorratProjectPagination
+    
     def get(self, request):
         queryset = ZarorratProject.objects.all()
         status_filter = request.query_params.get('status', None)
         if status_filter:
             queryset = queryset.filter(status=status_filter)
-        serializer = ZarorratProjectSerializer(queryset, many=True)
-        return Response(serializer.data)
+        
+        # Apply pagination
+        paginator = self.pagination_class()
+        paginated_queryset = paginator.paginate_queryset(queryset, request)
+        
+        serializer = ZarorratProjectSerializer(paginated_queryset, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
 class ZarorratProjectCreateView(APIView):
     """
@@ -194,27 +165,27 @@ class ZarorratProjectDetailView(APIView):
     Zarorrat Project Detail, Update, and Delete View
     
     This view handles:
-    - GET: Retrieve a specific zarorrat project by ID
+    - GET: Retrieve a specific zarorrat project by project_id
     - PUT/PATCH: Update a zarorrat project
     - DELETE: Delete a zarorrat project
     
     Provides full CRUD operations for individual zarorrat projects.
     """
-    def get(self, request, pk):
-        project = get_object_or_404(ZarorratProject, pk=pk)
+    def get(self, request, project_id):
+        project = get_object_or_404(ZarorratProject, project_id=project_id)
         serializer = ZarorratProjectSerializer(project)
         return Response(serializer.data)
     
-    def put(self, request, pk):
-        project = get_object_or_404(ZarorratProject, pk=pk)
+    def put(self, request, project_id):
+        project = get_object_or_404(ZarorratProject, project_id=project_id)
         serializer = ZarorratProjectSerializer(project, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-    def delete(self, request, pk):
-        project = get_object_or_404(ZarorratProject, pk=pk)
+    def delete(self, request, project_id):
+        project = get_object_or_404(ZarorratProject, project_id=project_id)
         project.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -228,8 +199,8 @@ class ZarorratProjectServicesView(APIView):
     Returns a list of services that are linked to the specified zarorrat project.
     This helps in viewing what services are being provided for a particular project.
     """
-    def get(self, request, pk):
-        project = get_object_or_404(ZarorratProject, pk=pk)
+    def get(self, request, project_id):
+        project = get_object_or_404(ZarorratProject, project_id=project_id)
         services = project.selected_services.all()
         serializer = ZarorratProjectServiceSerializer(services, many=True)
         return Response(serializer.data)

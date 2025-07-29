@@ -4,19 +4,17 @@ from . import views
 urlpatterns = [
     # Legacy Project URLs
     path('', views.ProjectListView.as_view(), name='project-list'),
-    path('create/', views.ProjectCreateView.as_view(), name='project-create'),
+    # path('create/', views.ProjectCreateView.as_view(), name='project-create'),
     path('projects/<int:pk>/', views.ProjectDetailView.as_view(), name='project-detail'),
     
     # Zarorrat Service URLs
     path('zarorrat-services/', views.ZarorratServiceListView.as_view(), name='zarorrat-service-list'),
-    path('zarorrat-services/create/', views.ZarorratServiceCreateView.as_view(), name='zarorrat-service-create'),
-    path('zarorrat-services/<int:pk>/', views.ZarorratServiceDetailView.as_view(), name='zarorrat-service-detail'),
-    
+
     # Zarorrat Project URLs
     path('zarorrat-projects/', views.ZarorratProjectListView.as_view(), name='zarorrat-project-list'),
     path('zarorrat-projects/create/', views.ZarorratProjectCreateView.as_view(), name='zarorrat-project-create'),
-    path('zarorrat-projects/<int:pk>/', views.ZarorratProjectDetailView.as_view(), name='zarorrat-project-detail'),
-    path('zarorrat-projects/<int:pk>/services/', views.ZarorratProjectServicesView.as_view(), name='zarorrat-project-services'),
+    path('zarorrat-projects/<str:project_id>/', views.ZarorratProjectDetailView.as_view(), name='zarorrat-project-detail'),
+    path('zarorrat-projects/<str:project_id>/services/', views.ZarorratProjectServicesView.as_view(), name='zarorrat-project-services'),
     
     # Unique Solar Product URLs
     path('unique-solar-products/', views.UniqueSolarProductListView.as_view(), name='unique-solar-product-list'),

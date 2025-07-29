@@ -30,11 +30,18 @@ class ZarorratProjectSerializer(serializers.ModelSerializer):
         write_only=True,
         required=False
     )
+    company_name = serializers.SerializerMethodField()
     
     class Meta:
         model = ZarorratProject
         fields = '__all__'
         read_only_fields = ['project_id', 'created_at', 'updated_at']
+    
+    def get_company_name(self, obj):
+        """Return company name based on project ID"""
+        if obj.project_id and obj.project_id.startswith('ZR-'):
+            return 'ZROORAT.COM'
+        return None
     
     def create(self, validated_data):
         service_ids = validated_data.pop('service_ids', [])
@@ -111,7 +118,21 @@ class UniqueSolarProjectSerializer(serializers.ModelSerializer):
     
     def create(self, validated_data):
         project = UniqueSolarProject.objects.create(**validated_data)
+        # Force save to ensure primary key is generated
+        project.save()
         return project
+    
+    def to_representation(self, instance):
+        """Custom representation to handle related fields properly"""
+        data = super().to_representation(instance)
+        # Ensure related fields are properly serialized
+        if hasattr(instance, 'products'):
+            data['products'] = UniqueSolarProjectProductSerializer(instance.products.all(), many=True).data
+        if hasattr(instance, 'images'):
+            data['images'] = UniqueSolarProjectImageSerializer(instance.images.all(), many=True).data
+        if hasattr(instance, 'checklist_items'):
+            data['checklist_items'] = UniqueSolarProjectChecklistSerializer(instance.checklist_items.all(), many=True).data
+        return data
     
     def update(self, instance, validated_data):
         for attr, value in validated_data.items():

@@ -99,24 +99,33 @@ class UniqueSolarProduct(models.Model):
     PRODUCT_TYPE_CHOICES = [
         ('solar_panel', 'Solar Panel'),
         ('inverter', 'Inverter'),
-        ('battery', 'Battery'),
-        ('mounting', 'Mounting System'),
-        ('cable', 'Cable'),
+
         ('others', 'Others'),
     ]
     
-    name = models.CharField(max_length=200)
     product_type = models.CharField(max_length=50, choices=PRODUCT_TYPE_CHOICES)
-    specification = models.TextField(blank=True, null=True)
+    quantity = models.PositiveIntegerField(default=0)
+    unit_price = models.DecimalField(
+        max_digits=12, 
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal('0.00'))],
+        default=0
+    )
+    line_total = models.DecimalField(
+        max_digits=12, 
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal('0.00'))],
+        default=0
+    )
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
     def __str__(self):
-        return f"{self.get_product_type_display()} - {self.name}"
+        return f"{self.get_product_type_display()} - {self.quantity} - {self.unit_price} - {self.line_total}"
     
     class Meta:
-        ordering = ['product_type', 'name']
+        ordering = ['product_type', 'quantity', 'unit_price', 'line_total']
 
 class UniqueSolarProject(models.Model):
     """Model for Unique Solar projects"""
@@ -214,8 +223,13 @@ class UniqueSolarProject(models.Model):
     
     def calculate_totals(self):
         """Calculate subtotal, tax, and grand total"""
-        # Calculate subtotal from products
-        self.subtotal = sum(item.line_total for item in self.products.all())
+        # Only calculate from products if instance has been saved (has primary key)
+        if self.pk:
+            # Calculate subtotal from products
+            self.subtotal = sum(item.line_total for item in self.products.all())
+        else:
+            # For new instances, set subtotal to 0
+            self.subtotal = Decimal('0.00')
         
         # Calculate tax
         tax_amount = (self.subtotal * self.tax_percentage) / 100
@@ -231,10 +245,14 @@ class UniqueSolarProject(models.Model):
         if not self.project_id:
             self.project_id = self.generate_project_id()
         
-        # Calculate totals
+        # Save first to ensure primary key is generated
+        super().save(*args, **kwargs)
+        
+        # Calculate totals after saving (when we have primary key)
         self.calculate_totals()
         
-        super().save(*args, **kwargs)
+        # Save again with calculated totals
+        super().save(update_fields=['subtotal', 'grand_total', 'total_payment', 'completion_payment'])
     
     class Meta:
         ordering = ['-created_at']
@@ -307,23 +325,17 @@ class UniqueSolarProjectImage(models.Model):
 
 class UniqueSolarProjectChecklist(models.Model):
     """Checklist items for Unique Solar projects"""
-    project = models.ForeignKey(
-        UniqueSolarProject, 
-        on_delete=models.CASCADE,
-        related_name='checklist_items'
-    )
+   
     item_name = models.CharField(max_length=100)
-    is_completed = models.BooleanField(default=False)
-    order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
-        return f"{self.project.project_id} - {self.item_name}"
+        return f"{self.item_name}"
     
     class Meta:
-        ordering = ['order']
-        unique_together = ['project', 'order']
-
+        ordering = ['id']
+        
 # Legacy Project model for backward compatibility
 class Project(models.Model):
     PROJECT_TYPE_CHOICES = [

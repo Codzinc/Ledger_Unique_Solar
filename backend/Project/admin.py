@@ -43,10 +43,10 @@ class ZarorratProjectServiceAdmin(admin.ModelAdmin):
 
 @admin.register(UniqueSolarProduct)
 class UniqueSolarProductAdmin(admin.ModelAdmin):
-    list_display = ['name', 'product_type', 'is_active', 'created_at']
+    list_display = [ 'product_type', 'unit_price',  'is_active', 'created_at']
     list_filter = ['product_type', 'is_active', 'created_at']
-    search_fields = ['name', 'specification']
-    ordering = ['product_type', 'name']
+    search_fields = ['product_type', 'quantity', 'unit_price', 'line_total']
+    ordering = ['product_type', 'quantity', 'unit_price', 'line_total']
 
 @admin.register(UniqueSolarProject)
 class UniqueSolarProjectAdmin(admin.ModelAdmin):
@@ -92,8 +92,8 @@ class UniqueSolarProjectImageAdmin(admin.ModelAdmin):
 
 @admin.register(UniqueSolarProjectChecklist)
 class UniqueSolarProjectChecklistAdmin(admin.ModelAdmin):
-    list_display = ['project', 'item_name', 'is_completed', 'order', 'created_at']
-    list_filter = ['is_completed', 'created_at']
-    search_fields = ['project__project_id', 'project__customer_name', 'item_name']
+    list_display = ['item_name', 'is_active', 'created_at']
+    list_filter = ['is_active', 'created_at']
+    search_fields = [ 'item_name']
     readonly_fields = ['created_at']
-    ordering = ['project', 'order']
+    ordering = ['id']
