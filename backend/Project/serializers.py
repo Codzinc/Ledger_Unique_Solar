@@ -1,13 +1,12 @@
 from rest_framework import serializers
 from .models import (
-    Project,
     ZarorratService,
     ZarorratProject,
     ZarorratProjectService,
-    UniqueSolarProduct,
     UniqueSolarProject,
-    UniqueSolarProjectProduct,
     UniqueSolarProjectImage,
+    UniqueSolarChecklist,
+    UniqueSolarProjectProduct,
     UniqueSolarProjectChecklist
 )
 
@@ -30,11 +29,18 @@ class ZarorratProjectSerializer(serializers.ModelSerializer):
         write_only=True,
         required=False
     )
+    company_name = serializers.SerializerMethodField()
     
     class Meta:
         model = ZarorratProject
         fields = '__all__'
         read_only_fields = ['project_id', 'created_at', 'updated_at']
+    
+    def get_company_name(self, obj):
+        """Return company name based on project ID"""
+        if obj.project_id and obj.project_id.startswith('ZR-'):
+            return 'ZROORAT.COM'
+        return None
     
     def create(self, validated_data):
         service_ids = validated_data.pop('service_ids', [])
@@ -73,22 +79,17 @@ class ZarorratProjectSerializer(serializers.ModelSerializer):
         
         return instance
 
-class UniqueSolarProductSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = UniqueSolarProduct
-        fields = '__all__'
 
-class UniqueSolarProjectProductSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = UniqueSolarProjectProduct
-        fields = '__all__'
-        read_only_fields = ['line_total', 'created_at']
 
-class UniqueSolarProjectImageSerializer(serializers.ModelSerializer):
+
+
+
+class UniqueSolarChecklistSerializer(serializers.ModelSerializer):
     class Meta:
-        model = UniqueSolarProjectImage
+        model = UniqueSolarChecklist
         fields = '__all__'
         read_only_fields = ['created_at']
+
 
 class UniqueSolarProjectChecklistSerializer(serializers.ModelSerializer):
     class Meta:
@@ -96,32 +97,39 @@ class UniqueSolarProjectChecklistSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ['created_at']
 
-class UniqueSolarProjectSerializer(serializers.ModelSerializer):
-    products = UniqueSolarProjectProductSerializer(many=True, read_only=True)
-    images = UniqueSolarProjectImageSerializer(many=True, read_only=True)
-    checklist_items = UniqueSolarProjectChecklistSerializer(many=True, read_only=True)
+class UniqueSolarProjectImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UniqueSolarProjectImage
+        fields = '__all__'
+        read_only_fields = ['created_at']
     
+    def validate(self, data):
+        """Validate that the project doesn't exceed 7 images"""
+        project = data.get('project')
+        if project:
+            existing_count = UniqueSolarProjectImage.objects.filter(project=project).count()
+            if existing_count >= 7:
+                raise serializers.ValidationError("Maximum of 7 images allowed per project")
+        return data
+
+class UniqueSolarProjectProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UniqueSolarProjectProduct
+        fields = '__all__'
+        read_only_fields = ['created_at']
+
+class UniqueSolarProjectSerializer(serializers.ModelSerializer):
+    images = UniqueSolarProjectImageSerializer(many=True, read_only=True)
+    products = UniqueSolarProjectProductSerializer(many=True, read_only=True)
+    checklist_items = UniqueSolarProjectChecklistSerializer(many=True, read_only=True)
+    image_count = serializers.SerializerMethodField()
+
     class Meta:
         model = UniqueSolarProject
         fields = '__all__'
-        read_only_fields = [
-            'project_id', 'subtotal', 'grand_total', 'total_payment', 
-            'completion_payment', 'created_at', 'updated_at'
-        ]
     
-    def create(self, validated_data):
-        project = UniqueSolarProject.objects.create(**validated_data)
-        return project
-    
-    def update(self, instance, validated_data):
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-        instance.save()
-        return instance
+    def get_image_count(self, obj):
+        """Return the number of images for this project"""
+        return obj.images.count()
 
-# Legacy Project serializer for backward compatibility
-class ProjectSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Project
-        fields = '__all__'
-        read_only_fields = ['project_id', 'pending', 'created_at', 'updated_at'] 
+

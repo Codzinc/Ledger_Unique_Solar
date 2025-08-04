@@ -221,6 +221,850 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "Product",
+			"item": [
+				{
+					"name": "get all products",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUzNTQ2MzQyLCJpYXQiOjE3NTM1MjgzNDIsImp0aSI6ImMyOGYxY2VkMGJmNjQzZjc4NDExNDE2Y2Q0NGEwMDZhIiwidXNlcl9pZCI6Mn0.4VpjWli6iifFbkfxLxIGs8nKSAK_vmLpc8Q93jrXh0A",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"username\": \"john_doe2\",\r\n//   \"email\": \"john.doe@example.com\",\r\n  \"password\": \"SecurePassword123!\",\r\n  \"password2\": \"SecurePassword123!\",\r\n  \"first_name\": \"John\",\r\n  \"last_name\": \"Doe\"\r\n}"
+						},
+						"url": {
+							"raw": "{{localhost}}/api/product/list/",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"api",
+								"product",
+								"list",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add product",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUzNTQ2MzQyLCJpYXQiOjE3NTM1MjgzNDIsImp0aSI6ImMyOGYxY2VkMGJmNjQzZjc4NDExNDE2Y2Q0NGEwMDZhIiwidXNlcl9pZCI6Mn0.4VpjWli6iifFbkfxLxIGs8nKSAK_vmLpc8Q93jrXh0A",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "name",
+									"value": "ip15",
+									"type": "text"
+								},
+								{
+									"key": "brand",
+									"value": "apple ",
+									"type": "text"
+								},
+								{
+									"key": "customer_name",
+									"value": "wastta",
+									"type": "text"
+								},
+								{
+									"key": "date",
+									"value": "2025-08-25",
+									"type": "text"
+								},
+								{
+									"key": "purchase_price",
+									"value": "12000",
+									"type": "text"
+								},
+								{
+									"key": "sale_price",
+									"value": "24000",
+									"type": "text"
+								},
+								{
+									"key": "quantity",
+									"value": "2",
+									"type": "text"
+								},
+								{
+									"key": "images",
+									"type": "file",
+									"src": "/C:/Users/mujta/Downloads/0.2.png"
+								},
+								{
+									"key": "images",
+									"type": "file",
+									"src": "/C:/Users/mujta/Downloads/0.3.png"
+								},
+								{
+									"key": "category",
+									"value": "ups",
+									"type": "text"
+								},
+								{
+									"key": "description",
+									"value": "kuch hh",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{localhost}}/api/product/create/",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"api",
+								"product",
+								"create",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get a Product",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUzNTQ2MzQyLCJpYXQiOjE3NTM1MjgzNDIsImp0aSI6ImMyOGYxY2VkMGJmNjQzZjc4NDExNDE2Y2Q0NGEwMDZhIiwidXNlcl9pZCI6Mn0.4VpjWli6iifFbkfxLxIGs8nKSAK_vmLpc8Q93jrXh0A",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"username\": \"john_doe2\",\r\n//   \"email\": \"john.doe@example.com\",\r\n  \"password\": \"SecurePassword123!\",\r\n  \"password2\": \"SecurePassword123!\",\r\n  \"first_name\": \"John\",\r\n  \"last_name\": \"Doe\"\r\n}"
+						},
+						"url": {
+							"raw": "{{localhost}}/api/product/get-product/1/",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"api",
+								"product",
+								"get-product",
+								"1",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Edit a product",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUzNTQ2MzQyLCJpYXQiOjE3NTM1MjgzNDIsImp0aSI6ImMyOGYxY2VkMGJmNjQzZjc4NDExNDE2Y2Q0NGEwMDZhIiwidXNlcl9pZCI6Mn0.4VpjWli6iifFbkfxLxIGs8nKSAK_vmLpc8Q93jrXh0A",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "name",
+									"value": "solis DC/AC inverter",
+									"type": "text"
+								},
+								{
+									"key": "brand",
+									"value": "Solis",
+									"type": "text"
+								},
+								{
+									"key": "customer_name",
+									"value": "Taimoor",
+									"type": "text"
+								},
+								{
+									"key": "date",
+									"value": "2025-07-26",
+									"type": "text"
+								},
+								{
+									"key": "purchase_price",
+									"value": "42000",
+									"type": "text"
+								},
+								{
+									"key": "sale_price",
+									"value": "50000",
+									"type": "text"
+								},
+								{
+									"key": "category",
+									"value": "Soloar inverter",
+									"type": "text"
+								},
+								{
+									"key": "quantity",
+									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "description",
+									"value": "solis Dc inverter supported by 6 month warranty",
+									"type": "text"
+								},
+								{
+									"key": "image",
+									"type": "file",
+									"src": "/C:/Users/mujta/Downloads/0.11111.png"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{localhost}}/api/product/1/update/",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"api",
+								"product",
+								"1",
+								"update",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete an image of a product",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUzNTQ2MzQyLCJpYXQiOjE3NTM1MjgzNDIsImp0aSI6ImMyOGYxY2VkMGJmNjQzZjc4NDExNDE2Y2Q0NGEwMDZhIiwidXNlcl9pZCI6Mn0.4VpjWli6iifFbkfxLxIGs8nKSAK_vmLpc8Q93jrXh0A",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"username\": \"john_doe2\",\r\n//   \"email\": \"john.doe@example.com\",\r\n  \"password\": \"SecurePassword123!\",\r\n  \"password2\": \"SecurePassword123!\",\r\n  \"first_name\": \"John\",\r\n  \"last_name\": \"Doe\"\r\n}"
+						},
+						"url": {
+							"raw": "{{localhost}}/api/product/1/image/8/delete/",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"api",
+								"product",
+								"1",
+								"image",
+								"8",
+								"delete",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete a Product",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUzNTQ2MzQyLCJpYXQiOjE3NTM1MjgzNDIsImp0aSI6ImMyOGYxY2VkMGJmNjQzZjc4NDExNDE2Y2Q0NGEwMDZhIiwidXNlcl9pZCI6Mn0.4VpjWli6iifFbkfxLxIGs8nKSAK_vmLpc8Q93jrXh0A",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"username\": \"john_doe2\",\r\n//   \"email\": \"john.doe@example.com\",\r\n  \"password\": \"SecurePassword123!\",\r\n  \"password2\": \"SecurePassword123!\",\r\n  \"first_name\": \"John\",\r\n  \"last_name\": \"Doe\"\r\n}"
+						},
+						"url": {
+							"raw": "{{localhost}}/api/product/2/delete/",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"api",
+								"product",
+								"2",
+								"delete",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Project",
+			"item": [
+				{
+					"name": "Zrorat Project",
+					"item": [
+						{
+							"name": "Get detail of  a single zroorat project",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUzNzkzNzQzLCJpYXQiOjE3NTM3NzU3NDMsImp0aSI6IjJlMTRhNGQ5MjJjMjQ1YTI4YjYyYjNmMzlmY2EyNTljIiwidXNlcl9pZCI6IjEifQ.dH7lEVmYdPDYE2N7CC8ik6iOc7EPGIjHeupa8u-a0xE",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"customer_name\": \"Nouman Ali\",\r\n  \"address\": \"House #782, Street 5, DHA Phase 6, Lahore, Pakistan\",\r\n  \"date\": \"2024-12-20\",\r\n  \"valid_until\": \"2024-12-27\",\r\n//   \"notes\": \"Emergency AC repair service required. Customer reported AC not cooling properly. Need immediate attention.\",\r\n  \"amount\": \"3500.00\",\r\n  \"status\": \"pending\",\r\n  \"service_ids\": [1, 3]\r\n}"
+								},
+								"url": {
+									"raw": "{{localhost}}/api/project/zarorrat-projects/ZR-2025-0001/",
+									"host": [
+										"{{localhost}}"
+									],
+									"path": [
+										"api",
+										"project",
+										"zarorrat-projects",
+										"ZR-2025-0001",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create zroorat project",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUzNzkzNzQzLCJpYXQiOjE3NTM3NzU3NDMsImp0aSI6IjJlMTRhNGQ5MjJjMjQ1YTI4YjYyYjNmMzlmY2EyNTljIiwidXNlcl9pZCI6IjEifQ.dH7lEVmYdPDYE2N7CC8ik6iOc7EPGIjHeupa8u-a0xE",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"customer_name\": \"Nouman Ali\",\r\n  \"address\": \"House #782, Street 5, DHA Phase 6, Lahore, Pakistan\",\r\n  \"date\": \"2024-12-20\",\r\n  \"valid_until\": \"2024-12-27\",\r\n//   \"notes\": \"Emergency AC repair service required. Customer reported AC not cooling properly. Need immediate attention.\",\r\n  \"amount\": \"3500.00\",\r\n  \"status\": \"pending\",\r\n  \"service_ids\": [1, 3]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{localhost}}/api/project/zarorrat-projects/create/",
+									"host": [
+										"{{localhost}}"
+									],
+									"path": [
+										"api",
+										"project",
+										"zarorrat-projects",
+										"create",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get all zroorat projects",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUzNzkzNzQzLCJpYXQiOjE3NTM3NzU3NDMsImp0aSI6IjJlMTRhNGQ5MjJjMjQ1YTI4YjYyYjNmMzlmY2EyNTljIiwidXNlcl9pZCI6IjEifQ.dH7lEVmYdPDYE2N7CC8ik6iOc7EPGIjHeupa8u-a0xE",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"customer_name\": \"Nouman Ali\",\r\n  \"address\": \"House #782, Street 5, DHA Phase 6, Lahore, Pakistan\",\r\n  \"date\": \"2024-12-20\",\r\n  \"valid_until\": \"2024-12-27\",\r\n//   \"notes\": \"Emergency AC repair service required. Customer reported AC not cooling properly. Need immediate attention.\",\r\n  \"amount\": \"3500.00\",\r\n  \"status\": \"pending\",\r\n  \"service_ids\": [1, 3]\r\n}"
+								},
+								"url": {
+									"raw": "{{localhost}}/api/project/zarorrat-projects/",
+									"host": [
+										"{{localhost}}"
+									],
+									"path": [
+										"api",
+										"project",
+										"zarorrat-projects",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "All zroorat services",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUzNzkzNzQzLCJpYXQiOjE3NTM3NzU3NDMsImp0aSI6IjJlMTRhNGQ5MjJjMjQ1YTI4YjYyYjNmMzlmY2EyNTljIiwidXNlcl9pZCI6IjEifQ.dH7lEVmYdPDYE2N7CC8ik6iOc7EPGIjHeupa8u-a0xE",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{localhost}}/api/project/zarorrat-services/",
+									"host": [
+										"{{localhost}}"
+									],
+									"path": [
+										"api",
+										"project",
+										"zarorrat-services",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Edit a zroorat project",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUzNzkzNzQzLCJpYXQiOjE3NTM3NzU3NDMsImp0aSI6IjJlMTRhNGQ5MjJjMjQ1YTI4YjYyYjNmMzlmY2EyNTljIiwidXNlcl9pZCI6IjEifQ.dH7lEVmYdPDYE2N7CC8ik6iOc7EPGIjHeupa8u-a0xE",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"customer_name\": \"Nouman Ali\",\r\n  \"address\": \"House #800, Street 5, DHA Phase 6, Lahore, Pakistan\",\r\n  \"date\": \"2024-12-20\",\r\n  \"valid_until\": \"2024-12-27\",\r\n   \"notes\": \"Emergency AC repair service required. Customer reported AC not cooling properly. Need immediate attention.\",\r\n  \"amount\": \"3500.00\",\r\n  \"status\": \"pending\",\r\n  \"service_ids\": [1, 3]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{localhost}}/api/project/zarorrat-projects/ZR-2025-0002/",
+									"host": [
+										"{{localhost}}"
+									],
+									"path": [
+										"api",
+										"project",
+										"zarorrat-projects",
+										"ZR-2025-0002",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete a zroorat project",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUzNzkzNzQzLCJpYXQiOjE3NTM3NzU3NDMsImp0aSI6IjJlMTRhNGQ5MjJjMjQ1YTI4YjYyYjNmMzlmY2EyNTljIiwidXNlcl9pZCI6IjEifQ.dH7lEVmYdPDYE2N7CC8ik6iOc7EPGIjHeupa8u-a0xE",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"customer_name\": \"Nouman Ali\",\r\n  \"address\": \"House #800, Street 5, DHA Phase 6, Lahore, Pakistan\",\r\n  \"date\": \"2024-12-20\",\r\n  \"valid_until\": \"2024-12-27\",\r\n   \"notes\": \"Emergency AC repair service required. Customer reported AC not cooling properly. Need immediate attention.\",\r\n  \"amount\": \"3500.00\",\r\n  \"status\": \"pending\",\r\n  \"service_ids\": [1, 3]\r\n}"
+								},
+								"url": {
+									"raw": "{{localhost}}/api/project/zarorrat-projects/ZR-2025-0002/",
+									"host": [
+										"{{localhost}}"
+									],
+									"path": [
+										"api",
+										"project",
+										"zarorrat-projects",
+										"ZR-2025-0002",
+										""
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Unique Solar",
+					"item": [
+						{
+							"name": "Get all unique solar Projects",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUzODEyODIyLCJpYXQiOjE3NTM3OTQ4MjIsImp0aSI6IjUwOTU1MmYwMGRkODQ4MmQ5OTM2Njc2ZTI3Njg0MDZjIiwidXNlcl9pZCI6IjEifQ.4g_yMQ_xao2madQAZ6LkQEpJKA7LsmNTN1gdel1THUw",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"customer_name\": \"Nouman Ali\",\r\n  \"address\": \"House #782, Street 5, DHA Phase 6, Lahore, Pakistan\",\r\n  \"date\": \"2024-12-20\",\r\n  \"valid_until\": \"2024-12-27\",\r\n//   \"notes\": \"Emergency AC repair service required. Customer reported AC not cooling properly. Need immediate attention.\",\r\n  \"amount\": \"3500.00\",\r\n  \"status\": \"pending\",\r\n  \"service_ids\": [1, 3]\r\n}"
+								},
+								"url": {
+									"raw": "{{localhost}}/api/project/unique-solar-projects/",
+									"host": [
+										"{{localhost}}"
+									],
+									"path": [
+										"api",
+										"project",
+										"unique-solar-projects",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create a project",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUzODEyODIyLCJpYXQiOjE3NTM3OTQ4MjIsImp0aSI6IjUwOTU1MmYwMGRkODQ4MmQ5OTM2Njc2ZTI3Njg0MDZjIiwidXNlcl9pZCI6IjEifQ.4g_yMQ_xao2madQAZ6LkQEpJKA7LsmNTN1gdel1THUw",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "customer_name",
+											"value": "tyson",
+											"type": "text"
+										},
+										{
+											"key": "address",
+											"value": "789 Solar Lane, Power City, 1111",
+											"type": "text"
+										},
+										{
+											"key": "valid_until",
+											"value": "2026-01-15",
+											"type": "text"
+										},
+										{
+											"key": "date",
+											"value": "2024-01-15",
+											"type": "text"
+										},
+										{
+											"key": "project_type",
+											"value": "on_grid",
+											"type": "text"
+										},
+										{
+											"key": " products",
+											"value": "[{\"product_type\": \"solar_panel\", \"specify_product\": \"400W Panel\", \"quantity\": 8, \"unit_price\": \"200.00\", \"order\": 1}]",
+											"type": "text"
+										},
+										{
+											"key": "checklist_ids",
+											"value": "[1, 2]",
+											"type": "text"
+										},
+										{
+											"key": "installation_type",
+											"value": "standard",
+											"type": "text"
+										},
+										{
+											"key": "tax_percentage",
+											"value": "10",
+											"type": "text"
+										},
+										{
+											"key": "advance_payment",
+											"value": "20000",
+											"type": "text"
+										},
+										{
+											"key": "total_payment",
+											"value": "50000",
+											"type": "text"
+										},
+										{
+											"key": "completion_payment",
+											"value": "40000",
+											"type": "text"
+										},
+										{
+											"key": "status",
+											"value": "pending",
+											"type": "text"
+										},
+										{
+											"key": "images",
+											"type": "file",
+											"src": "/C:/Users/User1/Downloads/download (3).jpg"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{localhost}}/api/project/unique-solar-projects/create/",
+									"host": [
+										"{{localhost}}"
+									],
+									"path": [
+										"api",
+										"project",
+										"unique-solar-projects",
+										"create",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get all checklist",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUzODEyODIyLCJpYXQiOjE3NTM3OTQ4MjIsImp0aSI6IjUwOTU1MmYwMGRkODQ4MmQ5OTM2Njc2ZTI3Njg0MDZjIiwidXNlcl9pZCI6IjEifQ.4g_yMQ_xao2madQAZ6LkQEpJKA7LsmNTN1gdel1THUw",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"id\": 1,\r\n  \"customer_name\": \"John Smith\",\r\n  \"address\": \"123 Main Street, City, State, ZIP\",\r\n  \"date\": \"2024-01-15\",\r\n  \"valid_until\": \"2024-02-15\",\r\n  \"project_type\": \"on_grid\",\r\n  \"installation_type\": \"standard\",\r\n  \"tax_percentage\": \"15.00\",\r\n  \"advance_payment\": \"50000.00\",\r\n  \"completion_payment\": \"0.00\",\r\n  \"status\": \"pending\",\r\n\r\n}"
+								},
+								"url": {
+									"raw": "{{localhost}}/api/project/unique-solar-checklist/",
+									"host": [
+										"{{localhost}}"
+									],
+									"path": [
+										"api",
+										"project",
+										"unique-solar-checklist",
+										""
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Get all projects",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUzNzkzNzQzLCJpYXQiOjE3NTM3NzU3NDMsImp0aSI6IjJlMTRhNGQ5MjJjMjQ1YTI4YjYyYjNmMzlmY2EyNTljIiwidXNlcl9pZCI6IjEifQ.dH7lEVmYdPDYE2N7CC8ik6iOc7EPGIjHeupa8u-a0xE",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{localhost}}/api/project/",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"api",
+								"project",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Expense",
+			"item": [
+				{
+					"name": "get all expenses",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUzODEyODIyLCJpYXQiOjE3NTM3OTQ4MjIsImp0aSI6IjUwOTU1MmYwMGRkODQ4MmQ5OTM2Njc2ZTI3Njg0MDZjIiwidXNlcl9pZCI6IjEifQ.4g_yMQ_xao2madQAZ6LkQEpJKA7LsmNTN1gdel1THUw",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{localhost}}/api/expense/",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"api",
+								"expense",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add an expense",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUzODEyODIyLCJpYXQiOjE3NTM3OTQ4MjIsImp0aSI6IjUwOTU1MmYwMGRkODQ4MmQ5OTM2Njc2ZTI3Njg0MDZjIiwidXNlcl9pZCI6IjEifQ.4g_yMQ_xao2madQAZ6LkQEpJKA7LsmNTN1gdel1THUw",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"title\": \"Office Supplies\",\r\n    \"category\": \"Tariq\",\r\n    \"amount\": \"150.50\",\r\n    \"date\": \"2024-01-15\",\r\n    \"description\": \"Purchase of office supplies including paper, pens, and notebooks\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{localhost}}/api/expense/",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"api",
+								"expense",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	],
 	"variable": [
