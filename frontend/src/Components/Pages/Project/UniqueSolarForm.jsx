@@ -8,16 +8,10 @@ import ReceiptUpload from './Uniq_SubComp/ReceiptUpload';
 import PaymentTerms from './Uniq_SubComp/PaymentTerms';
 import ProjectChecklist from './Uniq_SubComp/ProjectChecklist';
 
-const INSTALLATION_PRICES = {
-  standard: 5000,
-  elevated: 8000,
-  none: 0
-};
-
 const UniqueSolarForm = ({ onBack, onSubmit, initialData }) => {
   const [formData, setFormData] = useState(initialData || {
     customerName: '',
-    contactno: '',
+    contact_no: '',
     address: '',
     date: '',
     validUntil: '',
@@ -27,11 +21,12 @@ const UniqueSolarForm = ({ onBack, onSubmit, initialData }) => {
     advancePayment: '',
     deliveryPayment: '',
     completionPayment: '',
-    status: 'DRAFT'
+    status: ''
   });
 
+  const [formErrors, setFormErrors] = useState({});
   const [products, setProducts] = useState([
-    { id: 3, type: 'Others', quantity: 0, unitPrice: 0, lineTotal: 0, customProduct: '' }
+    { id: 3, type: 'Others', description: '', quantity: 0, unitPrice: 0, Total: 0, customProduct: '' }
   ]);
 
   const [checklist, setChecklist] = useState({
@@ -48,33 +43,44 @@ const UniqueSolarForm = ({ onBack, onSubmit, initialData }) => {
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     const newValue = type === 'checkbox' ? checked : value;
-    
-    setFormData(prevData => {
-      const updatedData = { ...prevData };
-      updatedData[name] = newValue;
-      return updatedData;
-    });
+
+    setFormData(prevData => ({
+      ...prevData,
+      [name]: newValue
+    }));
+
+    setFormErrors(prevErrors => ({
+      ...prevErrors,
+      [name]: ''
+    }));
+  };
+
+  const validateForm = () => {
+    const errors = {};
+    if (!formData.customerName.trim()) errors.customerName = "This field is required";
+    if (!formData.contact_no.trim()) errors.contact_no = "This field is required";
+    if (!formData.address.trim()) errors.address = "This field is required";
+    if (!formData.date.trim()) errors.date = "This field is required";
+    if (!formData.validUntil.trim()) errors.validUntil = "This field is required";
+    if (!formData.projectType.trim()) errors.projectType = "This field is required";
+    if (!formData.status.trim()) errors.status = "This field is required";
+    return errors;
   };
 
   const handleProductChange = (id, field, value) => {
-  setProducts(prevProducts => {
-    return prevProducts.map(product => {
-      if (product.id === id) {
-        const updated = { ...product, [field]: value };
-
-        // Parse values here safely
-        const quantity = parseFloat(updated.quantity) || 0;
-        const price = parseFloat(updated.unitPrice) || 0;
-
-        updated.lineTotal = quantity * price;
-
-        return updated;
-      }
-      return product;
-    });
-  });
-};
-
+    setProducts(prevProducts =>
+      prevProducts.map(product => {
+        if (product.id === id) {
+          const updated = { ...product, [field]: value };
+          const quantity = parseFloat(updated.quantity) || 0;
+          const price = parseFloat(updated.unitPrice) || 0;
+          updated.Total = quantity * price;
+          return updated;
+        }
+        return product;
+      })
+    );
+  };
 
   const addProduct = () => {
     setProducts(prev => [
@@ -82,9 +88,10 @@ const UniqueSolarForm = ({ onBack, onSubmit, initialData }) => {
       {
         id: Date.now(),
         type: 'Select Product',
+        description: '',
         quantity: 0,
         unitPrice: 0,
-        lineTotal: 0
+        Total: 0
       }
     ]);
   };
@@ -97,14 +104,33 @@ const UniqueSolarForm = ({ onBack, onSubmit, initialData }) => {
     setChecklist(prev => ({ ...prev, [item]: !prev[item] }));
   };
 
-  const subtotal = products.reduce((sum, p) => sum + (p.lineTotal || 0), 0);
-  const installationCost = INSTALLATION_PRICES[formData.installationType] || 0;
+  const subtotal = products.reduce((sum, p) => sum + (p.Total || 0), 0);
+  const installationCost = (formData.installationType !== 'none')
+    ? parseFloat(formData.installationAmount) || 0
+    : 0;
   const taxAmount = ((subtotal + installationCost) * parseFloat(formData.tax || 0)) / 100;
   const grandTotal = subtotal + installationCost + taxAmount;
 
   const handleReceiptUpload = (e) => {
     const file = e.target.files?.[0];
     if (file) setReceiptImage(file);
+  };
+const handleSubmit = () => {
+    const errors = validateForm();
+    setFormErrors(errors);
+
+    if (Object.keys(errors).length === 0) {
+      const submitData = {
+        ...formData,
+        products,
+        amount: grandTotal,
+        advanceReceived: parseFloat(formData.advancePayment) || 0,
+        pending: grandTotal - (parseFloat(formData.advancePayment) || 0),
+        checklist,
+        receiptImage: receiptImage ? URL.createObjectURL(receiptImage) : null
+      };
+      onSubmit(submitData);
+    }
   };
 
   return (
@@ -119,15 +145,19 @@ const UniqueSolarForm = ({ onBack, onSubmit, initialData }) => {
         </div>
 
         <div className="p-6 space-y-8">
-          <ProjectInformation formData={formData} handleInputChange={handleInputChange} />
-          <ProductDetails 
+          <ProjectInformation
+            formData={formData}
+            handleInputChange={handleInputChange}
+            formErrors={formErrors}
+          />
+          <ProductDetails
             products={products}
             handleProductChange={handleProductChange}
             addProduct={addProduct}
             removeProduct={removeProduct}
           />
           <InstallationType formData={formData} handleInputChange={handleInputChange} />
-          <TotalsSummary 
+          <TotalsSummary
             subtotal={subtotal}
             installationCost={installationCost}
             formData={formData}
@@ -140,33 +170,15 @@ const UniqueSolarForm = ({ onBack, onSubmit, initialData }) => {
 
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t">
-            <button 
-              onClick={onBack} 
+            <button
+              onClick={onBack}
               className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
             >
               Back
             </button>
-            <button 
-              type="button" 
-              className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-              onClick={onBack}
-            >
-              Cancel
-            </button>
-            <button 
+            <button
               type="button"
-              onClick={() => {
-                const submitData = {
-                  ...formData,
-                  products,
-                  amount: grandTotal,
-                  advanceReceived: parseFloat(formData.advancePayment) || 0,
-                  pending: grandTotal - (parseFloat(formData.advancePayment) || 0),
-                  checklist,
-                  receiptImage: receiptImage ? URL.createObjectURL(receiptImage) : null
-                };
-                onSubmit(submitData);
-              }}
+              onClick={handleSubmit}
               className="px-6 py-2 bg-[#181829] text-white rounded-lg hover:bg-[#d8f276] hover:text-[#181829]"
             >
               Save Project
@@ -177,16 +189,5 @@ const UniqueSolarForm = ({ onBack, onSubmit, initialData }) => {
     </div>
   );
 };
-
-// 🔹 Section Heading Component
-const Section = ({ title, children, dashed }) => (
-  <div className={dashed ? 'border-2 border-dashed border-gray-200 rounded-lg p-6' : ''}>
-    <h3 className="text-lg font-semibold text-[#181829] mb-4 flex items-center gap-2">
-      <div className="w-2 h-2 bg-[#d8f276] rounded-full"></div>
-      {title}
-    </h3>
-    {children}
-  </div>
-);
 
 export default UniqueSolarForm;

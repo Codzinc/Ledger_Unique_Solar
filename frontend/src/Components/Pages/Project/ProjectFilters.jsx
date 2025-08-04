@@ -1,25 +1,25 @@
-import React from 'react';
-import { Filter, RotateCcw } from 'lucide-react';
+import React from "react";
+import { Filter, RotateCcw } from "lucide-react";
 
 const ProjectFilters = ({ filters, onFiltersChange }) => {
   const filterOptions = {
-    company: ['All Companies', 'UNIQUE SOLAR', 'ZARORRAT.COM'],
-    projectType: ['All Types', 'On-Grid', 'Hybrid', 'Off-Grid', 'Services'],
-    status: ['All Status', 'DRAFT', 'IN PROGRESS', 'COMPLETED']
+    company: ["All Companies", "UNIQUE SOLAR", "ZARORRAT.COM"],
+    projectType: ["All Types", "On-Grid", "Hybrid", "Off-Grid", "Services"],
+    status: ["All Status", "Pending", "IN PROGRESS", "COMPLETED"],
   };
 
   const handleFilterChange = (filterType, value) => {
     onFiltersChange({
       ...filters,
-      [filterType]: value
+      [filterType]: value,
     });
   };
 
   const handleResetFilters = () => {
     onFiltersChange({
-      company: 'All Companies',
-      projectType: 'All Types',
-      status: 'All Status'
+      company: "All Companies",
+      projectType: "All Types",
+      status: "All Status",
     });
   };
 
@@ -30,7 +30,7 @@ const ProjectFilters = ({ filters, onFiltersChange }) => {
           <Filter className="w-4 h-4 text-gray-600" />
           <span className="text-sm font-medium text-gray-700">Filter By:</span>
         </div>
-        
+
         <div className="flex flex-col sm:flex-row gap-3 flex-1">
           {Object.entries(filterOptions).map(([filterType, options]) => (
             <select

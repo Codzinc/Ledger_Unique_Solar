@@ -1,20 +1,47 @@
-import React from 'react';
-import Section from './Section';
+import React from "react";
+import Section from "./Section";
 
-const ReceiptUpload = ({ handleReceiptUpload, receiptImage }) => (
-  <Section title="Add Receipt">
-    <input
-      type="file"
-      accept="image/*"
-      onChange={handleReceiptUpload}
-      className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-[#181829] file:text-white hover:file:bg-[#d8f276] hover:file:text-[#181829]"
-    />
-    {receiptImage && (
-      <div className="mt-4">
-        <img src={URL.createObjectURL(receiptImage)} alt="Receipt Preview" className="max-w-xs border rounded shadow" />
+const ReceiptUpload = ({ handleReceiptUpload, receiptImage }) => {
+  return (
+    <Section title="Receipt Image">
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center gap-2">
+          <label htmlFor="receipt-upload" className="inline-block">
+            <input
+              id="receipt-upload"
+              type="file"
+              accept="image/*"
+              onChange={handleReceiptUpload}
+              className="hidden"
+            />
+            <span
+              className="bg-[#181829] text-white px-4 py-2 rounded-lg cursor-pointer transition-colors hover:bg-[#d8f276] hover:text-[#181829]"
+              tabIndex={0}
+              onClick={(e) => {
+                e.preventDefault();
+                document.getElementById("receipt-upload").click();
+              }}
+            >
+              Upload Receipt
+            </span>
+          </label>
+          {receiptImage && (
+            <span className="text-sm text-gray-600">Image selected</span>
+          )}
+        </div>
+
+        {receiptImage && (
+          <div className="mt-2">
+            <img
+              src={receiptImage}
+              alt="Receipt Preview"
+              className="h-40 object-contain rounded-md border"
+            />
+          </div>
+        )}
       </div>
-    )}
-  </Section>
-);
+    </Section>
+  );
+};
 
 export default ReceiptUpload;

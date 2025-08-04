@@ -4,7 +4,7 @@ import { sampleProjects, STATUS_CLASSES } from './SampleProjects';
 
 // Component for the table header
 const TableHeader = () => (
-  <thead className="bg-[#181829] text-white whitespace-nowrap sticky top-0 z-10 text-xs uppercase tracking-wider">
+  <thead className="bg-[#181829] text-white whitespace-nowrap text-xs uppercase tracking-wider">
     <tr>
       {['Project ID', 'Company', 'Customer Name', 'Contact No', 'Address', 'Date', 'Project Type', 'Status', 'Total Amount', 'Paid', 'Pending', 'Actions'].map((head, idx) => (
         <th key={idx} className={`px-6 py-4 ${head === 'Actions' ? 'text-right' : ''}`}>
@@ -67,7 +67,7 @@ const StatusBadge = ({ status }) => {
   );
 };
 
-const ProjectTable = ({ projects, searchTerm, filters, onViewProject, onEditProject, onDeleteProject }) => {
+const ProjectTable = ({ projects, searchTerm, filters, dateFilter, onViewProject, onEditProject, onDeleteProject }) => {
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const [currentPage, setCurrentPage] = useState(1);
   const [activeDropdown, setActiveDropdown] = useState(null);
@@ -96,9 +96,13 @@ const ProjectTable = ({ projects, searchTerm, filters, onViewProject, onEditProj
       const matchesCompany = filters.company === 'All Companies' || p.company === filters.company;
       const matchesType = filters.projectType === 'All Types' || p.projectType === filters.projectType;
       const matchesStatus = filters.status === 'All Status' || p.status === filters.status;
-      return matchesSearch && matchesCompany && matchesType && matchesStatus;
+      
+      // Date filter
+      const matchesDate = !dateFilter || (p.date && p.date.startsWith(dateFilter));
+      
+      return matchesSearch && matchesCompany && matchesType && matchesStatus && matchesDate;
     });
-  }, [projects, searchTerm, filters]);
+  }, [projects, searchTerm, filters, dateFilter]);
 
   const sortedProjects = useMemo(() => {
     if (!sortConfig.key) return filteredProjects;
@@ -117,13 +121,22 @@ const ProjectTable = ({ projects, searchTerm, filters, onViewProject, onEditProj
   );
 
   return (
-    <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-      <div className="overflow-x-auto">
+    <div className="bg-white rounded-xl shadow-lg overflow-hidden relative">
+      <div className="overflow-x-auto overflow-y-visible">
         <table className="min-w-full text-left">
           <TableHeader />
           <tbody className="divide-y divide-gray-200">
             {paginatedProjects.map(project => (
-              <tr key={project.id} className="hover:bg-gray-50">
+              <tr 
+                key={project.id} 
+                className="hover:bg-gray-50 cursor-pointer transition-colors"
+                onClick={(e) => {
+                  // Prevent row click if clicking on action buttons
+                  if (!e.target.closest('.action-buttons')) {
+                    onViewProject(project);
+                  }
+                }}
+              >
                 <TableCell value={project.id} className="font-medium text-gray-900" />
                 <TableCell value={project.company} className="text-gray-700" />
                 <TableCell value={project.customerName} className="text-gray-700" />

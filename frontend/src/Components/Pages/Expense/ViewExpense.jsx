@@ -1,5 +1,15 @@
-import React from 'react';
-import { X, DollarSign, FileText, User, Tag, Calendar, Receipt, Building, Edit } from 'lucide-react';
+import React from "react";
+import {
+  X,
+  DollarSign,
+  FileText,
+  User,
+  Tag,
+  Calendar,
+  Receipt,
+  Building,
+  Edit,
+} from "lucide-react";
 
 const ViewExpense = ({ expense, onClose, onEdit }) => {
   if (!expense) return null;
@@ -7,12 +17,14 @@ const ViewExpense = ({ expense, onClose, onEdit }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-        {/* Header */} 
+        {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
             <DollarSign className="w-7 h-7 text-[#d8f276]" />
             <div>
-              <h2 className="text-2xl font-bold text-gray-800">Expense Details</h2>
+              <h2 className="text-2xl font-bold text-gray-800">
+                Expense Details
+              </h2>
               <p className="text-gray-600">#{expense.srNo}</p>
             </div>
           </div>
@@ -30,7 +42,9 @@ const ViewExpense = ({ expense, onClose, onEdit }) => {
           <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-6">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
-                <h3 className="text-2xl font-bold text-gray-800 mb-2">{expense.title}</h3>
+                <h3 className="text-2xl font-bold text-gray-800 mb-2">
+                  {expense.title}
+                </h3>
                 <div className="flex items-center gap-2 mb-3">
                   <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
                     {expense.category}
@@ -39,12 +53,16 @@ const ViewExpense = ({ expense, onClose, onEdit }) => {
                     {expense.utilizer}
                   </span>
                 </div>
-                <p className="text-gray-600 leading-relaxed">{expense.description}</p>
+                <p className="text-gray-600 leading-relaxed">
+                  {expense.description}
+                </p>
               </div>
               <div className="text-right">
                 <div className="bg-white rounded-lg p-4 shadow-sm whitespace-nowrap">
                   <p className="text-sm text-gray-600 mb-1">Total Amount</p>
-                  <p className="text-3xl font-bold text-red-600">${expense.amount.toLocaleString()}</p>
+                  <p className="text-3xl font-bold text-red-600">
+                    ${expense.amount.toLocaleString()}
+                  </p>
                 </div>
               </div>
             </div>
@@ -58,7 +76,9 @@ const ViewExpense = ({ expense, onClose, onEdit }) => {
                 <Tag className="w-5 h-5 text-blue-600" />
                 <h4 className="font-semibold text-gray-800">Category</h4>
               </div>
-              <p className="text-lg font-medium text-gray-900">{expense.category}</p>
+              <p className="text-lg font-medium text-gray-900">
+                {expense.category}
+              </p>
               <p className="text-sm text-gray-600 mt-1">Expense type</p>
             </div>
 
@@ -68,7 +88,9 @@ const ViewExpense = ({ expense, onClose, onEdit }) => {
                 <User className="w-5 h-5 text-purple-600" />
                 <h4 className="font-semibold text-gray-800">Utilizer</h4>
               </div>
-              <p className="text-lg font-medium text-gray-900">{expense.utilizer}</p>
+              <p className="text-lg font-medium text-gray-900">
+                {expense.utilizer}
+              </p>
               <p className="text-sm text-gray-600 mt-1">Responsible person</p>
             </div>
 
@@ -78,7 +100,9 @@ const ViewExpense = ({ expense, onClose, onEdit }) => {
                 <DollarSign className="w-5 h-5 text-green-600" />
                 <h4 className="font-semibold text-gray-800">Amount</h4>
               </div>
-              <p className="text-lg font-medium text-red-600">${expense.amount.toLocaleString()}</p>
+              <p className="text-lg font-medium text-red-600">
+                ${expense.amount.toLocaleString()}
+              </p>
               <p className="text-sm text-gray-600 mt-1">Total expense</p>
             </div>
 
@@ -88,7 +112,9 @@ const ViewExpense = ({ expense, onClose, onEdit }) => {
                 <Calendar className="w-5 h-5 text-orange-600" />
                 <h4 className="font-semibold text-gray-800">Date</h4>
               </div>
-              <p className="text-lg font-medium text-gray-900">{expense.date}</p>
+              <p className="text-lg font-medium text-gray-900">
+                {expense.date}
+              </p>
               <p className="text-sm text-gray-600 mt-1">Expense date</p>
             </div>
 
@@ -98,21 +124,19 @@ const ViewExpense = ({ expense, onClose, onEdit }) => {
                 <Receipt className="w-5 h-5 text-indigo-600" />
                 <h4 className="font-semibold text-gray-800">Receipt Image</h4>
               </div>
-               {expense.receiptImage ? (
-    <img
-      src={expense.receiptImage}
-      alt="Receipt"
-      className="w-full max-w-xs rounded-md border border-gray-300"
-    />
-  ) : (
-    <p className="text-sm text-gray-500 italic">No receipt image uploaded</p>
-  )}
+              {expense.receiptImage ? (
+                <img
+                  src={expense.receiptImage}
+                  alt="Receipt"
+                  className="w-full max-w-xs rounded-md border border-gray-300"
+                />
+              ) : (
+                <p className="text-sm text-gray-500 italic">
+                  No receipt image uploaded
+                </p>
+              )}
             </div>
-
-           
           </div>
-
-         
 
           {/* Expense Summary */}
           <div className="bg-gradient-to-r from-red-50 to-orange-50 rounded-lg p-6">
@@ -123,15 +147,21 @@ const ViewExpense = ({ expense, onClose, onEdit }) => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="text-center">
                 <p className="text-sm text-gray-600">Category</p>
-                <p className="text-xl font-bold text-blue-600">{expense.category}</p>
+                <p className="text-xl font-bold text-blue-600">
+                  {expense.category}
+                </p>
               </div>
               <div className="text-center">
                 <p className="text-sm text-gray-600">Utilizer</p>
-                <p className="text-xl font-bold text-purple-600">{expense.utilizer}</p>
+                <p className="text-xl font-bold text-purple-600">
+                  {expense.utilizer}
+                </p>
               </div>
               <div className="text-center">
                 <p className="text-sm text-gray-600">Total Amount</p>
-                <p className="text-xl font-bold text-red-600">${expense.amount.toLocaleString()}</p>
+                <p className="text-xl font-bold text-red-600">
+                  ${expense.amount.toLocaleString()}
+                </p>
               </div>
             </div>
           </div>

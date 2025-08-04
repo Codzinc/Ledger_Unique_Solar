@@ -1,20 +1,20 @@
-import React from 'react';
-import { X } from 'lucide-react';
+import React from "react";
+import { X } from "lucide-react";
 
 const AddProjectModal = ({ onClose, onSelectType }) => {
   const projectTypes = [
     {
-      id: 'unique-solar',
-      name: 'Unique Solar',
-      description: 'Solar Panel Projects',
-      subtitle: 'On-Grid, Hybrid, Off-Grid'
+      id: "unique-solar",
+      name: "Unique Solar",
+      description: "Solar Panel Projects",
+      subtitle: "On-Grid, Hybrid, Off-Grid",
     },
     {
-      id: 'zarorrat',
-      name: 'Zarorrat.com',
-      description: 'Home Services',
-      subtitle: 'AC, Electrical, Plumbing, etc.'
-    }
+      id: "zarorrat",
+      name: "Zarorrat.com",
+      description: "Home Services",
+      subtitle: "AC, Electrical, Plumbing, etc.",
+    },
   ];
 
   return (
@@ -23,8 +23,9 @@ const AddProjectModal = ({ onClose, onSelectType }) => {
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">
             <div className=" items-center ">
-             
-              <h2 className="text-xl font-semibold text-[#181829] ">PROJECT TYPE SELECTOR</h2>
+              <h2 className="text-xl font-semibold text-[#181829] ">
+                PROJECT TYPE SELECTOR
+              </h2>
             </div>
             <button
               onClick={onClose}
@@ -35,8 +36,12 @@ const AddProjectModal = ({ onClose, onSelectType }) => {
           </div>
 
           <div className="border-2 border-dashed border-gray-200 rounded-lg p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Select Project Type</h3>
-            <p className="text-gray-600 mb-6">Choose the type of project you want to create:</p>
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              Select Project Type
+            </h3>
+            <p className="text-gray-600 mb-6">
+              Choose the type of project you want to create:
+            </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
               {projectTypes.map((type) => (
@@ -49,7 +54,9 @@ const AddProjectModal = ({ onClose, onSelectType }) => {
                     <div className="w-4 h-4 border-2 border-blue-400 rounded-full"></div>
                     <div>
                       <h4 className="font-medium text-gray-900">{type.name}</h4>
-                      <p className="text-sm text-gray-600">{type.description}</p>
+                      <p className="text-sm text-gray-600">
+                        {type.description}
+                      </p>
                       <p className="text-xs text-gray-500">{type.subtitle}</p>
                     </div>
                   </div>
@@ -57,16 +64,17 @@ const AddProjectModal = ({ onClose, onSelectType }) => {
               ))}
             </div>
 
-            <p className="text-sm text-red-600 mb-6">* Mandatory: Must select one option</p>
+            <p className="text-sm text-red-600 mb-6">
+              * Mandatory: Must select one option
+            </p>
 
             <div className="flex justify-end gap-3">
               <button
                 onClick={onClose}
-              className="bg-[#181829] cursor-pointer text-white hover:text-[#181829] px-4 py-2 rounded-lg hover:bg-[#d8f276] transition-colors flex items-center gap-2 whitespace-nowrap"
+                className="bg-[#181829] cursor-pointer text-white hover:text-[#181829] px-4 py-2 rounded-lg hover:bg-[#d8f276] transition-colors flex items-center gap-2 whitespace-nowrap"
               >
                 Cancel
               </button>
-              
             </div>
           </div>
         </div>

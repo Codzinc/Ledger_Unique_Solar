@@ -1,27 +1,29 @@
-import React, { useState } from 'react';
-import { ProjectProvider, useProjects } from './ProjectContext';
-import ProjectHeader from './ProjectHeader';
-import ProjectStats from './ProjectStats';
-import ProjectFilters from './ProjectFilters';
-import ProjectTable from './ProjectTable';
-import AddProjectModal from './AddProjectModal';
-import UniqueSolarForm from './UniqueSolarForm';
-import ZarorratForm from './ZarorratForm';
-import ViewProject from './ViewProject';
+import React, { useState } from "react";
+import { ProjectProvider, useProjects } from "./ProjectContext";
+import ProjectHeader from "./ProjectHeader";
+import ProjectStats from "./ProjectStats";
+import ProjectFilters from "./ProjectFilters";
+import ProjectTable from "./ProjectTable";
+import AddProjectModal from "./AddProjectModal";
+import UniqueSolarForm from "./UniqueSolarForm";
+import ZarorratForm from "./ZarorratForm";
+import ViewProject from "./ViewProject";
 
 const ProjectContent = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showProjectForm, setShowProjectForm] = useState(false);
-  const [selectedProjectType, setSelectedProjectType] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedProjectType, setSelectedProjectType] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const [selectedProject, setSelectedProject] = useState(null);
+  const [dateFilter, setDateFilter] = useState("");
   const [filters, setFilters] = useState({
-    company: 'All Companies',
-    projectType: 'All Types',
-    status: 'All Status'
+    company: "All Companies",
+    projectType: "All Types",
+    status: "All Status",
   });
 
-  const { projects, stats, addProject, updateProject, deleteProject } = useProjects();
+  const { projects, stats, addProject, updateProject, deleteProject } =
+    useProjects();
 
   const handleAddProject = () => {
     setShowAddModal(true);
@@ -35,7 +37,7 @@ const ProjectContent = () => {
 
   const handleBackToProjects = () => {
     setShowProjectForm(false);
-    setSelectedProjectType('');
+    setSelectedProjectType("");
     setSelectedProject(null);
   };
 
@@ -49,12 +51,14 @@ const ProjectContent = () => {
 
   const handleEditProject = (project) => {
     setSelectedProject(project);
-    setSelectedProjectType(project.company === 'UNIQUE SOLAR' ? 'unique-solar' : 'zarorrat');
+    setSelectedProjectType(
+      project.company === "UNIQUE SOLAR" ? "unique-solar" : "zarorrat"
+    );
     setShowProjectForm(true);
   };
 
   const handleDeleteProject = (projectId) => {
-    if (window.confirm('Are you sure you want to delete this project?')) {
+    if (window.confirm("Are you sure you want to delete this project?")) {
       deleteProject(projectId);
       setSelectedProject(null);
     }
@@ -69,18 +73,22 @@ const ProjectContent = () => {
     handleBackToProjects();
   };
 
+  const handleDateFilterChange = (date) => {
+    setDateFilter(date);
+  };
+
   if (showProjectForm) {
     return (
       <div className="min-h-screen bg-gray-100">
-        {selectedProjectType === 'unique-solar' ? (
-          <UniqueSolarForm 
-            onBack={handleBackToProjects} 
+        {selectedProjectType === "unique-solar" ? (
+          <UniqueSolarForm
+            onBack={handleBackToProjects}
             onSubmit={handleProjectSubmit}
             initialData={selectedProject}
           />
         ) : (
-          <ZarorratForm 
-            onBack={handleBackToProjects} 
+          <ZarorratForm
+            onBack={handleBackToProjects}
             onSubmit={handleProjectSubmit}
             initialData={selectedProject}
           />
@@ -96,24 +104,23 @@ const ProjectContent = () => {
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
           onAddProject={handleAddProject}
+          onDateFilterChange={handleDateFilterChange}
         />
-        
+
         <ProjectStats stats={stats} />
-        
-        <ProjectFilters
-          filters={filters}
-          onFiltersChange={setFilters}
-        />
-        
+
+        <ProjectFilters filters={filters} onFiltersChange={setFilters} />
+
         <ProjectTable
           projects={projects}
           searchTerm={searchTerm}
           filters={filters}
+          dateFilter={dateFilter}
           onViewProject={handleViewProject}
           onEditProject={handleEditProject}
           onDeleteProject={handleDeleteProject}
         />
-        
+
         {showAddModal && (
           <AddProjectModal
             onClose={handleCloseModal}

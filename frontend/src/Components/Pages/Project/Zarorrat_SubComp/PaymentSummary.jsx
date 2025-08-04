@@ -1,7 +1,12 @@
-import React from 'react';
-import SectionHeading from './SectionHeading';
+import React from "react";
+import SectionHeading from "./SectionHeading";
 
-const PaymentSummary = ({ totalAmount, formData, handleInputChange, pendingAmount }) => (
+const PaymentSummary = ({
+  totalAmount,
+  formData,
+  handleInputChange,
+  pendingAmount,
+}) => (
   <div>
     <SectionHeading title="Payment Summary" />
     <div className="bg-gray-50 p-6 rounded-lg space-y-4">

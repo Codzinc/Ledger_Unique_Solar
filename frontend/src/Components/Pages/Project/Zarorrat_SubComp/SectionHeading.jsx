@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 const SectionHeading = ({ title }) => (
   <h3 className="text-lg font-semibold text-[#181829] mb-4 flex items-center gap-2">

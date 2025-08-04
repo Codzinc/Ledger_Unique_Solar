@@ -9,35 +9,68 @@ import ActionButtons from './Zarorrat_SubComp/ActionButtons';
 const ZarorratForm = ({ onBack, onSubmit, initialData }) => {
   const [formData, setFormData] = useState(initialData || {
     customerName: '',
-    contactno: '',
+    contact_no: '',
     address: '',
     date: '',
     validUntil: '',
     notes: '',
     amount: '',
-    advanceReceived: ''
+    advanceReceived: '',
+    projectType: '',
+    status: ''
   });
 
+  const [errors, setErrors] = useState({});
   const [selectedServices, setSelectedServices] = useState({});
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handleServiceChange = (serviceId) => {
-    setSelectedServices(prev => ({
+    setSelectedServices((prev) => ({
       ...prev,
-      [serviceId]: !prev[serviceId]
+      [serviceId]: !prev[serviceId],
     }));
+  };
+
+  const validate = () => {
+    const newErrors = {};
+
+    if (!formData.customerName.trim()) newErrors.customerName = 'This field is required';
+    if (!formData.contact_no.trim()) newErrors.contact_no = 'This field is required';
+    if (!formData.address.trim()) newErrors.address = 'This field is required';
+    if (!formData.date) newErrors.date = 'This field is required';
+    if (!formData.validUntil) newErrors.validUntil = 'This field is required';
+    if (!formData.status) newErrors.status = 'This field is required';
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const totalAmount = parseFloat(formData.amount) || 0;
   const advanceReceived = parseFloat(formData.advanceReceived) || 0;
   const pendingAmount = totalAmount - advanceReceived;
+
+  const handleFormSubmit = () => {
+    if (!validate()) return;
+
+    const submitData = {
+      ...formData,
+      selectedServices,
+      amount: totalAmount,
+      advanceReceived,
+      pending: pendingAmount,
+      projectType: 'Service from Zarorrat',
+      status: formData.status || 'DRAFT'
+    };
+
+    onSubmit(submitData);
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
@@ -55,27 +88,32 @@ const ZarorratForm = ({ onBack, onSubmit, initialData }) => {
         </div>
 
         <div className="p-6 space-y-8">
-          <BasicInformation formData={formData} handleInputChange={handleInputChange} />
-          <ServicesProvided selectedServices={selectedServices} handleServiceChange={handleServiceChange} />
-          <NotesAndAmount formData={formData} handleInputChange={handleInputChange} />
-          <PaymentSummary 
+          <BasicInformation
+            formData={formData}
+            handleInputChange={handleInputChange}
+            errors={errors}
+          />
+
+          <ServicesProvided
+            selectedServices={selectedServices}
+            handleServiceChange={handleServiceChange}
+          />
+
+          <NotesAndAmount
+            formData={formData}
+            handleInputChange={handleInputChange}
+          />
+
+          <PaymentSummary
             totalAmount={totalAmount}
             formData={formData}
             handleInputChange={handleInputChange}
             pendingAmount={pendingAmount}
           />
-          <ActionButtons 
+
+          <ActionButtons
             onBack={onBack}
-            onSubmit={() => {
-              const submitData = {
-                ...formData,
-                selectedServices,
-                amount: totalAmount,
-                advanceReceived,
-                pending: pendingAmount
-              };
-              onSubmit(submitData);
-            }}
+            onSubmit={handleFormSubmit}
           />
         </div>
       </div>

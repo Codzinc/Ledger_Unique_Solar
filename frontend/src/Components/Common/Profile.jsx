@@ -1,11 +1,11 @@
-import React, { useEffect, useRef } from 'react';
-import { FaUserCircle } from 'react-icons/fa';
+import React, { useEffect, useRef } from "react";
+import { FaUserCircle } from "react-icons/fa";
 
 const user = {
-  name: 'John Doe',
-  email: 'john.doe@example.com',
-  role: 'Administrator',
-  avatar: '', // Optional avatar URL
+  name: "John Doe",
+  email: "john.doe@example.com",
+  role: "Administrator",
+  avatar: "", // Optional avatar URL
 };
 
 const Profile = ({ open, onClose }) => {
@@ -20,11 +20,11 @@ const Profile = ({ open, onClose }) => {
     };
 
     if (open) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [open, onClose]);
 
@@ -34,7 +34,7 @@ const Profile = ({ open, onClose }) => {
       <aside
         ref={sidebarRef}
         className={`fixed top-0 right-0 h-full w-full sm:w-[350px] bg-white shadow-xl z-[999] transform transition-transform duration-300 ${
-          open ? 'translate-x-0' : 'translate-x-full'
+          open ? "translate-x-0" : "translate-x-full"
         }`}
       >
         {/* Header */}
@@ -68,7 +68,8 @@ const Profile = ({ open, onClose }) => {
           <div>
             <div className="font-semibold text-gray-700 mb-1">About</div>
             <div className="text-gray-500 text-sm">
-              This is a sample user profile panel. You can add more details here.
+              This is a sample user profile panel. You can add more details
+              here.
             </div>
           </div>
           <div>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 const ActionButtons = ({ onBack, onSubmit }) => (
   <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t">
@@ -7,12 +7,6 @@ const ActionButtons = ({ onBack, onSubmit }) => (
       className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
     >
       Back
-    </button>
-    <button
-      type="button"
-      className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-    >
-      Cancel
     </button>
     <button
       onClick={onSubmit}
