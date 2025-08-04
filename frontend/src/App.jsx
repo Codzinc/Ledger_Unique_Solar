@@ -1,4 +1,5 @@
 import { useState } from "react";
+import SignIn from "./Components/Common/Auth/SignIn";
 import "./App.css";
 import SideBar from "./Components/Pages/SideBar/SideBar";
 import Dashboard from "./Components/Pages/Dashboard/Dashboard";
@@ -11,10 +12,10 @@ import { FaUserCircle } from "react-icons/fa";
 import { HiMenuAlt3 } from "react-icons/hi";
 
 const tabComponents = {
-  Dashboard: <Dashboard />,
-  Product: <Product />,
-  Project: <Project />,
-  Expense: <Expense />,
+  Dashboard: <Dashboard />, 
+  Product: <Product />, 
+  Project: <Project />, 
+  Expense: <Expense />, 
   Salary: <Salary />,
 };
 
@@ -22,11 +23,23 @@ function App() {
   const [activeTab, setActiveTab] = useState("Dashboard");
   const [profileOpen, setProfileOpen] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const handleTabClick = (label) => {
     setActiveTab(label);
     setMobileSidebarOpen(false); // Auto-close sidebar on mobile
   };
+
+  // Handler for successful login
+  const handleLoginSuccess = () => {
+    setIsAuthenticated(true);
+    setActiveTab("Dashboard");
+  };
+
+  // Show SignIn page if not authenticated
+  if (!isAuthenticated) {
+    return <SignIn onLoginSuccess={handleLoginSuccess} />;
+  }
 
   return (
     <div className="flex min-h-screen bg-[#f6f7fb] relative">
