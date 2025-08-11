@@ -1,6 +1,7 @@
 from rest_framework import generics, status, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.pagination import PageNumberPagination
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
@@ -11,8 +12,44 @@ from .serializers import (
     CustomTokenObtainPairSerializer,
     ChangePasswordSerializer
 )
+from django.db import models
 
 User = get_user_model()
+
+class UserPagination(PageNumberPagination):
+    page_size = 20
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+class UserListView(generics.ListAPIView):
+    """API view to get all users"""
+    queryset = User.objects.all().order_by('username')
+    serializer_class = UserProfileSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = UserPagination
+    
+    def get_queryset(self):
+        queryset = User.objects.all().order_by('username')
+        
+        # Optional search by username, first_name, or last_name
+        search_query = self.request.query_params.get('search', None)
+        if search_query:
+            queryset = queryset.filter(
+                models.Q(username__icontains=search_query) |
+                models.Q(first_name__icontains=search_query) |
+                models.Q(last_name__icontains=search_query) |
+                models.Q(email__icontains=search_query)
+            )
+        
+        # Optional filter by is_active status
+        is_active = self.request.query_params.get('is_active', None)
+        if is_active is not None:
+            if is_active.lower() == 'true':
+                queryset = queryset.filter(is_active=True)
+            elif is_active.lower() == 'false':
+                queryset = queryset.filter(is_active=False)
+        
+        return queryset
 
 class UserRegistrationView(generics.CreateAPIView):
     """API view for user registration"""
