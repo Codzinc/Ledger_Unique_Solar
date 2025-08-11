@@ -7,7 +7,6 @@ import {
   Tag,
   Calendar,
   Receipt,
-  Building,
   Edit,
 } from "lucide-react";
 
@@ -17,7 +16,6 @@ const ViewExpense = ({ expense, onClose, onEdit }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-        {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
             <DollarSign className="w-7 h-7 text-[#d8f276]" />
@@ -36,9 +34,7 @@ const ViewExpense = ({ expense, onClose, onEdit }) => {
           </button>
         </div>
 
-        {/* Content */}
         <div className="p-6 space-y-6">
-          {/* Expense Overview */}
           <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-6">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
@@ -54,7 +50,7 @@ const ViewExpense = ({ expense, onClose, onEdit }) => {
                   </span>
                 </div>
                 <p className="text-gray-600 leading-relaxed">
-                  {expense.description}
+                  {expense.description || 'No description provided'}
                 </p>
               </div>
               <div className="text-right">
@@ -68,9 +64,7 @@ const ViewExpense = ({ expense, onClose, onEdit }) => {
             </div>
           </div>
 
-          {/* Details Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Category */}
             <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
               <div className="flex items-center gap-3 mb-3">
                 <Tag className="w-5 h-5 text-blue-600" />
@@ -82,7 +76,6 @@ const ViewExpense = ({ expense, onClose, onEdit }) => {
               <p className="text-sm text-gray-600 mt-1">Expense type</p>
             </div>
 
-            {/* Utilizer */}
             <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
               <div className="flex items-center gap-3 mb-3">
                 <User className="w-5 h-5 text-purple-600" />
@@ -94,7 +87,6 @@ const ViewExpense = ({ expense, onClose, onEdit }) => {
               <p className="text-sm text-gray-600 mt-1">Responsible person</p>
             </div>
 
-            {/* Amount */}
             <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
               <div className="flex items-center gap-3 mb-3">
                 <DollarSign className="w-5 h-5 text-green-600" />
@@ -106,7 +98,6 @@ const ViewExpense = ({ expense, onClose, onEdit }) => {
               <p className="text-sm text-gray-600 mt-1">Total expense</p>
             </div>
 
-            {/* Date */}
             <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
               <div className="flex items-center gap-3 mb-3">
                 <Calendar className="w-5 h-5 text-orange-600" />
@@ -118,27 +109,40 @@ const ViewExpense = ({ expense, onClose, onEdit }) => {
               <p className="text-sm text-gray-600 mt-1">Expense date</p>
             </div>
 
-            {/* Receipt */}
             <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
               <div className="flex items-center gap-3 mb-3">
                 <Receipt className="w-5 h-5 text-indigo-600" />
                 <h4 className="font-semibold text-gray-800">Receipt Image</h4>
               </div>
               {expense.receiptImage ? (
-                <img
-                  src={expense.receiptImage}
-                  alt="Receipt"
-                  className="w-full max-w-xs rounded-md border border-gray-300"
-                />
+                <div className="space-y-2">
+                  <img
+                    src={expense.receiptImage}
+                    alt="Receipt"
+                    className="w-full max-w-xs rounded-md border border-gray-300 cursor-pointer hover:shadow-lg transition-shadow"
+                    onClick={() => window.open(expense.receiptImage, '_blank')}
+                  />
+                  <p className="text-xs text-gray-500">Click to view full size</p>
+                </div>
               ) : (
                 <p className="text-sm text-gray-500 italic">
                   No receipt image uploaded
                 </p>
               )}
             </div>
+
+            <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+              <div className="flex items-center gap-3 mb-3">
+                <FileText className="w-5 h-5 text-gray-600" />
+                <h4 className="font-semibold text-gray-800">Reference</h4>
+              </div>
+              <p className="text-lg font-medium text-gray-900">
+                ID: {expense.id}
+              </p>
+              <p className="text-sm text-gray-600 mt-1">Expense reference ID</p>
+            </div>
           </div>
 
-          {/* Expense Summary */}
           <div className="bg-gradient-to-r from-red-50 to-orange-50 rounded-lg p-6">
             <h4 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
               <DollarSign className="w-5 h-5 text-red-600" />
@@ -167,7 +171,6 @@ const ViewExpense = ({ expense, onClose, onEdit }) => {
           </div>
         </div>
 
-        {/* Footer */}
         <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200">
           <button
             onClick={onClose}
@@ -177,7 +180,7 @@ const ViewExpense = ({ expense, onClose, onEdit }) => {
           </button>
           <button
             onClick={() => onEdit(expense)}
-            className="px-6 py-2 bg-[#d8f276] text-[#181829] rounded-lg hover:bg-[#181829] hover:text-[#d8f276]  transition-colors flex items-center gap-2"
+            className="px-6 py-2 bg-[#d8f276] text-[#181829] rounded-lg hover:bg-[#181829] hover:text-[#d8f276] transition-colors flex items-center gap-2"
           >
             <Edit className="w-4 h-4" />
             Edit Expense

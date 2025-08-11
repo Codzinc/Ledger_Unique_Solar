@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   MoreVertical,
   Eye,
@@ -9,19 +9,66 @@ import {
   Package,
   TrendingUp,
   Calendar,
+  Loader2,
+  AlertCircle,
 } from "lucide-react";
-
-const ProductList = ({
-  products,
+import { getProducts } from "../../../ApiComps/Product/ProductList";
+const ProductList = React.forwardRef(({
   onViewProduct,
   onEditProduct,
   onDeleteProduct,
   onAddProduct,
-}) => {
+  isDeleting = false,
+}, ref) => {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
-  const [showDatePicker, setShowDatePicker] = useState(false);
+
+  // Fetch products on component mount
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    setLoading(true);
+    setError(null);
+    
+    const result = await getProducts();
+    
+    if (result.success) {
+      // Transform API data to match component expected format
+      const transformedProducts = result.data.results.map((product, index) => ({
+        id: product.id,
+        srNo: index + 1,
+        product: product.name,
+        brand: product.brand,
+        cName: product.customer_name,
+        dateAdded: product.date,
+        purchPrice: parseFloat(product.purchase_price),
+        salePrice: parseFloat(product.sale_price),
+        profit: product.total_profit,
+        category: product.category,
+        quantity: product.quantity,
+        description: product.description,
+        images: product.images,
+        totalPurchaseCost: product.total_purchase_cost,
+        totalSaleValue: product.total_sale_value,
+        profitPerUnit: product.profit_per_unit,
+        profitMarginPercentage: product.profit_margin_percentage,
+        createdAt: product.created_at,
+        updatedAt: product.updated_at,
+      }));
+      
+      setProducts(transformedProducts);
+    } else {
+      setError(result.error);
+    }
+    
+    setLoading(false);
+  };
 
   // Function to filter products by selected month and year
   const filterByDate = (products) => {
@@ -77,13 +124,62 @@ const ProductList = ({
   // Function to handle month-year selection
   const handleDateChange = (e) => {
     setSelectedDate(e.target.value);
-    setShowDatePicker(false);
   };
 
   // Function to clear date filter
   const clearDateFilter = () => {
     setSelectedDate("");
   };
+
+  // ...removed refreshProducts and imperative handle...
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="bg-white rounded-xl shadow-lg">
+        <div className="p-6 border-b border-gray-200">
+          <h2 className="text-2xl font-bold text-[#181829] flex items-center gap-3">
+            <Package className="w-7 h-7 text-[#d8f276]" />
+            Product
+          </h2>
+        </div>
+        <div className="flex items-center justify-center py-20">
+          <div className="flex flex-col items-center gap-4">
+            <Loader2 className="w-8 h-8 animate-spin text-[#d8f276]" />
+            <p className="text-gray-600">Loading products...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="bg-white rounded-xl shadow-lg">
+        <div className="p-6 border-b border-gray-200">
+          <h2 className="text-2xl font-bold text-[#181829] flex items-center gap-3">
+            <Package className="w-7 h-7 text-[#d8f276]" />
+            Product
+          </h2>
+        </div>
+        <div className="flex items-center justify-center py-20">
+          <div className="flex flex-col items-center gap-4">
+            <AlertCircle className="w-12 h-12 text-red-500" />
+            <p className="text-red-600 text-center">
+              {error}
+            </p>
+            <button
+              onClick={fetchProducts}
+              className="bg-[#181829] text-white px-4 py-2 rounded-lg hover:bg-[#d8f276] hover:text-[#181829] transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-xl shadow-lg">
@@ -133,12 +229,17 @@ const ProductList = ({
               </div>
             </div>
             <button
-              onClick={onAddProduct}
+              onClick={() => {
+                onAddProduct();
+                // You might want to refresh products after adding
+                // This could be handled by the parent component calling refreshProducts
+              }}
               className="bg-[#181829] cursor-pointer text-white hover:text-[#181829] px-4 py-2 rounded-lg hover:bg-[#d8f276] transition-colors flex items-center gap-2 whitespace-nowrap"
             >
               <Plus className="w-4 h-4" />
               Add Product
             </button>
+            {/* Refresh button removed */}
           </div>
         </div>
       </div>
@@ -212,20 +313,21 @@ const ProductList = ({
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredProducts.map((product) => (
-                  <tr
-                    key={product.id}
-                    className="hover:bg-gray-50 transition-colors cursor-pointer"
-                    onClick={(e) => {
-                      if (!e.target.closest(".dropdown-container")) {
-                        onViewProduct(product);
-                      }
-                    }}
-                  >
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      #{product.srNo}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-900">
+                {filteredProducts.length > 0 ? (
+                  filteredProducts.map((product) => (
+                    <tr
+                      key={product.id}
+                      className="hover:bg-gray-50 transition-colors cursor-pointer"
+                      onClick={(e) => {
+                        if (!e.target.closest(".dropdown-container")) {
+                          onViewProduct(product);
+                        }
+                      }}
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        #{product.srNo}
+                      </td>
+                       <td className="px-6 py-4 text-sm text-gray-900">
                       <div className="flex items-center">
                         <div>
                           <div className="font-medium">{product.product}</div>
@@ -237,64 +339,95 @@ const ProductList = ({
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      <div className="font-medium">{product.cName}</div>
-                      <div className="text-gray-500 text-xs">
-                        {product.dateAdded}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
-                      ${product.purchPrice.toLocaleString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
-                      ${product.salePrice.toLocaleString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      ${product.profit.toLocaleString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <div className="relative dropdown-container">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDropdownToggle(product.id);
-                          }}
-                          className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-                        >
-                          <MoreVertical className="w-4 h-4" />
-                        </button>
-
-                        {activeDropdown === product.id && (
-                          <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-20">
-                            <div className="py-1">
-                              <button
-                                onClick={() => handleAction("view", product)}
-                                className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
-                              >
-                                <Eye className="w-4 h-4" />
-                                View Details
-                              </button>
-                              <button
-                                onClick={() => handleAction("edit", product)}
-                                className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
-                              >
-                                <Edit className="w-4 h-4" />
-                                Edit Product
-                              </button>
-                              <button
-                                onClick={() => handleAction("delete", product)}
-                                className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                                Delete Product
-                              </button>
+                      {/* <td className="px-6 py-4 text-sm text-gray-900">
+                        <div className="flex items-center">
+                          <div>
+                            <div className="font-medium">{product.product}</div>
+                            <div className="text-gray-500 text-xs flex items-center gap-2">
+                              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
+                                className={`flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left ${
+                                  isDeleting ? 'opacity-50 cursor-not-allowed' : ''
+                                }`}
+                                disabled={isDeleting}
+                              </span>
+                              <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs">
+                                {isDeleting ? 'Deleting...' : 'Delete Product'}
+                              </span>
                             </div>
                           </div>
-                        )}
+                        </div>
+                      </td> */}
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <div className="font-medium">{product.cName}</div>
+                        <div className="text-gray-500 text-xs">
+                          {new Date(product.dateAdded).toLocaleDateString()}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
+                        ${product.purchPrice.toLocaleString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
+                        ${product.salePrice.toLocaleString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        <span className={`font-medium ${product.profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          ${product.profit.toLocaleString()}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <div className="relative dropdown-container">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDropdownToggle(product.id);
+                            }}
+                            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                          >
+                            <MoreVertical className="w-4 h-4" />
+                          </button>
+
+                          {activeDropdown === product.id && (
+                            <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-20">
+                              <div className="py-1">
+                                <button
+                                  onClick={() => handleAction("view", product)}
+                                  className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                                >
+                                  <Eye className="w-4 h-4" />
+                                  View Details
+                                </button>
+                                <button
+                                  onClick={() => handleAction("edit", product)}
+                                  className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                                >
+                                  <Edit className="w-4 h-4" />
+                                  Edit Product
+                                </button>
+                                <button
+                                  onClick={() => handleAction("delete", product)}
+                                  className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                  Delete Product
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="7" className="px-6 py-8 text-center text-gray-500">
+                      <div className="flex flex-col items-center gap-2">
+                        <Package className="w-12 h-12 text-gray-300" />
+                        <p>No products found</p>
+                        <p className="text-sm">Add your first product to get started</p>
                       </div>
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>
@@ -305,23 +438,23 @@ const ProductList = ({
       <div className="p-6 bg-[#181829] text-white border-t border-gray-200 rounded-b-xl">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="text-center">
-            <p className="text-sm ">Total Products</p>
+            <p className="text-sm">Total Products</p>
             <p className="text-lg font-bold">{filteredProducts.length}</p>
           </div>
           <div className="text-center">
-            <p className="text-sm ">Total Purchase</p>
-            <p className="text-lg font-bold ">
+            <p className="text-sm">Total Purchase</p>
+            <p className="text-lg font-bold">
               ${totals.totalPurchase.toLocaleString()}
             </p>
           </div>
           <div className="text-center">
-            <p className="text-sm ">Total Sale</p>
-            <p className="text-lg font-bold ">
+            <p className="text-sm">Total Sale</p>
+            <p className="text-lg font-bold">
               ${totals.totalSale.toLocaleString()}
             </p>
           </div>
           <div className="text-center">
-            <p className="text-sm ">Total Profit</p>
+            <p className="text-sm">Total Profit</p>
             <p className="text-lg font-bold">
               ${totals.totalProfit.toLocaleString()}
             </p>
@@ -330,6 +463,8 @@ const ProductList = ({
       </div>
     </div>
   );
-};
+});
+
+ProductList.displayName = 'ProductList';
 
 export default ProductList;
