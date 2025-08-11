@@ -1065,6 +1065,235 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "Salsry",
+			"item": [
+				{
+					"name": "Get all salaries",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU0OTQ5Mzk5LCJpYXQiOjE3NTQ5MzEzOTksImp0aSI6IjE0ZjZhNjYyZjI0MTQ4ZTZiZDUyODllZjRkMjMyYTIwIiwidXNlcl9pZCI6M30.z9PcYjmI7lPSDKIFQx2j4BHfmE1sWlYzI9lWUgkXY6c",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{localhost}}/api/salary/",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"api",
+								"salary",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Daily wage",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU0OTQ5Mzk5LCJpYXQiOjE3NTQ5MzEzOTksImp0aSI6IjE0ZjZhNjYyZjI0MTQ4ZTZiZDUyODllZjRkMjMyYTIwIiwidXNlcl9pZCI6M30.z9PcYjmI7lPSDKIFQx2j4BHfmE1sWlYzI9lWUgkXY6c",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"employee\": \"John Doe2\",\r\n    \"date\": \"2024-01-15\",\r\n    \"description\": \"Site work at project A\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{localhost}}/api/salary/daily-wage/",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"api",
+								"salary",
+								"daily-wage",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Monthly wage",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU0OTQ5Mzk5LCJpYXQiOjE3NTQ5MzEzOTksImp0aSI6IjE0ZjZhNjYyZjI0MTQ4ZTZiZDUyODllZjRkMjMyYTIwIiwidXNlcl9pZCI6M30.z9PcYjmI7lPSDKIFQx2j4BHfmE1sWlYzI9lWUgkXY6c",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"employee\": \"Jane typ\",\r\n    \"date\": \"2024-01-01\",\r\n    \"description\": \"January 2024 salary\",\r\n    \"salary_amount\": 50000\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{localhost}}/api/salary/monthly-salary/",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"api",
+								"salary",
+								"monthly-salary",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "View a Salry",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU0OTQ5Mzk5LCJpYXQiOjE3NTQ5MzEzOTksImp0aSI6IjE0ZjZhNjYyZjI0MTQ4ZTZiZDUyODllZjRkMjMyYTIwIiwidXNlcl9pZCI6M30.z9PcYjmI7lPSDKIFQx2j4BHfmE1sWlYzI9lWUgkXY6c",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{localhost}}/api/salary/1/",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"api",
+								"salary",
+								"1",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "edit a salry",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU0OTQ5Mzk5LCJpYXQiOjE3NTQ5MzEzOTksImp0aSI6IjE0ZjZhNjYyZjI0MTQ4ZTZiZDUyODllZjRkMjMyYTIwIiwidXNlcl9pZCI6M30.z9PcYjmI7lPSDKIFQx2j4BHfmE1sWlYzI9lWUgkXY6c",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"employee\": \"Johnnyy Doe2\",\r\n    \"date\": \"2025-01-15\",\r\n    \"description\": \"Site111 work at project A\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{localhost}}/api/salary/1/",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"api",
+								"salary",
+								"1",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete a salry",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU0OTQ5Mzk5LCJpYXQiOjE3NTQ5MzEzOTksImp0aSI6IjE0ZjZhNjYyZjI0MTQ4ZTZiZDUyODllZjRkMjMyYTIwIiwidXNlcl9pZCI6M30.z9PcYjmI7lPSDKIFQx2j4BHfmE1sWlYzI9lWUgkXY6c",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"employee\": \"Johnnyy Doe2\",\r\n    \"date\": \"2025-01-15\",\r\n    \"description\": \"Site111 work at project A\"\r\n}"
+						},
+						"url": {
+							"raw": "{{localhost}}/api/salary/1/",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"api",
+								"salary",
+								"1",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	],
 	"variable": [
