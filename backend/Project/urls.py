@@ -13,7 +13,7 @@ urlpatterns = [
     # Unique Solar Project URLs
     path('unique-solar-projects/', views.UniqueSolarProjectListView.as_view(), name='unique-solar-project-list'),
     path('unique-solar-projects/create/', views.UniqueSolarProjectCreateView.as_view(), name='unique-solar-project-create'),
-    path('unique-solar-projects/<int:pk>/', views.UniqueSolarProjectDetailView.as_view(), name='unique-solar-project-detail'),
+    path('unique-solar-projects/<str:project_id>/', views.UniqueSolarProjectDetailView.as_view(), name='unique-solar-project-detail'),
 
 
 

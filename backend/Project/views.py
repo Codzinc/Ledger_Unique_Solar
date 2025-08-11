@@ -338,21 +338,21 @@ class UniqueSolarProjectDetailView(APIView):
     
     Provides full CRUD operations for individual unique solar projects.
     """
-    def get(self, request, pk):
-        project = get_object_or_404(UniqueSolarProject, pk=pk)
+    def get(self, request, project_id):
+        project = get_object_or_404(UniqueSolarProject, project_id=project_id)
         serializer = UniqueSolarProjectSerializer(project)
         return Response(serializer.data)
     
-    def put(self, request, pk):
-        project = get_object_or_404(UniqueSolarProject, pk=pk)
+    def put(self, request, project_id):
+        project = get_object_or_404(UniqueSolarProject, project_id=project_id)
         serializer = UniqueSolarProjectSerializer(project, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-    def delete(self, request, pk):
-        project = get_object_or_404(UniqueSolarProject, pk=pk)
+    def delete(self, request, project_id):
+        project = get_object_or_404(UniqueSolarProject, project_id=project_id)
         project.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
