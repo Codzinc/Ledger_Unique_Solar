@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     # Third party apps
     'rest_framework',
     'rest_framework_simplejwt',
+    'corsheaders', # CORS headers (hammad)
     
     # Custom apps
     'Product',
@@ -52,6 +53,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',  # added (hammad)
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -158,6 +160,10 @@ REST_FRAMEWORK = {
         'rest_framework.parsers.FormParser',
     ),
 }
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",  # React dev server ka URL (hammad)
+]
 
 # JWT Settings
 from datetime import timedelta
