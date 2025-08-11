@@ -27,16 +27,19 @@ function App() {
 
   const handleTabClick = (label) => {
     setActiveTab(label);
-    setMobileSidebarOpen(false); // Auto-close sidebar on mobile
+    setMobileSidebarOpen(false);
   };
 
-  // Handler for successful login
   const handleLoginSuccess = () => {
     setIsAuthenticated(true);
     setActiveTab("Dashboard");
   };
 
-  // Show SignIn page if not authenticated
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    setActiveTab("Dashboard");
+  };
+
   if (!isAuthenticated) {
     return <SignIn onLoginSuccess={handleLoginSuccess} />;
   }
@@ -51,7 +54,7 @@ function App() {
       {/* Mobile Sidebar Overlay */}
       {mobileSidebarOpen && (
         <div
-          className="fixed inset-0  bg-opacity-40 z-40 md:hidden"
+          className="fixed inset-0 bg-opacity-40 z-40 md:hidden"
           onClick={() => setMobileSidebarOpen(false)}
         />
       )}
@@ -90,7 +93,12 @@ function App() {
           <FaUserCircle className="text-3xl text-[#181829] hover:text-[#d8f276] transition sm:text-4xl" />
         </button>
 
-        <Profile open={profileOpen} onClose={() => setProfileOpen(false)} />
+        <Profile
+          open={profileOpen}
+          onClose={() => setProfileOpen(false)}
+          onLogout={handleLogout}
+        />
+
         {tabComponents[activeTab]}
       </div>
     </div>

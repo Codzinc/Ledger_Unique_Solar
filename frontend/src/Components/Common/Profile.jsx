@@ -3,12 +3,12 @@ import { FaUserCircle } from "react-icons/fa";
 
 const user = {
   name: "John Doe",
-  email: "john.doe@example.com",
+  username: "johndoe", // updated since we now use username
   role: "Administrator",
   avatar: "", // Optional avatar URL
 };
 
-const Profile = ({ open, onClose }) => {
+const Profile = ({ open, onClose, onLogout }) => {
   const sidebarRef = useRef(null);
 
   // Close sidebar on outside click
@@ -30,7 +30,6 @@ const Profile = ({ open, onClose }) => {
 
   return (
     <>
-      {/* Sidebar Panel */}
       <aside
         ref={sidebarRef}
         className={`fixed top-0 right-0 h-full w-full sm:w-[350px] bg-white shadow-xl z-[999] transform transition-transform duration-300 ${
@@ -51,7 +50,7 @@ const Profile = ({ open, onClose }) => {
             )}
             <div>
               <div className="font-bold text-lg text-gray-800">{user.name}</div>
-              <div className="text-sm text-gray-500">{user.email}</div>
+              <div className="text-sm text-gray-500">{user.username}</div>
               <div className="text-xs text-gray-400 mt-1">{user.role}</div>
             </div>
           </div>
@@ -65,17 +64,16 @@ const Profile = ({ open, onClose }) => {
 
         {/* Body Content */}
         <div className="flex-1 p-6 flex flex-col gap-6">
-          <div>
-            <div className="font-semibold text-gray-700 mb-1">About</div>
-            <div className="text-gray-500 text-sm">
-              This is a sample user profile panel. You can add more details
-              here.
-            </div>
-          </div>
-          <div>
-            <div className="font-semibold text-gray-700 mb-1">Settings</div>
-            <button className="mt-2 px-4 py-2 bg-[#d8f276] text-[#181829] rounded-lg font-semibold hover:bg-[#e6fa9c] transition">
-              Edit Profile
+          {/* Logout Button */}
+          <div className="mt-auto">
+            <button
+              onClick={() => {
+                onLogout();
+                onClose();
+              }}
+              className="w-full px-4 py-2 bg-red-500 text-white cursor-pointer rounded-lg font-semibold hover:bg-red-600 transition"
+            >
+              Logout
             </button>
           </div>
         </div>

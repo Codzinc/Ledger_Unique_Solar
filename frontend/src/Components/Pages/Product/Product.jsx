@@ -1,19 +1,18 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import ProductDetail from "./ProductDetail";
 import ProductList from "./ProductList";
 import AddProduct from "./AddProduct";
-
-import { SampleProducts } from "./SampleProducts";
-
+import { deleteProduct } from "../../../ApiComps/Product/ProductList";
 const Product = () => {
-  const [products, setProducts] = useState(SampleProducts);
   const [showAddProduct, setShowAddProduct] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showProductDetail, setShowProductDetail] = useState(false);
-
+  const [isDeleting, setIsDeleting] = useState(false);
+  
+  // Remove productListRef and refresh logic
   const handleAddProduct = (newProduct) => {
-    setProducts([...products, newProduct]);
     setShowAddProduct(false);
+    // No manual refresh needed; rely on state updates/props
   };
 
   const handleViewProduct = (product) => {
@@ -27,43 +26,65 @@ const Product = () => {
     setShowAddProduct(true);
   };
 
-  const handleDeleteProduct = (productId) => {
+  const handleDeleteProduct = async (productId) => {
     if (window.confirm("Are you sure you want to delete this product?")) {
-      setProducts(products.filter((product) => product.id !== productId));
+      setIsDeleting(true);
+      const result = await deleteProduct(productId);
+      if (result.success) {
+        // Close product detail modal if the deleted product was being viewed
+        if (selectedProduct && selectedProduct.id === productId) {
+          setShowProductDetail(false);
+          setSelectedProduct(null);
+        }
+        alert("Product deleted successfully!");
+      } else {
+        alert(`Failed to delete product: ${result.error}`);
+      }
+      setIsDeleting(false);
     }
   };
 
-  const getNextSrNo = () => {
-    return products.length > 0
-      ? Math.max(...products.map((p) => p.srNo)) + 1
-      : 1;
+  const handleProductUpdated = () => {
+    setShowAddProduct(false);
+    setShowProductDetail(false);
+    setSelectedProduct(null);
   };
 
   return (
     <div className="">
       {/* Main Content */}
       <ProductList
-        products={products}
         onViewProduct={handleViewProduct}
         onEditProduct={handleEditProduct}
         onDeleteProduct={handleDeleteProduct}
         onAddProduct={() => setShowAddProduct(true)}
+        isDeleting={isDeleting}
       />
 
       {/* Modals */}
       {showAddProduct && (
         <AddProduct
+          product={selectedProduct} // Pass selected product for editing
           onAddProduct={handleAddProduct}
-          onClose={() => setShowAddProduct(false)}
-          nextSrNo={getNextSrNo()}
+          onProductUpdated={handleProductUpdated}
+          onClose={() => {
+            setShowAddProduct(false);
+            setSelectedProduct(null);
+          }}
+          isEdit={!!selectedProduct}
         />
       )}
 
       {showProductDetail && selectedProduct && (
         <ProductDetail
           product={selectedProduct}
-          onClose={() => setShowProductDetail(false)}
+          onClose={() => {
+            setShowProductDetail(false);
+            setSelectedProduct(null);
+          }}
           onEdit={handleEditProduct}
+          onDelete={handleDeleteProduct}
+          onProductUpdated={handleProductUpdated}
         />
       )}
     </div>
