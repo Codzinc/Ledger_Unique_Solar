@@ -1,4 +1,3 @@
-from re import T
 from django.db import models
 from django.core.exceptions import ValidationError
 from Authentication.models import CustomUser
