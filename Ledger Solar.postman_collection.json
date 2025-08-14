@@ -144,6 +144,43 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Get all users",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU0OTQ5Mzk5LCJpYXQiOjE3NTQ5MzEzOTksImp0aSI6IjE0ZjZhNjYyZjI0MTQ4ZTZiZDUyODllZjRkMjMyYTIwIiwidXNlcl9pZCI6M30.z9PcYjmI7lPSDKIFQx2j4BHfmE1sWlYzI9lWUgkXY6c",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{localhost}}/api/auth/users/",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"users",
+								""
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -792,7 +829,7 @@
 									"bearer": [
 										{
 											"key": "token",
-											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUzODEyODIyLCJpYXQiOjE3NTM3OTQ4MjIsImp0aSI6IjUwOTU1MmYwMGRkODQ4MmQ5OTM2Njc2ZTI3Njg0MDZjIiwidXNlcl9pZCI6IjEifQ.4g_yMQ_xao2madQAZ6LkQEpJKA7LsmNTN1gdel1THUw",
+											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU0OTU1OTUwLCJpYXQiOjE3NTQ5Mzc5NTAsImp0aSI6ImZjYjk3ZjAyYTA1NjRjN2Y4MThjODk3ZWExNGJkOWMxIiwidXNlcl9pZCI6IjMifQ.XZ_-SXRqF0dMZN_t3yHZhwAar8TcGsBgL0YEocBDAu0",
 											"type": "string"
 										}
 									]
@@ -960,6 +997,77 @@
 								}
 							},
 							"response": []
+						},
+						{
+							"name": "Edit a project",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU0OTU1OTUwLCJpYXQiOjE3NTQ5Mzc5NTAsImp0aSI6ImZjYjk3ZjAyYTA1NjRjN2Y4MThjODk3ZWExNGJkOWMxIiwidXNlcl9pZCI6IjMifQ.XZ_-SXRqF0dMZN_t3yHZhwAar8TcGsBgL0YEocBDAu0",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n\"customer_name\": \"tyson2\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{localhost}}/api/project/unique-solar-projects/US-2025-0003/",
+									"host": [
+										"{{localhost}}"
+									],
+									"path": [
+										"api",
+										"project",
+										"unique-solar-projects",
+										"US-2025-0003",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete a project",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU0OTU1OTUwLCJpYXQiOjE3NTQ5Mzc5NTAsImp0aSI6ImZjYjk3ZjAyYTA1NjRjN2Y4MThjODk3ZWExNGJkOWMxIiwidXNlcl9pZCI6IjMifQ.XZ_-SXRqF0dMZN_t3yHZhwAar8TcGsBgL0YEocBDAu0",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{localhost}}/api/project/unique-solar-projects/US-2025-0003/",
+									"host": [
+										"{{localhost}}"
+									],
+									"path": [
+										"api",
+										"project",
+										"unique-solar-projects",
+										"US-2025-0003",
+										""
+									]
+								}
+							},
+							"response": []
 						}
 					]
 				},
@@ -1070,6 +1178,151 @@
 			"name": "Salsry",
 			"item": [
 				{
+					"name": "Advance Salary",
+					"item": [
+						{
+							"name": "Get all Advances details",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU1MDAzMTczLCJpYXQiOjE3NTQ5ODUxNzMsImp0aSI6ImJjMWVjNjk1M2Q4YTQ1MjViOWE1ODlhYTI0NWI4MjRkIiwidXNlcl9pZCI6IjEifQ.AoOIG-PPg7KmQ63wJgFw2WN6xg1G8yg0r_7zOAWodb0",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{localhost}}/api/salary/advance/",
+									"host": [
+										"{{localhost}}"
+									],
+									"path": [
+										"api",
+										"salary",
+										"advance",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "create a advance salary",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU1MDAzMTczLCJpYXQiOjE3NTQ5ODUxNzMsImp0aSI6ImJjMWVjNjk1M2Q4YTQ1MjViOWE1ODlhYTI0NWI4MjRkIiwidXNlcl9pZCI6IjEifQ.AoOIG-PPg7KmQ63wJgFw2WN6xg1G8yg0r_7zOAWodb0",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"employee\": \"Jane typ\",\r\n    \"date\": \"2023-11-01\",\r\n    \"description\": \"advanceJanuary 2023 salary\",\r\n    \"advance_taken\": 3200,\r\n    \"purpose\":\"emergency\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{localhost}}/api/salary/advance/",
+									"host": [
+										"{{localhost}}"
+									],
+									"path": [
+										"api",
+										"salary",
+										"advance",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Edit an advance id",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU1MDAzMTczLCJpYXQiOjE3NTQ5ODUxNzMsImp0aSI6ImJjMWVjNjk1M2Q4YTQ1MjViOWE1ODlhYTI0NWI4MjRkIiwidXNlcl9pZCI6IjEifQ.AoOIG-PPg7KmQ63wJgFw2WN6xg1G8yg0r_7zOAWodb0",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"employee\": \"Jane typ\",\r\n    \"date\": \"2023-11-01\",\r\n    \"description\": \"advanceJanuary 2023 salary\",\r\n    \"advance_taken\": 1200,\r\n    \"purpose\":\"emergency\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{localhost}}/api/salary/advance/1/",
+									"host": [
+										"{{localhost}}"
+									],
+									"path": [
+										"api",
+										"salary",
+										"advance",
+										"1",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete an advance salary",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU1MDAzMTczLCJpYXQiOjE3NTQ5ODUxNzMsImp0aSI6ImJjMWVjNjk1M2Q4YTQ1MjViOWE1ODlhYTI0NWI4MjRkIiwidXNlcl9pZCI6IjEifQ.AoOIG-PPg7KmQ63wJgFw2WN6xg1G8yg0r_7zOAWodb0",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{localhost}}/api/salary/advance/1/",
+									"host": [
+										"{{localhost}}"
+									],
+									"path": [
+										"api",
+										"salary",
+										"advance",
+										"1",
+										""
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
 					"name": "Get all salaries",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true
@@ -1080,7 +1333,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU0OTQ5Mzk5LCJpYXQiOjE3NTQ5MzEzOTksImp0aSI6IjE0ZjZhNjYyZjI0MTQ4ZTZiZDUyODllZjRkMjMyYTIwIiwidXNlcl9pZCI6M30.z9PcYjmI7lPSDKIFQx2j4BHfmE1sWlYzI9lWUgkXY6c",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU1MDAzMTczLCJpYXQiOjE3NTQ5ODUxNzMsImp0aSI6ImJjMWVjNjk1M2Q4YTQ1MjViOWE1ODlhYTI0NWI4MjRkIiwidXNlcl9pZCI6IjEifQ.AoOIG-PPg7KmQ63wJgFw2WN6xg1G8yg0r_7zOAWodb0",
 									"type": "string"
 								}
 							]
