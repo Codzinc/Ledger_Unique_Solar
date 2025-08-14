@@ -16,7 +16,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"username\": \"john_doe2\",\r\n//   \"email\": \"john.doe@example.com\",\r\n  \"password\": \"SecurePassword123!\",\r\n  \"password2\": \"SecurePassword123!\",\r\n  \"first_name\": \"John\",\r\n  \"last_name\": \"Doe\"\r\n}",
+							"raw": "{\r\n  \"username\": \"abc\",\r\n//   \"email\": \"john.doe@example.com\",\r\n  \"password\": \"abc\",\r\n  \"password2\": \"abc\",\r\n  \"first_name\": \"John\",\r\n  \"last_name\": \"Doe\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1541,6 +1541,214 @@
 								"salary",
 								"1",
 								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Dashboard",
+			"item": [
+				{
+					"name": "Data view yearly",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU1MTY4ODE2LCJpYXQiOjE3NTUxNTA4MTYsImp0aSI6IjAxYjQ4MzZiYmQ1MjRhNmI4Y2ExOWZhOGNiNTE3YzI3IiwidXNlcl9pZCI6IjQifQ.CKhjCCVn343wWik_6-5awSIVaoYInQsRNriUZC27M20",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"username\": \"abc\",\r\n//   \"email\": \"john.doe@example.com\",\r\n  \"password\": \"abc\",\r\n  \"password2\": \"abc\",\r\n  \"first_name\": \"John\",\r\n  \"last_name\": \"Doe\"\r\n}"
+						},
+						"url": {
+							"raw": "{{localhost}}/api/dashboard/data/?year=2025",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"api",
+								"dashboard",
+								"data",
+								""
+							],
+							"query": [
+								{
+									"key": "year",
+									"value": "2025"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Summary view",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU1MTY4ODE2LCJpYXQiOjE3NTUxNTA4MTYsImp0aSI6IjAxYjQ4MzZiYmQ1MjRhNmI4Y2ExOWZhOGNiNTE3YzI3IiwidXNlcl9pZCI6IjQifQ.CKhjCCVn343wWik_6-5awSIVaoYInQsRNriUZC27M20",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"username\": \"abc\",\r\n//   \"email\": \"john.doe@example.com\",\r\n  \"password\": \"abc\",\r\n  \"password2\": \"abc\",\r\n  \"first_name\": \"John\",\r\n  \"last_name\": \"Doe\"\r\n}"
+						},
+						"url": {
+							"raw": "{{localhost}}/api/dashboard/summary/?year=2024",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"api",
+								"dashboard",
+								"summary",
+								""
+							],
+							"query": [
+								{
+									"key": "year",
+									"value": "2024"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Data view monthly",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU1MTY4ODE2LCJpYXQiOjE3NTUxNTA4MTYsImp0aSI6IjAxYjQ4MzZiYmQ1MjRhNmI4Y2ExOWZhOGNiNTE3YzI3IiwidXNlcl9pZCI6IjQifQ.CKhjCCVn343wWik_6-5awSIVaoYInQsRNriUZC27M20",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"username\": \"abc\",\r\n//   \"email\": \"john.doe@example.com\",\r\n  \"password\": \"abc\",\r\n  \"password2\": \"abc\",\r\n  \"first_name\": \"John\",\r\n  \"last_name\": \"Doe\"\r\n}"
+						},
+						"url": {
+							"raw": "{{localhost}}/api/dashboard/daily/?month=8&year=2025",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"api",
+								"dashboard",
+								"daily",
+								""
+							],
+							"query": [
+								{
+									"key": "month",
+									"value": "8"
+								},
+								{
+									"key": "year",
+									"value": "2025"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Finnacial summary",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU1MTY4ODE2LCJpYXQiOjE3NTUxNTA4MTYsImp0aSI6IjAxYjQ4MzZiYmQ1MjRhNmI4Y2ExOWZhOGNiNTE3YzI3IiwidXNlcl9pZCI6IjQifQ.CKhjCCVn343wWik_6-5awSIVaoYInQsRNriUZC27M20",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{localhost}}/api/dashboard/financial/",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"api",
+								"dashboard",
+								"financial",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Zrorat",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU1MTY4ODE2LCJpYXQiOjE3NTUxNTA4MTYsImp0aSI6IjAxYjQ4MzZiYmQ1MjRhNmI4Y2ExOWZhOGNiNTE3YzI3IiwidXNlcl9pZCI6IjQifQ.CKhjCCVn343wWik_6-5awSIVaoYInQsRNriUZC27M20",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{localhost}}/api/dashboard/zarorrat/?year=2024&month=12",
+							"host": [
+								"{{localhost}}"
+							],
+							"path": [
+								"api",
+								"dashboard",
+								"zarorrat",
+								""
+							],
+							"query": [
+								{
+									"key": "year",
+									"value": "2024"
+								},
+								{
+									"key": "month",
+									"value": "12"
+								}
 							]
 						}
 					},

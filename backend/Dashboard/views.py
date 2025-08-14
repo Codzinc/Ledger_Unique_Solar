@@ -270,7 +270,6 @@ class FinancialSummaryView(APIView):
             year = int(request.query_params.get('year', timezone.now().year))
             month = int(request.query_params.get('month', timezone.now().month))
             
-            # Get products with error handling
             try:
                 products = Product.objects.filter(
                     date__year=year,
@@ -285,7 +284,6 @@ class FinancialSummaryView(APIView):
                 total_cost = 0
                 product_profit = 0
             
-            # Get projects with error handling
             try:
                 zarorrat = ZarorratProject.objects.filter(
                     date__year=year,
@@ -300,7 +298,6 @@ class FinancialSummaryView(APIView):
                 print(f"Project query error: {e}")
                 project_amount = 0
             
-            # Get expenses with error handling
             try:
                 expenses = Expense.objects.filter(
                     date__year=year,
@@ -308,7 +305,6 @@ class FinancialSummaryView(APIView):
                 )
                 total_expenses = sum(float(e.amount) for e in expenses)
             except Exception as e:
-                # Handle case where Expense model fields might not match database
                 print(f"Expense query error: {e}")
                 total_expenses = 0
             
@@ -327,6 +323,73 @@ class FinancialSummaryView(APIView):
                     'total_expenses': round(total_expenses, 2),
                     'total_profit': round(total_profit, 2)
                 }
+            })
+            
+        except Exception as e:
+            return Response({
+                'success': False,
+                'error': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class ZarorratProfitView(APIView):
+    """
+    API endpoint to get Zarorrat project profit data (monthly and daily)
+    """
+    
+    def get(self, request):
+        try:
+            year = int(request.query_params.get('year', timezone.now().year))
+            month = int(request.query_params.get('month', timezone.now().month))
+            
+            yearly_projects = ZarorratProject.objects.filter(date__year=year)
+            
+            monthly_data = []
+            for m in range(1, 13):
+                month_projects = yearly_projects.filter(date__month=m)
+                month_profit = sum(float(p.amount) for p in month_projects)
+                monthly_data.append({
+                    'month': m,
+                    'month_name': datetime(year, m, 1).strftime('%b'),
+                    'profit': round(month_profit, 2),
+                    'project_count': month_projects.count()
+                })
+            
+            daily_data = []
+            month_projects = yearly_projects.filter(date__month=month)
+            
+            import calendar
+            num_days = calendar.monthrange(year, month)[1]
+            
+            daily_profits = {}
+            for project in month_projects:
+                day = project.date.day
+                daily_profits[day] = daily_profits.get(day, 0) + float(project.amount)
+            
+            for day in range(1, num_days + 1):
+                daily_data.append({
+                    'day': day,
+                    'profit': round(daily_profits.get(day, 0), 2)
+                })
+            
+            total_yearly_profit = sum(item['profit'] for item in monthly_data)
+            total_monthly_profit = sum(item['profit'] for item in daily_data)
+            total_projects = yearly_projects.count()
+            month_projects_count = month_projects.count()
+            
+            return Response({
+                'success': True,
+                'year': year,
+                'month': month,
+                'month_name': datetime(year, month, 1).strftime('%B'),
+                'summary': {
+                    'total_yearly_profit': round(total_yearly_profit, 2),
+                    'total_monthly_profit': round(total_monthly_profit, 2),
+                    'total_projects': total_projects,
+                    'month_projects': month_projects_count
+                },
+                'monthly_data': monthly_data,
+                'daily_data': daily_data
             })
             
         except Exception as e:
