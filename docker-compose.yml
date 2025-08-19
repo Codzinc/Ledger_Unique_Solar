@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  #Django web service
+  backend:
+    build: .
+    ports:
+      - "8000:8000"
+      - "5173:5173"
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+
+
+
+  #Database service
+  db:
+    image: postgres:15
+    container_name: ledger-solar-db
+    environment:
+      - POSTGRES_DB=ledger_solar
+      - POSTGRES_USER=ledger_user
+      - POSTGRES_PASSWORD=ledger_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+volumes:
+  postgres_data:
