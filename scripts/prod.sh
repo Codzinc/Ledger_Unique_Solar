@@ -9,12 +9,16 @@ sleep 10
 
 # Start React frontend in the background (build and serve)
 echo "Building and starting React frontend..."
-cd /app/frontend && npm run build && npm run preview &
+cd /app/frontend && npm run build 
+
+
+# Copy build output to Django static files
+echo "Copying React build to Django static files..."
+cp -r /app/frontend/dist/* /app/backend/static/
 
 # Wait a moment for React to start
 sleep 5
 
-# Go back to app root
 cd /app
 
 # Run database migrations

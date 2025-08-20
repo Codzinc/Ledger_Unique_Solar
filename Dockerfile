@@ -31,8 +31,8 @@ RUN pip install --no-cache-dir -r backend/requirements.txt
 WORKDIR /app/frontend
 
 # Clean install with proper flags
-RUN rm -rf node_modules package-lock.json
-RUN npm install --no-audit --no-fund --verbose
+# RUN rm -rf node_modules package-lock.json
+RUN npm install --no-audit --no-fund --verbose --include=dev
 
 # Verify vite is installed and show the bin directory
 RUN ls -la node_modules/.bin/

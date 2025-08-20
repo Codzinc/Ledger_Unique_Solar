@@ -8,7 +8,7 @@ echo "Starting Django development server..."
 
 # Start React frontend in the background
 echo "Starting React development server on port 5173..."
-cd /app/frontend && npm run dev &
+cd /app/frontend && npm run dev -- --host 0.0.0.0 &
 
 
 # Wait a moment for React to start
