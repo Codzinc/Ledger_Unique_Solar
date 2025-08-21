@@ -1,6 +1,5 @@
-import { useState } from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import SignIn from "./Components/Common/Auth/SignIn";
-import "./App.css";
 import SideBar from "./Components/Pages/SideBar/SideBar";
 import Dashboard from "./Components/Pages/Dashboard/Dashboard";
 import Product from "./Components/Pages/Product/Product";
@@ -10,51 +9,25 @@ import Salary from "./Components/Pages/Salaries/Salary";
 import Profile from "./Components/Common/Profile";
 import { FaUserCircle } from "react-icons/fa";
 import { HiMenuAlt3 } from "react-icons/hi";
+import { AuthProvider, useAuth } from "./Components/Common/Auth/AuthProvider";
+import { useState } from "react";
 
-const tabComponents = {
-  Dashboard: <Dashboard />, 
-  Product: <Product />, 
-  Project: <Project />, 
-  Expense: <Expense />, 
-  Salary: <Salary />,
-};
-
-function App() {
-  const [activeTab, setActiveTab] = useState("Dashboard");
+function Layout() {
   const [profileOpen, setProfileOpen] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  const handleTabClick = (label) => {
-    setActiveTab(label);
-    setMobileSidebarOpen(false);
-  };
-
-  const handleLoginSuccess = () => {
-    setIsAuthenticated(true);
-    setActiveTab("Dashboard");
-  };
-
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    setActiveTab("Dashboard");
-  };
-
-  if (!isAuthenticated) {
-    return <SignIn onLoginSuccess={handleLoginSuccess} />;
-  }
+  const { logout } = useAuth();
 
   return (
     <div className="flex min-h-screen bg-[#f6f7fb] relative">
       {/* Desktop Sidebar */}
       <div className="hidden md:block w-[250px]">
-        <SideBar activeTab={activeTab} setActiveTab={handleTabClick} />
+        <SideBar />
       </div>
 
       {/* Mobile Sidebar Overlay */}
       {mobileSidebarOpen && (
         <div
-          className="fixed inset-0 bg-opacity-40 z-40 md:hidden"
+          className="fixed inset-0 bg-black bg-opacity-40 z-40 md:hidden"
           onClick={() => setMobileSidebarOpen(false)}
         />
       )}
@@ -65,7 +38,7 @@ function App() {
           mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <SideBar activeTab={activeTab} setActiveTab={handleTabClick} />
+        <SideBar onLinkClick={() => setMobileSidebarOpen(false)} />
       </div>
 
       {/* Main Content */}
@@ -93,16 +66,49 @@ function App() {
           <FaUserCircle className="text-3xl text-[#181829] hover:text-[#d8f276] transition sm:text-4xl" />
         </button>
 
+        {/* Profile Panel */}
         <Profile
           open={profileOpen}
           onClose={() => setProfileOpen(false)}
-          onLogout={handleLogout}
+          onLogout={logout}
         />
 
-        {tabComponents[activeTab]}
+        {/* Page Content */}
+        <Routes>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/products" element={<Product />} />
+          <Route path="/projects" element={<Project />} />
+          <Route path="/expenses" element={<Expense />} />
+          <Route path="/salaries" element={<Salary />} />
+          {/* Default redirect ONLY for "/" */}
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="*" element={<h1>404 - Page Not Found</h1>} />
+        </Routes>
       </div>
     </div>
   );
 }
 
-export default App;
+function App() {
+  const { isAuthenticated } = useAuth();
+
+  return (
+    <Router>
+      {isAuthenticated ? (
+        <Layout />
+      ) : (
+        <Routes>
+          <Route path="*" element={<SignIn />} />
+        </Routes>
+      )}
+    </Router>
+  );
+}
+
+export default function RootApp() {
+  return (
+    <AuthProvider>
+      <App />
+    </AuthProvider>
+  );
+}

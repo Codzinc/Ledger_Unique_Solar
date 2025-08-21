@@ -1,21 +1,22 @@
 import React, { useState } from "react";
-import { loginUser } from "../../../ApiComps/Auth/SignIn";
 import { toast } from "react-toastify";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { useAuth } from "./AuthProvider";
 
-export default function SignIn({ onLoginSuccess }) {
+export default function SignIn() {
   const [formData, setFormData] = useState({ username: "", password: "" });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const { login } = useAuth();
 
- const validate = () => {
+  const validate = () => {
     let newErrors = {};
     if (!formData.username.trim()) newErrors.username = "Username is required";
     if (!formData.password.trim()) newErrors.password = "Password is required";
-
     if (Object.keys(newErrors).length > 0) {
       toast.error("Please fill all required fields");
     }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -28,15 +29,10 @@ export default function SignIn({ onLoginSuccess }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
-
     setLoading(true);
     try {
-      const data = await loginUser(formData);
-      localStorage.setItem("access", data.access);
-      localStorage.setItem("refresh", data.refresh);
-
+      const data = await login(formData);
       toast.success(`Welcome ${data.user?.first_name || "User"}!`);
-      if (onLoginSuccess) onLoginSuccess();
     } catch (err) {
       toast.error("Invalid username or password");
       setErrors({ general: "Invalid username or password" });
@@ -50,11 +46,9 @@ export default function SignIn({ onLoginSuccess }) {
         <h2 className="text-2xl font-bold text-center mb-6 text-[#d8f276]">
           Sign In
         </h2>
-
-      {errors.general && (
+        {errors.general && (
           <p className="text-red-500 text-sm mb-4">{errors.general}</p>
         )}
-
         <form onSubmit={handleSubmit} noValidate>
           {/* Username Field */}
           <div className="mb-4">
@@ -80,12 +74,12 @@ export default function SignIn({ onLoginSuccess }) {
           </div>
 
           {/* Password Field */}
-          <div className="mb-6">
+          <div className="mb-6 relative">
             <label className="block text-sm font-medium mb-1 text-[#d8f276]">
               Password
             </label>
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               name="password"
               value={formData.password}
               onChange={handleChange}
@@ -97,6 +91,12 @@ export default function SignIn({ onLoginSuccess }) {
                   : "border-gray-300 focus:ring-blue-400"
               }`}
             />
+            <span
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-9 cursor-pointer text-gray-500"
+            >
+              {showPassword ? <FaEyeSlash /> : <FaEye />}
+            </span>
             {errors.password && (
               <p className="text-red-500 text-xs mt-1">{errors.password}</p>
             )}
@@ -115,3 +115,4 @@ export default function SignIn({ onLoginSuccess }) {
     </div>
   );
 }
+        

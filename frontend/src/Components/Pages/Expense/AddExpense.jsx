@@ -49,14 +49,10 @@ const AddExpense = ({
     const file = e.target.files[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setFormData((prev) => ({
-        ...prev,
-        receiptImage: reader.result,
-      }));
-    };
-    reader.readAsDataURL(file);
+    setFormData((prev) => ({
+      ...prev,
+      receiptImage: file, // File object store karna hai, base64 nahi
+    }));
   };
 
   const validateForm = () => {
@@ -78,7 +74,7 @@ const AddExpense = ({
     if (!validateForm()) return;
 
     setLoading(true);
-    
+
     try {
       const expenseData = {
         id: editExpense?.id || Date.now().toString(),
@@ -94,7 +90,7 @@ const AddExpense = ({
 
       await onAddExpense(expenseData, editExpense ? "edit" : "add");
     } catch (error) {
-      console.error('Error saving expense:', error);
+      console.error("Error saving expense:", error);
     } finally {
       setLoading(false);
     }
@@ -253,7 +249,7 @@ const AddExpense = ({
               {formData.receiptImage && (
                 <div className="mt-2">
                   <img
-                    src={formData.receiptImage}
+                    src={URL.createObjectURL(formData.receiptImage)}
                     alt="Receipt Preview"
                     className="h-24 object-contain rounded-md border"
                   />
@@ -296,12 +292,11 @@ const AddExpense = ({
               ) : (
                 <Plus className="w-4 h-4" />
               )}
-              {loading 
-                ? 'Saving...' 
-                : editExpense 
-                ? "Update Expense" 
-                : "Add Expense"
-              }
+              {loading
+                ? "Saving..."
+                : editExpense
+                ? "Update Expense"
+                : "Add Expense"}
             </button>
           </div>
         </form>

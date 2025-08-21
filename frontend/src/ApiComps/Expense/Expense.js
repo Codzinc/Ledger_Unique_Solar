@@ -12,16 +12,30 @@ class ExpenseService {
   }
 
   async createExpense(expenseData) {
-    try {
-      const apiData = this.mapUIToAPI(expenseData);
-      console.log('Creating expense with data:', apiData);  // Debug log
-      const response = await api.post('/expense/', apiData);
-      return response.data;
-    } catch (error) {
-      console.error('Error creating expense:', error.response?.data || error.message);
-      throw new Error(error.response?.data?.message || 'Failed to create expense');
-    }
+  try {
+    const apiData = this.mapUIToAPI(expenseData);
+
+    // JSON -> FormData
+    const formData = new FormData();
+    Object.keys(apiData).forEach(key => {
+      if (apiData[key] !== null && apiData[key] !== undefined) {
+        formData.append(key, apiData[key]);
+      }
+    });
+
+    const response = await api.post('/expense/', formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error('Error creating expense:', error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || 'Failed to create expense');
   }
+}
+
 
   async updateExpense(id, expenseData) {
     try {
@@ -46,23 +60,23 @@ class ExpenseService {
   }
 
   mapUIToAPI(uiData) {
-    return {
-      title: uiData.title,
-      category: uiData.category,
-      utilizer: uiData.utilizer,  // Ensure utilizer is included
-      amount: parseFloat(uiData.amount).toString(),
-      date: uiData.date,
-      description: uiData.description || '',
-      image1: uiData.receiptImage || null,
-      // Keep other image fields as null
-      image2: null,
-      image3: null,
-      image4: null,
-      image5: null,
-      image6: null,
-      image7: null,
-    };
-  }
+  return {
+    title: uiData.title,
+    category: uiData.category,
+    utilizer: uiData.utilizer,
+    amount: parseFloat(uiData.amount).toString(),
+    date: uiData.date,
+    description: uiData.description || '',
+    image1: uiData.receiptImage || null,  // yahan File hona chahiye
+    image2: null,
+    image3: null,
+    image4: null,
+    image5: null,
+    image6: null,
+    image7: null,
+  };
+}
+
 
   mapAPIToUI(apiData, index = 0) {
     return {
