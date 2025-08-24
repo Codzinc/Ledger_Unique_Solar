@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { getZarorratData } from "../../../ApiComps/Dasbhoard/zarorratService";
 import {
   LineChart,
   Line,
@@ -9,37 +10,58 @@ import {
   CartesianGrid,
 } from "recharts";
 
-const atpData = [
-  { name: "Jan", payment: 4000 },
-  { name: "Feb", payment: 3000 },
-  { name: "Mar", payment: 5000 },
-  { name: "Apr", payment: 3500 },
-  { name: "May", payment: 6000 },
-  { name: "Jun", payment: 4500 },
-  { name: "Jul", payment: 7000 },
-  { name: "Aug", payment: 6500 },
-  { name: "Sep", payment: 8000 },
-  { name: "Oct", payment: 7500 },
-  { name: "Nov", payment: 9000 },
-  { name: "Dec", payment: 8500 },
-];
-
-const mpData = [
-  { name: "1 Jul", payment: 500 },
-  { name: "2 Jul", payment: 700 },
-  { name: "3 Jul", payment: 1200 },
-  { name: "4 Jul", payment: 900 },
-  { name: "5 Jul", payment: 1400 },
-  { name: "6 Jul", payment: 1000 },
-  { name: "7 Jul", payment: 1600 },
-];
-
 const Zarorrat = () => {
   const [mode, setMode] = useState("ATP");
-  const handleToggle = () => setMode((prev) => (prev === "ATP" ? "MP" : "ATP"));
+  const [data, setData] = useState({ monthly_data: [], daily_data: [] });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const chartData = mode === "ATP" ? atpData : mpData;
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const date = new Date();
+        const response = await getZarorratData(
+          date.getFullYear(),
+          date.getMonth() + 1
+        );
+
+        const monthlyData = response.monthly_data.map((item) => ({
+          name: item.month_name,
+          payment: item.profit,
+        }));
+
+        const dailyData = response.daily_data.map((item) => ({
+          name: `${item.day} ${response.month_name}`,
+          payment: item.profit,
+        }));
+
+        setData({ monthly_data: monthlyData, daily_data: dailyData });
+      } catch (err) {
+        setError("Failed to fetch data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const handleToggle = () => setMode((prev) => (prev === "ATP" ? "MP" : "ATP"));
+  const chartData = mode === "ATP" ? data.monthly_data : data.daily_data;
   const chartLabel = mode === "ATP" ? "All Time Payments" : "Monthly Payments";
+
+  if (loading)
+    return (
+      <div className="bg-white rounded-xl shadow-md p-6 w-full max-w-4xl mx-auto">
+        Loading...
+      </div>
+    );
+  if (error)
+    return (
+      <div className="bg-white rounded-xl shadow-md p-6 w-full max-w-4xl mx-auto">
+        {error}
+      </div>
+    );
 
   return (
     <div className="bg-white rounded-xl shadow-md p-6 w-full max-w-4xl mx-auto">

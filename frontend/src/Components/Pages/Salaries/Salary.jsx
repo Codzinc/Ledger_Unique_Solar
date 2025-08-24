@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { salaryApi } from "../../../ApiComps/Salary/AddSalary";
 import { SampleSalaries } from "./SampleSalaries";
 import SalaryHeader from "./SalaryHeader";
 import SalaryStats from "./SalaryStats";
@@ -17,6 +18,25 @@ const SalaryContent = () => {
   const [selectedSalary, setSelectedSalary] = useState(null);
   const [dateFilter, setDateFilter] = useState("");
   const [salaries, setSalaries] = useState(SampleSalaries);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetchSalaries();
+  }, []);
+
+  const fetchSalaries = async () => {
+    try {
+      setLoading(true);
+      const response = await salaryApi.getAllSalaries();
+      setSalaries(response.results);
+    } catch (err) {
+      setError("Failed to fetch salaries");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const stats = {
     totalEmployees: salaries.length,
@@ -64,57 +84,51 @@ const SalaryContent = () => {
     setShowSalaryForm(true);
   };
 
-  const handleDeleteSalary = (salaryId) => {
+  const handleDeleteSalary = async (salaryId) => {
     if (window.confirm("Are you sure you want to delete this salary record?")) {
-      setSalaries(salaries.filter((salary) => salary.id !== salaryId));
-      setSelectedSalary(null);
-      setSelectedWageType("");
+      try {
+        await salaryApi.deleteSalary(salaryId);
+        await fetchSalaries();
+        setSelectedSalary(null);
+        setSelectedWageType("");
+      } catch (err) {
+        console.error(err);
+        alert("Failed to delete salary record");
+      }
     }
   };
 
-  const handleSalarySubmit = (formData) => {
-    if (selectedSalary) {
-      // Preserve existing wages/advances when updating
-      const existingData = salaries.find((s) => s.id === selectedSalary.id);
-      const updatedData = {
+  const handleSalarySubmit = async (formData) => {
+    try {
+      let response;
+      // Format the data according to API requirements
+      const apiData = {
         ...formData,
-        id: selectedSalary.id,
-        wages: existingData.wages || [],
-        advances: existingData.advances || [],
-        salary:
-          formData.salary !== undefined
-            ? formData.salary
-            : existingData.salary || 0,
-        baseSalary:
-          formData.baseSalary !== undefined
-            ? formData.baseSalary
-            : existingData.baseSalary || 0,
-        totalAdvance:
-          formData.totalAdvance !== undefined
-            ? formData.totalAdvance
-            : existingData.totalAdvance || 0,
-        remainingSalary:
-          formData.remainingSalary !== undefined
-            ? formData.remainingSalary
-            : existingData.remainingSalary || 0,
-        lastUpdated: new Date().toISOString(),
+        date: formData.date || `${formData.month}-01`, // Ensure date is in YYYY-MM-DD format
+        salary_amount: parseFloat(formData.salary_amount) || 0,
+        total_advance_taken: parseFloat(formData.total_advance_taken) || 0,
+        remaining_salary: parseFloat(formData.remaining_salary) || parseFloat(formData.salary_amount) || 0,
+        status: formData.status || "Active",
+        month: formData.month || formData.date?.substring(0, 7) // Ensure month is in YYYY-MM format
       };
-      setSalaries(
-        salaries.map((salary) =>
-          salary.id === selectedSalary.id ? updatedData : salary
-        )
-      );
-    } else {
-      setSalaries([
-        ...salaries,
-        {
-          ...formData,
-          id: Date.now().toString(),
-          lastUpdated: new Date().toISOString(),
-        },
-      ]);
+
+      if (formData.wage_type === "Daily") {
+        response = await salaryApi.createDailyWage(apiData);
+      } else {
+        response = await salaryApi.createMonthlySalary(apiData);
+      }
+      
+      if (response.data) {
+        await fetchSalaries();
+        handleBackToSalaries();
+      }
+    } catch (err) {
+      console.error('API Error:', err.response?.data || err);
+      const errorMessage = err.response?.data?.message || 
+                        Object.values(err.response?.data || {})[0]?.[0] ||
+                        'Failed to create salary record';
+      alert(errorMessage);
     }
-    handleBackToSalaries();
   };
 
   // Card update handler for wage/advance changes
@@ -130,6 +144,22 @@ const SalaryContent = () => {
   const handleDateFilterChange = (date) => {
     setDateFilter(date);
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        Loading...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-red-500">
+        {error}
+      </div>
+    );
+  }
 
   if (showSalaryForm) {
     return (

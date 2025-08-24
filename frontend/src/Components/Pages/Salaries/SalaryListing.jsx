@@ -2,74 +2,117 @@ import React, { useState } from "react";
 import { MoreVertical, Eye, Edit2, Trash2, DollarSign } from "lucide-react";
 
 const SalaryListing = ({
-  salaries,
-  searchTerm,
-  dateFilter,
+  salaries = [], // Add default empty array
+  searchTerm = "",
+  dateFilter = "",
   onViewSalary,
   onEditSalary,
   onDeleteSalary,
 }) => {
   const [activeDropdown, setActiveDropdown] = useState(null);
 
-  // Filter salaries by search term and month
+  // Add null checks for salary properties
   const filteredSalaries = salaries.filter((salary) => {
+    if (!salary) return false;
+
+    const employeeName = salary.employeeName || salary.employee || "";
+    const designation = salary.designation || "";
+
     const matchesSearch =
-      salary.employeeName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      salary.designation.toLowerCase().includes(searchTerm.toLowerCase());
+      employeeName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      designation.toLowerCase().includes(searchTerm.toLowerCase());
 
     if (!dateFilter) return matchesSearch;
 
-    return matchesSearch && salary.month === dateFilter;
+    const salaryMonth = salary.month || salary.date?.substring(0, 7) || "";
+    return matchesSearch && salaryMonth === dateFilter;
   });
 
-  // Calculate total paid and last updated for each salary row
+  // Safe getter for total paid
   const getTotalPaid = (salary) => {
+    if (!salary) return 0;
+
     if (salary.wageType === "Daily" && Array.isArray(salary.wages)) {
-      return salary.wages.reduce((sum, wage) => sum + (wage.amount || 0), 0);
+      return salary.wages.reduce(
+        (sum, wage) => sum + (Number(wage.amount) || 0),
+        0
+      );
     }
     if (salary.wageType === "Monthly" && Array.isArray(salary.advances)) {
-      // Total Paid is the sum of all advances
-      return salary.advances.reduce((sum, adv) => sum + (adv.amount || 0), 0);
+      return salary.advances.reduce(
+        (sum, adv) => sum + (Number(adv.amount) || 0),
+        0
+      );
     }
-    return 0;
+    // Return salary amount if no wages/advances
+    return Number(salary.salary) || Number(salary.amount) || 0;
   };
 
+  // Safe getter for last updated
   const getLastUpdated = (salary) => {
-    let last = salary.lastUpdated ? new Date(salary.lastUpdated) : null;
-    if (
-      salary.wageType === "Daily" &&
-      Array.isArray(salary.wages) &&
-      salary.wages.length > 0
-    ) {
-      const wageDates = salary.wages.map((w) => new Date(w.date));
-      const maxWageDate = new Date(
-        Math.max(...wageDates.map((d) => d.getTime()))
-      );
-      if (!last || maxWageDate > last) last = maxWageDate;
+    if (!salary) return "--";
+
+    try {
+      let last = salary.lastUpdated ? new Date(salary.lastUpdated) : null;
+
+      if (
+        salary.wageType === "Daily" &&
+        Array.isArray(salary.wages) &&
+        salary.wages.length > 0
+      ) {
+        const wageDates = salary.wages
+          .map((w) => (w.date ? new Date(w.date) : null))
+          .filter(Boolean);
+        if (wageDates.length > 0) {
+          const maxWageDate = new Date(
+            Math.max(...wageDates.map((d) => d.getTime()))
+          );
+          if (!last || maxWageDate > last) last = maxWageDate;
+        }
+      }
+
+      if (
+        salary.wageType === "Monthly" &&
+        Array.isArray(salary.advances) &&
+        salary.advances.length > 0
+      ) {
+        const advDates = salary.advances
+          .map((a) => (a.date ? new Date(a.date) : null))
+          .filter(Boolean);
+        if (advDates.length > 0) {
+          const maxAdvDate = new Date(
+            Math.max(...advDates.map((d) => d.getTime()))
+          );
+          if (!last || maxAdvDate > last) last = maxAdvDate;
+        }
+      }
+
+      return last
+        ? last.toLocaleString("en-US", {
+            dateStyle: "medium",
+            timeStyle: "short",
+          })
+        : "--";
+    } catch (error) {
+      console.error("Error formatting date:", error);
+      return "--";
     }
-    if (
-      salary.wageType === "Monthly" &&
-      Array.isArray(salary.advances) &&
-      salary.advances.length > 0
-    ) {
-      const advDates = salary.advances.map((a) => new Date(a.date));
-      const maxAdvDate = new Date(
-        Math.max(...advDates.map((d) => d.getTime()))
-      );
-      if (!last || maxAdvDate > last) last = maxAdvDate;
-    }
-    return last
-      ? last.toLocaleString("en-US", {
-          dateStyle: "medium",
-          timeStyle: "short",
-        })
-      : "--";
   };
 
+  // Safe total calculation
   const totalAmount = filteredSalaries.reduce(
     (sum, salary) => sum + getTotalPaid(salary),
     0
   );
+
+  // Show message if no data
+  if (!salaries || salaries.length === 0) {
+    return (
+      <div className="bg-white rounded-xl shadow-lg p-6 text-center">
+        <p className="text-gray-500">No salary records found</p>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-xl shadow-lg">
@@ -119,7 +162,7 @@ const SalaryListing = ({
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredSalaries.map((salary) => (
                   <tr
-                    key={salary.id}
+                    key={salary.id || `salary-${Date.now()}-${Math.random()}`}
                     className="hover:bg-gray-50 transition-colors cursor-pointer"
                     onClick={(e) => {
                       if (!e.target.closest(".dropdown-container")) {
@@ -128,21 +171,27 @@ const SalaryListing = ({
                     }}
                   >
                     <td className="px-6 py-4 text-sm text-[#181829]">
-                      <div className="font-medium">{salary.employeeName}</div>
+                      <div className="font-medium">
+                        {salary.employeeName || salary.employee || "--"}
+                      </div>
                       <div className="text-gray-500 text-xs">
-                        {salary.designation}
+                        {salary.designation || "--"}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-[#181829]">
                       <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
-                        {salary.wageType} Wage
+                        {salary.wageType || salary.wage_type || "Unknown"} Wage
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-[#181829]">
-                      {new Date(salary.month + "-01").toLocaleDateString(
-                        "en-US",
-                        { year: "numeric", month: "short" }
-                      )}
+                      {salary.month || salary.date
+                        ? new Date(
+                            (salary.month || salary.date.substring(0, 7)) + "-01"
+                          ).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "short",
+                          })
+                        : "--"}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-[#181829]">
                       <span className="text-green-600 font-medium">

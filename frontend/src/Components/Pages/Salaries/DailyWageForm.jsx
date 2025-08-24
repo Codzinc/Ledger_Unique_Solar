@@ -41,26 +41,17 @@ const DailyWageForm = ({ onBack, onSubmit, initialData }) => {
     e.preventDefault();
     if (validateForm()) {
       const submitData = {
-        ...formData,
-        id: initialData?.id || Date.now().toString(),
-        srNo: initialData?.srNo || Date.now(),
+        employee: formData.employeeName,
         date: formData.month + "-01",
-        salary: 0, // This will be updated when daily wages are added
-        lastUpdated: new Date().toISOString(),
-        designation: "Daily Worker", // You might want to add this to the form
-        wageType: "Daily",
-        totalAdvance: 0,
-        remainingSalary: 0,
+        description: formData.serviceDescription || "",
+        wage_type: "Daily",
+        salary_amount: 0, // Added salary_amount field
+        status: "Active",
+        total_advance_taken: 0,
+        remaining_salary: 0,
       };
-      setCurrentSalary(submitData);
-      setShowWageCard(true);
       onSubmit(submitData);
     }
-  };
-
-  const handleWageCardUpdate = (updatedSalary) => {
-    setCurrentSalary(updatedSalary);
-    onSubmit(updatedSalary); // Update the parent component
   };
 
   if (showWageCard && currentSalary) {
@@ -220,5 +211,7 @@ const DailyWageForm = ({ onBack, onSubmit, initialData }) => {
     </div>
   );
 };
+
+
 
 export default DailyWageForm;

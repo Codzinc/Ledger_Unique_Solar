@@ -62,16 +62,15 @@ const MonthlyWageForm = ({ onBack, onSubmit, initialData }) => {
     e.preventDefault();
     if (validateForm()) {
       const submitData = {
-        ...formData,
-        id: initialData?.id || Date.now().toString(),
-        srNo: initialData?.srNo || Date.now(),
-        date: formData.month + "-01",
-        salary: parseFloat(formData.baseSalary) || 0,
-        lastUpdated: new Date().toISOString(),
-        designation: "Employee", // You might want to add this to the form
-        wageType: "Monthly",
-        totalAdvance: parseFloat(formData.totalAdvance) || 0,
-        remainingSalary: parseFloat(formData.remainingSalary) || 0,
+        employee: formData.employeeName,
+        date: formData.month + "-01", // Format: YYYY-MM-DD
+        salary_amount: parseFloat(formData.baseSalary),
+        description: formData.note || "",
+        wage_type: "Monthly_wage",
+        total_advance_taken: 0,
+        remaining_salary: parseFloat(formData.baseSalary),
+        status: "Active",
+        month: formData.month, // Add month field
       };
       onSubmit(submitData);
     }

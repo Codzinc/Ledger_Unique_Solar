@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   BarChart,
   Bar,
@@ -8,40 +8,70 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
+import { getDailyDashboardData } from "../../../ApiComps/Dasbhoard/dashboardDailyService";
 
-const data = [
-  { date: "1 Jul", payment: 500 },
-  { date: "2 Jul", payment: 700 },
-  { date: "3 Jul", payment: 800 },
-  { date: "4 Jul", payment: 600 },
-  { date: "5 Jul", payment: 1000 },
-  { date: "6 Jul", payment: 950 },
-  { date: "7 Jul", payment: 1200 },
-  { date: "8 Jul", payment: 1100 },
-  { date: "9 Jul", payment: 1050 },
-  { date: "10 Jul", payment: 1150 },
-];
+const MonthlyPaymentsChart = () => {
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-const MonthlyPaymentsChart = () => (
-  <div className="bg-white rounded-lg shadow p-4 w-full">
-    <h2 className="text-lg font-semibold text-[#181829] mb-2">
-      Monthly Payments (Daily Sales - July)
-    </h2>
-    <div className="w-full h-[200px]">
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart
-          data={data}
-          margin={{ top: 10, right: 20, left: 0, bottom: 0 }}
-        >
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="date" />
-          <YAxis />
-          <Tooltip />
-          <Bar dataKey="payment" fill="#d8f276" radius={[6, 6, 0, 0]} />
-        </BarChart>
-      </ResponsiveContainer>
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const date = new Date();
+        const month = date.getMonth() + 1;
+        const year = date.getFullYear();
+        const response = await getDailyDashboardData(month, year);
+
+        const formattedData = response.data.map((item) => ({
+          date: `${item.day} ${new Date(year, month - 1).toLocaleString(
+            "default",
+            { month: "short" }
+          )}`,
+          payment: item.profit,
+        }));
+
+        setData(formattedData);
+      } catch (err) {
+        setError("Failed to fetch data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (loading)
+    return (
+      <div className="bg-white rounded-lg shadow p-4 w-full">Loading...</div>
+    );
+  if (error)
+    return (
+      <div className="bg-white rounded-lg shadow p-4 w-full">{error}</div>
+    );
+
+  return (
+    <div className="bg-white rounded-lg shadow p-4 w-full">
+      <h2 className="text-lg font-semibold text-[#181829] mb-2">
+        Monthly Payments (Daily Sales)
+      </h2>
+      <div className="w-full h-[200px]">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart
+            data={data}
+            margin={{ top: 10, right: 20, left: 0, bottom: 0 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="date" />
+            <YAxis />
+            <Tooltip />
+            <Bar dataKey="payment" fill="#d8f276" radius={[6, 6, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 export default MonthlyPaymentsChart;
