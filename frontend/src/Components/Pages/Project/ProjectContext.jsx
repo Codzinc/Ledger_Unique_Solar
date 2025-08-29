@@ -1,5 +1,10 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { sampleProjects } from "./SampleProjects";
+import { 
+  getUniqueSolarProjects, 
+  getZarorratProjects,
+  deleteUniqueSolarProject,
+  deleteZarorratProject 
+} from "../../../ApiComps/Project/ProjectApi";
 
 const ProjectContext = createContext();
 
@@ -12,86 +17,87 @@ export const useProjects = () => {
 };
 
 export const ProjectProvider = ({ children }) => {
-  const [projects, setProjects] = useState(sampleProjects);
+  const [projects, setProjects] = useState([]);
   const [stats, setStats] = useState({
     totalProjects: 0,
     uniqueSolarProjects: 0,
     zarorratProjects: 0,
     totalValue: 0,
   });
+  const [loading, setLoading] = useState(true);
 
-  // Generate unique project ID
-  const generateProjectId = (company) => {
-    const prefix = company === "UNIQUE SOLAR" ? "USL" : "ZRC";
-    const year = new Date().getFullYear();
-    const currentCount =
-      projects.filter((p) => p.company === company).length + 1;
-    const paddedCount = String(currentCount).padStart(3, "0");
-    return `${prefix}-${year}-${paddedCount}`;
-  };
+  // Load projects from API
+  const loadProjects = async () => {
+    try {
+      setLoading(true);
+      const [uniqueSolarProjects, zarorratProjects] = await Promise.all([
+        getUniqueSolarProjects(),
+        getZarorratProjects()
+      ]);
 
-  // Add new project
-  const addProject = (formData, formType) => {
-    const company =
-      formType === "unique-solar" ? "UNIQUE SOLAR" : "ZARORRAT.COM";
-    const newProject = {
-      ...formData,
-      id: generateProjectId(company),
-      company,
-      status: "",
-      date: formData.date || new Date().toISOString().split("T")[0],
-      totalAmount: parseFloat(formData.amount || 0),
-      paid: parseFloat(
-        formData.advancePayment || formData.advanceReceived || 0
-      ),
-      pending:
-        parseFloat(formData.amount || 0) -
-        parseFloat(formData.advancePayment || formData.advanceReceived || 0),
-    };
+      // Transform projects to common format
+      const transformedProjects = [
+        ...(uniqueSolarProjects.results || uniqueSolarProjects).map(project => ({
+          ...project,
+          company: 'UNIQUE SOLAR',
+          projectType: project.project_type,
+          totalAmount: parseFloat(project.grand_total || project.total_payment || 0),
+          paid: parseFloat(project.advance_payment || 0),
+          pending: parseFloat(project.completion_payment || 0),
+          id: project.id || project.project_id
+        })),
+        ...(zarorratProjects.results || zarorratProjects).map(project => ({
+          ...project,
+          company: 'ZARORRAT.COM',
+          projectType: 'Service',
+          totalAmount: parseFloat(project.amount || 0),
+          paid: parseFloat(project.advance_received || 0),
+          pending: parseFloat(project.amount || 0) - parseFloat(project.advance_received || 0),
+          id: project.id || project.project_id
+        }))
+      ];
 
-    setProjects((prev) => [...prev, newProject]);
-  };
-
-  // Update project
-  const updateProject = (projectId, updatedData) => {
-    setProjects((prev) =>
-      prev.map((project) =>
-        project.id === projectId
-          ? {
-              ...project,
-              ...updatedData,
-              totalAmount: parseFloat(updatedData.amount || 0),
-              paid: parseFloat(
-                updatedData.advancePayment || updatedData.advanceReceived || 0
-              ),
-              pending:
-                parseFloat(updatedData.amount || 0) -
-                parseFloat(
-                  updatedData.advancePayment || updatedData.advanceReceived || 0
-                ),
-            }
-          : project
-      )
-    );
+      setProjects(transformedProjects);
+    } catch (error) {
+      console.error('Error loading projects:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Delete project
-  const deleteProject = (projectId) => {
-    setProjects((prev) => prev.filter((project) => project.id !== projectId));
+  const deleteProject = async (projectId) => {
+    try {
+      // Determine project type and call appropriate API
+      const project = projects.find(p => p.id === projectId);
+      if (project) {
+        if (project.company === 'UNIQUE SOLAR') {
+          await deleteUniqueSolarProject(projectId);
+        } else {
+          await deleteZarorratProject(projectId);
+        }
+        
+        // Reload projects after deletion
+        await loadProjects();
+      }
+    } catch (error) {
+      console.error('Error deleting project:', error);
+      throw error;
+    }
   };
+
+  // Load projects on component mount
+  useEffect(() => {
+    loadProjects();
+  }, []);
 
   // Update stats whenever projects change
   useEffect(() => {
     const newStats = {
       totalProjects: projects.length,
-      uniqueSolarProjects: projects.filter((p) => p.company === "UNIQUE SOLAR")
-        .length,
-      zarorratProjects: projects.filter((p) => p.company === "ZARORRAT.COM")
-        .length,
-      totalValue: projects.reduce(
-        (sum, p) => sum + (parseFloat(p.totalAmount) || 0),
-        0
-      ),
+      uniqueSolarProjects: projects.filter((p) => p.company === "UNIQUE SOLAR").length,
+      zarorratProjects: projects.filter((p) => p.company === "ZARORRAT.COM").length,
+      totalValue: projects.reduce((sum, p) => sum + (p.totalAmount || 0), 0),
     };
     setStats(newStats);
   }, [projects]);
@@ -101,9 +107,9 @@ export const ProjectProvider = ({ children }) => {
       value={{
         projects,
         stats,
-        addProject,
-        updateProject,
+        loading,
         deleteProject,
+        refreshProjects: loadProjects
       }}
     >
       {children}

@@ -28,13 +28,13 @@ const BasicInformation = ({ formData, handleInputChange, errors }) => {
           </label>
           <input
             type="text"
-            name="customerName"
-            value={formData.customerName}
+            name="customer_name"
+            value={formData.customer_name}
             onChange={handleInputChange}
-            className={inputStyle("customerName")}
+            className={inputStyle("customer_name")}
             placeholder="Enter customer name"
           />
-          {errorText("customerName")}
+          {errorText("customer_name")}
         </div>
 
         {/* Contact Number */}
@@ -95,12 +95,12 @@ const BasicInformation = ({ formData, handleInputChange, errors }) => {
           </label>
           <input
             type="date"
-            name="validUntil"
-            value={formData.validUntil}
+            name="valid_until"
+            value={formData.valid_until}
             onChange={handleInputChange}
-            className={inputStyle("validUntil")}
+            className={inputStyle("valid_until")}
           />
-          {errorText("validUntil")}
+          {errorText("valid_until")}
         </div>
 
         {/* Status */}
@@ -116,9 +116,9 @@ const BasicInformation = ({ formData, handleInputChange, errors }) => {
             className={inputStyle("status")}
           >
             <option value="">Select status</option>
-            <option value="PENDING">Pending</option>
-            <option value="IN_PROGRESS">In Progress</option>
-            <option value="COMPLETED">Completed</option>
+            <option value="pending">Pending</option>
+            <option value="in_progress">In Progress</option>
+            <option value="completed">Completed</option>
           </select>
           {errorText("status")}
         </div>

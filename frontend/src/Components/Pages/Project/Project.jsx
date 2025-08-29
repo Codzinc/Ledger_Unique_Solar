@@ -22,8 +22,7 @@ const ProjectContent = () => {
     status: "All Status",
   });
 
-  const { projects, stats, addProject, updateProject, deleteProject } =
-    useProjects();
+  const { projects, stats, deleteProject, refreshProjects } = useProjects();
 
   const handleAddProject = () => {
     setShowAddModal(true);
@@ -39,6 +38,7 @@ const ProjectContent = () => {
     setShowProjectForm(false);
     setSelectedProjectType("");
     setSelectedProject(null);
+    refreshProjects(); // Refresh projects when returning from form
   };
 
   const handleCloseModal = () => {
@@ -57,19 +57,19 @@ const ProjectContent = () => {
     setShowProjectForm(true);
   };
 
-  const handleDeleteProject = (projectId) => {
+  const handleDeleteProject = async (projectId) => {
     if (window.confirm("Are you sure you want to delete this project?")) {
-      deleteProject(projectId);
-      setSelectedProject(null);
+      try {
+        await deleteProject(projectId);
+        setSelectedProject(null);
+      } catch (error) {
+        alert("Error deleting project: " + error.message);
+      }
     }
   };
 
-  const handleProjectSubmit = (formData) => {
-    if (selectedProject) {
-      updateProject(selectedProject.id, formData);
-    } else {
-      addProject(formData, selectedProjectType);
-    }
+  const handleProjectSubmit = () => {
+    // Projects are now automatically refreshed through API calls
     handleBackToProjects();
   };
 
