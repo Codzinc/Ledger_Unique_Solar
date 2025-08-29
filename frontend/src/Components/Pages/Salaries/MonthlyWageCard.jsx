@@ -1,5 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ArrowLeft, Plus, Edit2, Trash2 } from "lucide-react";
+import {
+  getAdvances,
+  createAdvance,
+  deleteAdvance,
+  updateAdvance,
+} from "../../../ApiComps/Salary/SalaryCard";
 
 const MonthlyWageCard = ({ salary, onClose, onUpdate }) => {
   const [showAdvanceForm, setShowAdvanceForm] = useState(false);
@@ -8,7 +14,8 @@ const MonthlyWageCard = ({ salary, onClose, onUpdate }) => {
     amount: "",
     purpose: "",
   });
-  const [advances, setAdvances] = useState(salary.advances || []);
+  const [advances, setAdvances] = useState([]);
+  const [loadingAdvances, setLoadingAdvances] = useState(true);
 
   // Edit state
   const [editAdvanceId, setEditAdvanceId] = useState(null);
@@ -18,58 +25,103 @@ const MonthlyWageCard = ({ salary, onClose, onUpdate }) => {
     purpose: "",
   });
 
-  // Add Advance
-  const handleAddAdvance = (e) => {
-    e.preventDefault();
-    const advance = {
-      id: Date.now(),
-      date: newAdvance.date,
-      amount: parseFloat(newAdvance.amount),
-      purpose: newAdvance.purpose,
+  // Fetch advances from API on mount or when salary changes
+  useEffect(() => {
+    const fetchAdvances = async () => {
+      setLoadingAdvances(true);
+      try {
+        const employeeName = salary.employeeName || salary.employee || "";
+        const apiAdvances = await getAdvances(employeeName);
+        // Map API advances to local format
+        setAdvances(
+          apiAdvances.map((adv) => ({
+            id: adv.id,
+            date: adv.date,
+            amount: parseFloat(adv.advance_taken),
+            purpose: adv.purpose,
+            employee: adv.employee,
+          }))
+        );
+      } catch (err) {
+        setAdvances([]);
+      } finally {
+        setLoadingAdvances(false);
+      }
     };
-    const updatedAdvances = [...advances, advance];
-    setAdvances(updatedAdvances);
+    fetchAdvances();
+  }, [salary]);
 
-    const totalAdvance = updatedAdvances.reduce(
-      (sum, adv) => sum + adv.amount,
-      0
-    );
-    const remainingSalary = salary.baseSalary - totalAdvance;
+  // Add Advance (API)
+  const handleAddAdvance = async (e) => {
+    e.preventDefault();
+    try {
+      const advanceData = {
+        employee: salary.employeeName || salary.employee || "",
+        date: newAdvance.date,
+        advance_taken: parseFloat(newAdvance.amount),
+        purpose: newAdvance.purpose,
+      };
+      const created = await createAdvance(advanceData);
+      const updatedAdvances = [
+        ...advances,
+        {
+          id: created.id,
+          date: created.date,
+          amount: parseFloat(created.advance_taken),
+          purpose: created.purpose,
+          employee: created.employee,
+        },
+      ];
+      setAdvances(updatedAdvances);
 
-    onUpdate({
-      ...salary,
-      advances: updatedAdvances,
-      totalAdvance,
-      remainingSalary,
-      lastUpdated: new Date().toISOString(),
-    });
+      const totalAdvance = updatedAdvances.reduce(
+        (sum, adv) => sum + adv.amount,
+        0
+      );
+      const remainingSalary = salary.baseSalary - totalAdvance;
 
-    setShowAdvanceForm(false);
-    setNewAdvance({
-      date: new Date().toISOString().split("T")[0],
-      amount: "",
-      purpose: "",
-    });
+      onUpdate({
+        ...salary,
+        advances: updatedAdvances,
+        totalAdvance,
+        remainingSalary,
+        lastUpdated: new Date().toISOString(),
+      });
+
+      setShowAdvanceForm(false);
+      setNewAdvance({
+        date: new Date().toISOString().split("T")[0],
+        amount: "",
+        purpose: "",
+      });
+    } catch (err) {
+      alert("Failed to add advance");
+    }
   };
 
-  // Delete Advance
-  const handleDeleteAdvance = (advanceId) => {
-    const updatedAdvances = advances.filter((adv) => adv.id !== advanceId);
-    const totalAdvance = updatedAdvances.reduce(
-      (sum, adv) => sum + adv.amount,
-      0
-    );
-    const remainingSalary = salary.baseSalary - totalAdvance;
+  // Delete Advance (API)
+  const handleDeleteAdvance = async (advanceId) => {
+    try {
+      await deleteAdvance(advanceId);
+      const updatedAdvances = advances.filter((adv) => adv.id !== advanceId);
+      const totalAdvance = updatedAdvances.reduce(
+        (sum, adv) => sum + adv.amount,
+        0
+      );
+      const remainingSalary = salary.baseSalary - totalAdvance;
 
-    onUpdate({
-      ...salary,
-      advances: updatedAdvances,
-      totalAdvance,
-      remainingSalary,
-      lastUpdated: new Date().toISOString(),
-    });
+      onUpdate({
+        ...salary,
+        advances: updatedAdvances,
+        totalAdvance,
+        remainingSalary,
+        lastUpdated: new Date().toISOString(),
+      });
 
-    setAdvances(updatedAdvances);
+      setAdvances(updatedAdvances);
+    } catch (err) {
+      alert("Failed to delete advance");
+    }
   };
 
   // Edit Advance Handlers
@@ -90,30 +142,48 @@ const MonthlyWageCard = ({ salary, onClose, onUpdate }) => {
     }));
   };
 
-  const handleEditAdvanceSave = () => {
-    const updatedAdvances = advances.map((adv) =>
-      adv.id === editAdvanceId
-        ? { ...adv, ...editAdvance, amount: parseFloat(editAdvance.amount) }
-        : adv
-    );
-    setAdvances(updatedAdvances);
+  // Save edited advance (API)
+  const handleEditAdvanceSave = async () => {
+    try {
+      const advanceData = {
+        employee: salary.employeeName || salary.employee || "",
+        date: editAdvance.date,
+        advance_taken: parseFloat(editAdvance.amount),
+        purpose: editAdvance.purpose,
+      };
+      const updated = await updateAdvance(editAdvanceId, advanceData);
+      const updatedAdvances = advances.map((adv) =>
+        adv.id === editAdvanceId
+          ? {
+              id: updated.id,
+              date: updated.date,
+              amount: parseFloat(updated.advance_taken),
+              purpose: updated.purpose,
+              employee: updated.employee,
+            }
+          : adv
+      );
+      setAdvances(updatedAdvances);
 
-    const totalAdvance = updatedAdvances.reduce(
-      (sum, adv) => sum + adv.amount,
-      0
-    );
-    const remainingSalary = salary.baseSalary - totalAdvance;
+      const totalAdvance = updatedAdvances.reduce(
+        (sum, adv) => sum + adv.amount,
+        0
+      );
+      const remainingSalary = salary.baseSalary - totalAdvance;
 
-    onUpdate({
-      ...salary,
-      advances: updatedAdvances,
-      totalAdvance,
-      remainingSalary,
-      lastUpdated: new Date().toISOString(),
-    });
+      onUpdate({
+        ...salary,
+        advances: updatedAdvances,
+        totalAdvance,
+        remainingSalary,
+        lastUpdated: new Date().toISOString(),
+      });
 
-    setEditAdvanceId(null);
-    setEditAdvance({ date: "", amount: "", purpose: "" });
+      setEditAdvanceId(null);
+      setEditAdvance({ date: "", amount: "", purpose: "" });
+    } catch (err) {
+      alert("Failed to update advance");
+    }
   };
 
   const handleEditAdvanceCancel = () => {
@@ -154,19 +224,22 @@ const MonthlyWageCard = ({ salary, onClose, onUpdate }) => {
           <div>
             <p className="text-sm text-gray-600">Base Salary</p>
             <p className="text-xl font-bold text-[#181829]">
-              Rs. {salary.baseSalary.toLocaleString()}
+              Rs.{" "}
+              {(salary.baseSalary || salary.salary_amount || 0).toLocaleString()}
             </p>
           </div>
           <div>
             <p className="text-sm text-gray-600">Total Advance</p>
             <p className="text-xl font-bold text-red-600">
-              Rs. {salary.totalAdvance.toLocaleString()}
+              Rs.{" "}
+              {(salary.totalAdvance || salary.total_advance_taken || 0).toLocaleString()}
             </p>
           </div>
           <div>
             <p className="text-sm text-gray-600">Remaining Salary</p>
             <p className="text-xl font-bold text-green-600">
-              Rs. {salary.remainingSalary.toLocaleString()}
+              Rs.{" "}
+              {(salary.remainingSalary || salary.remaining_salary || 0).toLocaleString()}
             </p>
           </div>
         </div>
@@ -266,113 +339,119 @@ const MonthlyWageCard = ({ salary, onClose, onUpdate }) => {
 
           {/* Advances Table */}
           <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Date
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Advance Taken
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Purpose
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {advances.map((advance) =>
-                  editAdvanceId === advance.id ? (
-                    <tr key={advance.id} className="bg-yellow-50">
-                      <td className="px-6 py-2">
-                        <input
-                          type="date"
-                          name="date"
-                          value={editAdvance.date}
-                          onChange={handleEditAdvanceChange}
-                          className="w-full px-2 py-1 border rounded"
-                        />
-                      </td>
-                      <td className="px-6 py-2">
-                        <input
-                          type="number"
-                          name="amount"
-                          value={editAdvance.amount}
-                          onChange={handleEditAdvanceChange}
-                          className="w-full px-2 py-1 border rounded"
-                        />
-                      </td>
-                      <td className="px-6 py-2">
-                        <input
-                          type="text"
-                          name="purpose"
-                          value={editAdvance.purpose}
-                          onChange={handleEditAdvanceChange}
-                          className="w-full px-2 py-1 border rounded"
-                        />
-                      </td>
-                      <td className="px-6 py-2 flex gap-2">
-                        <button
-                          onClick={handleEditAdvanceSave}
-                          className="text-green-600 hover:text-green-800 px-2"
-                        >
-                          Save
-                        </button>
-                        <button
-                          onClick={handleEditAdvanceCancel}
-                          className="text-gray-600 hover:text-gray-800 px-2"
-                        >
-                          Cancel
-                        </button>
-                      </td>
-                    </tr>
-                  ) : (
-                    <tr key={advance.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {new Date(advance.date).toLocaleDateString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        Rs. {advance.amount.toLocaleString()}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-900">
-                        {advance.purpose}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 flex gap-2">
-                        <button
-                          type="button"
-                          onClick={() => handleEditAdvance(advance)}
-                          className="text-blue-600 hover:text-blue-800 mr-2"
-                          title="Edit"
-                        >
-                          <Edit2 className="w-4 h-4" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteAdvance(advance.id)}
-                          className="text-red-600 hover:text-red-800"
-                          title="Delete"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </td>
-                    </tr>
-                  )
-                )}
-                {advances.length === 0 && (
+            {loadingAdvances ? (
+              <div className="text-center text-gray-500 py-4">
+                Loading advances...
+              </div>
+            ) : (
+              <table className="w-full">
+                <thead className="bg-gray-50">
                   <tr>
-                    <td
-                      colSpan="4"
-                      className="px-6 py-4 text-center text-sm text-gray-500"
-                    >
-                      No advances recorded yet
-                    </td>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                      Date
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                      Advance Taken
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                      Purpose
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                      Actions
+                    </th>
                   </tr>
-                )}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {advances.map((advance) =>
+                    editAdvanceId === advance.id ? (
+                      <tr key={advance.id} className="bg-yellow-50">
+                        <td className="px-6 py-2">
+                          <input
+                            type="date"
+                            name="date"
+                            value={editAdvance.date}
+                            onChange={handleEditAdvanceChange}
+                            className="w-full px-2 py-1 border rounded"
+                          />
+                        </td>
+                        <td className="px-6 py-2">
+                          <input
+                            type="number"
+                            name="amount"
+                            value={editAdvance.amount}
+                            onChange={handleEditAdvanceChange}
+                            className="w-full px-2 py-1 border rounded"
+                          />
+                        </td>
+                        <td className="px-6 py-2">
+                          <input
+                            type="text"
+                            name="purpose"
+                            value={editAdvance.purpose}
+                            onChange={handleEditAdvanceChange}
+                            className="w-full px-2 py-1 border rounded"
+                          />
+                        </td>
+                        <td className="px-6 py-2 flex gap-2">
+                          <button
+                            onClick={handleEditAdvanceSave}
+                            className="text-green-600 hover:text-green-800 px-2"
+                          >
+                            Save
+                          </button>
+                          <button
+                            onClick={handleEditAdvanceCancel}
+                            className="text-gray-600 hover:text-gray-800 px-2"
+                          >
+                            Cancel
+                          </button>
+                        </td>
+                      </tr>
+                    ) : (
+                      <tr key={advance.id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {new Date(advance.date).toLocaleDateString()}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          Rs. {advance.amount.toLocaleString()}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-900">
+                          {advance.purpose}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleEditAdvance(advance)}
+                            className="text-blue-600 hover:text-blue-800 mr-2"
+                            title="Edit"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteAdvance(advance.id)}
+                            className="text-red-600 hover:text-red-800"
+                            title="Delete"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    )
+                  )}
+                  {advances.length === 0 && (
+                    <tr>
+                      <td
+                        colSpan="4"
+                        className="px-6 py-4 text-center text-sm text-gray-500"
+                      >
+                        No advances recorded yet
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            )}
           </div>
         </div>
       </div>

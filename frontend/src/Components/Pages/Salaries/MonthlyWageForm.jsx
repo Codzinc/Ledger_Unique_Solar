@@ -66,7 +66,7 @@ const MonthlyWageForm = ({ onBack, onSubmit, initialData }) => {
         date: formData.month + "-01", // Format: YYYY-MM-DD
         salary_amount: parseFloat(formData.baseSalary),
         description: formData.note || "",
-        wage_type: "Monthly_wage",
+        wage_type: "Monthly",
         total_advance_taken: 0,
         remaining_salary: parseFloat(formData.baseSalary),
         status: "Active",

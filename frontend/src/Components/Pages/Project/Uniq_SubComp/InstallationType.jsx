@@ -22,7 +22,7 @@ const InstallationType = ({ formData, handleInputChange }) => (
           <label
             key={value}
             className={`relative flex flex-col p-4 border-2 rounded-lg cursor-pointer transition-colors ${
-              formData.installationType === value
+              formData.installation_type === value
                 ? "border-[#181829] bg-gray-50"
                 : "border-gray-200 hover:border-gray-300"
             }`}
@@ -30,9 +30,9 @@ const InstallationType = ({ formData, handleInputChange }) => (
             <div className="flex items-start">
               <input
                 type="radio"
-                name="installationType"
+                name="installation_type"
                 value={value}
-                checked={formData.installationType === value}
+                checked={formData.installation_type === value}
                 onChange={handleInputChange}
                 className="mt-1 text-[#181829] "
               />
@@ -44,16 +44,16 @@ const InstallationType = ({ formData, handleInputChange }) => (
         ))}
       </div>
       {/* Custom installation amount input if standard or elevated is selected */}
-      {(formData.installationType === "standard" ||
-        formData.installationType === "elevated") && (
+      {(formData.installation_type === "standard" ||
+        formData.installation_type === "elevated") && (
         <div className="mt-4">
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Enter Installation Amount
           </label>
           <input
             type="number"
-            name="installationAmount"
-            value={formData.installationAmount || ""}
+            name="installation_amount"
+            value={formData.installation_amount || ""}
             onChange={handleInputChange}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#d8f276] focus:border-transparent"
             placeholder="Enter installation amount"

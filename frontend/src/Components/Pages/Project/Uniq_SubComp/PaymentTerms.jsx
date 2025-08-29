@@ -7,27 +7,29 @@ const PaymentTerms = ({ formData, handleInputChange }) => (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <InputField
         label="Advance Payment"
-        name="advancePayment"
+        name="advance_payment"
         type="number"
         placeholder="0.00"
-        value={formData.advancePayment}
+        value={formData.advance_payment}
         onChange={handleInputChange}
       />
       <InputField
         label="Total Payment"
-        name="deliveryPayment"
+        name="total_payment"
         type="number"
         placeholder="0.00"
-        value={formData.deliveryPayment}
+        value={formData.total_payment}
         onChange={handleInputChange}
+        disabled
       />
       <InputField
-        label="Pending Payment"
-        name="pendingPayment"
+        label="Completion Payment"
+        name="completion_payment"
         type="number"
         placeholder="0.00"
-        value={formData.pendingPayment}
+        value={formData.completion_payment}
         onChange={handleInputChange}
+        disabled
       />
     </div>
   </Section>

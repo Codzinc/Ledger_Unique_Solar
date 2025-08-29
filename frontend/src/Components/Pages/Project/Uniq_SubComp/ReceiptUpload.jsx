@@ -2,6 +2,25 @@ import React from "react";
 import Section from "./Section";
 
 const ReceiptUpload = ({ handleReceiptUpload, receiptImage }) => {
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Check if file is an image
+      if (!file.type.startsWith('image/')) {
+        alert('Please select an image file');
+        return;
+      }
+      
+      // Check file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('File size should be less than 5MB');
+        return;
+      }
+      
+      handleReceiptUpload(e);
+    }
+  };
+
   return (
     <Section title="Receipt Image">
       <div className="flex flex-col gap-4">
@@ -11,7 +30,7 @@ const ReceiptUpload = ({ handleReceiptUpload, receiptImage }) => {
               id="receipt-upload"
               type="file"
               accept="image/*"
-              onChange={handleReceiptUpload}
+              onChange={handleFileChange}
               className="hidden"
             />
             <span

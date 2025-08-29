@@ -35,13 +35,13 @@ const ProjectInformation = ({ formData, handleInputChange, formErrors }) => {
           </label>
           <input
             type="text"
-            name="customerName"
-            value={formData.customerName}
+            name="customer_name"
+            value={formData.customer_name}
             onChange={handleInputChange}
-            className={inputClass("customerName")}
+            className={inputClass("customer_name")}
             placeholder="Enter customer name"
           />
-          {errorMsg("customerName")}
+          {errorMsg("customer_name")}
         </div>
 
         {/* Contact Number */}
@@ -102,12 +102,12 @@ const ProjectInformation = ({ formData, handleInputChange, formErrors }) => {
           </label>
           <input
             type="date"
-            name="validUntil"
-            value={formData.validUntil}
+            name="valid_until"
+            value={formData.valid_until}
             onChange={handleInputChange}
-            className={inputClass("validUntil")}
+            className={inputClass("valid_until")}
           />
-          {errorMsg("validUntil")}
+          {errorMsg("valid_until")}
         </div>
 
         {/* Project Type */}
@@ -117,17 +117,17 @@ const ProjectInformation = ({ formData, handleInputChange, formErrors }) => {
             Project Type *
           </label>
           <select
-            name="projectType"
-            value={formData.projectType}
+            name="project_type"
+            value={formData.project_type}
             onChange={handleInputChange}
-            className={inputClass("projectType")}
+            className={inputClass("project_type")}
           >
             <option value="">Select Project Type</option>
-            <option value="On-Grid">On-Grid</option>
-            <option value="Off-Grid">Off-Grid</option>
-            <option value="Hybrid">Hybrid</option>
+            <option value="on_grid">On-Grid</option>
+            <option value="off_grid">Off-Grid</option>
+            <option value="hybrid">Hybrid</option>
           </select>
-          {errorMsg("projectType")}
+          {errorMsg("project_type")}
         </div>
 
         {/* Status */}
@@ -142,10 +142,9 @@ const ProjectInformation = ({ formData, handleInputChange, formErrors }) => {
             onChange={handleInputChange}
             className={inputClass("status")}
           >
-            <option value="">Select status</option>
-            <option value="PENDING">Pending</option>
-            <option value="IN_PROGRESS">In Progress</option>
-            <option value="COMPLETED">Completed</option>
+            <option value="pending">Pending</option>
+            <option value="in_progress">In Progress</option>
+            <option value="completed">Completed</option>
           </select>
           {errorMsg("status")}
         </div>

@@ -1,15 +1,10 @@
 import React, { useEffect, useRef } from "react";
 import { FaUserCircle } from "react-icons/fa";
-
-const user = {
-  name: "John Doe",
-  username: "johndoe", // updated since we now use username
-  role: "Administrator",
-  avatar: "", // Optional avatar URL
-};
+import { useAuth } from "./Auth/AuthProvider";
 
 const Profile = ({ open, onClose, onLogout }) => {
   const sidebarRef = useRef(null);
+  const { user } = useAuth();
 
   // Close sidebar on outside click
   useEffect(() => {
@@ -39,7 +34,7 @@ const Profile = ({ open, onClose, onLogout }) => {
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b">
           <div className="flex items-center gap-3">
-            {user.avatar ? (
+            {user?.avatar ? (
               <img
                 src={user.avatar}
                 alt="User avatar"
@@ -49,9 +44,13 @@ const Profile = ({ open, onClose, onLogout }) => {
               <FaUserCircle className="w-14 h-14 text-gray-400" />
             )}
             <div>
-              <div className="font-bold text-lg text-gray-800">{user.name}</div>
-              <div className="text-sm text-gray-500">{user.username}</div>
-              <div className="text-xs text-gray-400 mt-1">{user.role}</div>
+              <div className="font-bold text-lg text-gray-800">
+                {user?.first_name || user?.username || "User"}
+              </div>
+              <div className="text-sm text-gray-500">
+                {user?.username || ""}
+              </div>
+              <div className="text-xs text-gray-400 mt-1">{user?.role || ""}</div>
             </div>
           </div>
           <button

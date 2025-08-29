@@ -20,7 +20,7 @@ class Migration(migrations.Migration):
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('title', models.CharField(max_length=255)),
                 ('category', models.CharField(choices=[('Tariq', 'Tariq'), ('Sajid', 'Sajid'), ('Wajid', 'Wajid')], max_length=255)),
-                ('wage_type', models.CharField(choices=[('Monthly_wage', 'Monthly_wage'), ('Daily', 'Daily'), ('Wage', 'Wage')], default='Wage', max_length=20)),
+                ('wage_type', models.CharField(choices=[('Monthly', 'Monthly'), ('Daily', 'Daily'), ('Wage', 'Wage')], default='Wage', max_length=20)),
                 ('employee', models.CharField(max_length=255)),
                 ('month', models.DateField()),
                 ('total_paid', models.PositiveIntegerField()),

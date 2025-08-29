@@ -3,8 +3,10 @@ import MiniCard from "./MiniCard";
 import AllTimePaymentsChart from "./AllTimePaymentsChart";
 import MonthlyPaymentsChart from "./MonthlyPaymentsChart";
 import Zarorrat from "./Zarorrat";
+import { useAuth } from "../../Common/Auth/AuthProvider";
 
 const Dashboard = () => {
+  const { user } = useAuth();
   const today = new Date().toLocaleDateString("en-GB", {
     weekday: "long", // e.g., Monday
     day: "2-digit", // e.g., 07
@@ -16,7 +18,7 @@ const Dashboard = () => {
     <div className="bg-[#f6f7fb] min-h-screen py-4 px-2">
       <div className="max-w-7xl mx-auto">
         <h1 className="text-3xl font-bold text-[#181829]">
-          Welcome back Mr Sajjid
+          Welcome back Mr {user?.username ? user.username : ""}
         </h1>
         <p className="text-gray-500 text-sm mb-6">{today}</p>
         <div className="space-y-6">

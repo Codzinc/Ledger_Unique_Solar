@@ -21,7 +21,7 @@ const TotalsSummary = ({
         </span>
       </div>
 
-      {formData.installationType !== "none" && (
+      {formData.installation_type !== "none" && (
         <div className="flex justify-between items-center text-gray-600">
           <span>Installation Cost:</span>
           <span className="font-medium text-gray-900">
@@ -35,8 +35,8 @@ const TotalsSummary = ({
         <div className="flex items-center gap-2">
           <input
             type="number"
-            name="tax"
-            value={formData.tax}
+            name="tax_percentage"
+            value={formData.tax_percentage}
             onChange={handleInputChange}
             placeholder="0.00"
             className="w-20 px-2 py-1 border border-gray-300 rounded text-right "

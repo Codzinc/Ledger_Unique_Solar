@@ -71,15 +71,32 @@ const SalaryContent = () => {
 
   const handleViewSalary = (salary) => {
     setSelectedSalary(salary);
-    setSelectedWageType(
-      salary.wageType === "Daily" ? "daily-wage" : "monthly-wage"
-    );
-  };
+    let type = salary.wageType || salary.wage_type || "";
+  if (type.toLowerCase().includes("daily")) {
+    setSelectedWageType("Daily");
+  } else {
+    setSelectedWageType("Monthly");
+  }
+};
 
   const handleEditSalary = (salary) => {
-    setSelectedSalary(salary);
+    // Format the salary data for form consumption
+    const formattedSalary = {
+      employeeName: salary.employeeName || salary.employee_name,
+      month: salary.month || salary.date?.substring(0, 7),
+      serviceDescription: salary.serviceDescription || salary.service_description || "",
+      baseSalary: salary.baseSalary || salary.salary_amount || "",
+      totalAdvance: salary.totalAdvance || salary.total_advance_taken || 0,
+      remainingSalary: salary.remainingSalary || salary.remaining_salary || 0,
+      note: salary.note || "",
+      wages: salary.wages || [],
+      advances: salary.advances || [],
+      wageType: salary.wageType || salary.wage_type
+    };
+    
+    setSelectedSalary(formattedSalary);
     setSelectedWageType(
-      salary.wageType === "Daily" ? "daily-wage" : "monthly-wage"
+      (salary.wageType || salary.wage_type || "").toLowerCase().includes("daily") ? "daily-wage" : "monthly-wage"
     );
     setShowSalaryForm(true);
   };
@@ -210,26 +227,27 @@ const SalaryContent = () => {
         )}
 
         {selectedSalary &&
-          !showSalaryForm &&
-          (selectedWageType === "daily-wage" ? (
-            <DailyWageCard
-              salary={selectedSalary}
-              onClose={() => {
-                setSelectedSalary(null);
-                setSelectedWageType("");
-              }}
-              onUpdate={handleCardUpdate}
-            />
-          ) : (
-            <MonthlyWageCard
-              salary={selectedSalary}
-              onClose={() => {
-                setSelectedSalary(null);
-                setSelectedWageType("");
-              }}
-              onUpdate={handleCardUpdate}
-            />
-          ))}
+          !showSalaryForm && (
+            selectedWageType === "Daily" ? (
+              <DailyWageCard
+                salary={selectedSalary}
+                onClose={() => {
+                  setSelectedSalary(null);
+                  setSelectedWageType("");
+                }}
+                onUpdate={handleCardUpdate}
+              />
+            ) : (
+              <MonthlyWageCard
+                salary={selectedSalary}
+                onClose={() => {
+                  setSelectedSalary(null);
+                  setSelectedWageType("");
+                }}
+                onUpdate={handleCardUpdate}
+              />
+            )
+          )}
       </div>
     </div>
   );

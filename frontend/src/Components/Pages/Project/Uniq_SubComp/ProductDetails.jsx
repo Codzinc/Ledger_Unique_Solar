@@ -28,50 +28,40 @@ const ProductDetails = ({
               Product Type <span className="text-red-500">*</span>
             </label>
             <select
-              value={product.type}
+              value={product.product_type}
               onChange={(e) =>
-                handleProductChange(product.id, "type", e.target.value)
+                handleProductChange(product.id, "product_type", e.target.value)
               }
               className="w-full px-3 py-2 border border-gray-300 rounded-lg  hover:border-gray-400 transition-colors"
             >
               {[
-                "Solar Panel",
-                "Inverter",
-                "Structure",
-                "Allied Material",
-                "Battery",
-                "Turnkey Activites",
-                "Earthing & Boring",
-                "Net Metering",
-                "Others",
+                "solar_panel",
+                "inverter",
+                "structure",
+                "allied_material",
+                "battery",
+                "turnkey_activities",
+                "earthing_boring",
+                "net_metering",
+                "Others"
               ].map((type) => (
                 <option key={type} value={type}>
-                  {type}
+                  {type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                 </option>
               ))}
             </select>
           </div>
-          {product.type === "Others" && (
+          {product.product_type === "Others" && (
             <InputField
               label="Specify Product"
-              name="customProduct"
-              value={product.customProduct}
+              name="specify_product"
+              value={product.specify_product}
               onChange={(e) =>
-                handleProductChange(product.id, "customProduct", e.target.value)
+                handleProductChange(product.id, "specify_product", e.target.value)
               }
               required
             />
           )}
-          <InputField
-            label="Description"
-            type="text"
-            name="Description"
-            value={product.description}
-            onChange={(e) =>
-              handleProductChange(product.id, "description", e.target.value)
-            }
-            placeholder="Enter description"
-          />
           <InputField
             label="Quantity"
             type="number"
@@ -85,20 +75,20 @@ const ProductDetails = ({
           <InputField
             label="Unit Price"
             type="number"
-            name="unitPrice"
-            value={product.unitPrice}
+            name="unit_price"
+            value={product.unit_price}
             onChange={(e) =>
-              handleProductChange(product.id, "unitPrice", e.target.value)
+              handleProductChange(product.id, "unit_price", e.target.value)
             }
             placeholder="Enter price"
           />
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Total
+              Line Total
             </label>
             <input
               type="number"
-              value={product.Total}
+              value={product.line_total}
               readOnly
               className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50"
             />

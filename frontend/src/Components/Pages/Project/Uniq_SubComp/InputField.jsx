@@ -7,6 +7,7 @@ const InputField = ({
   className = "",
   value,
   onChange,
+  disabled = false,
   ...props
 }) => (
   <div className={className}>
@@ -19,7 +20,10 @@ const InputField = ({
         name={name}
         value={value}
         onChange={onChange}
-        className="w-full px-3 py-2 border border-gray-300 rounded-lg  transition-colors bg-white"
+        disabled={disabled}
+        className={`w-full px-3 py-2 border border-gray-300 rounded-lg transition-colors bg-white ${
+          disabled ? "bg-gray-100 cursor-not-allowed" : ""
+        }`}
         {...props}
       >
         {props.options?.map((option) => (
@@ -34,7 +38,10 @@ const InputField = ({
         name={name}
         value={value}
         onChange={onChange}
-        className="w-full px-3 py-2 border border-gray-300 rounded-lg  transition-colors"
+        disabled={disabled}
+        className={`w-full px-3 py-2 border border-gray-300 rounded-lg transition-colors ${
+          disabled ? "bg-gray-100 cursor-not-allowed" : ""
+        }`}
         {...props}
       />
     )}

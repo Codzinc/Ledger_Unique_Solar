@@ -8,7 +8,7 @@ from Authentication.models import CustomUser
 class Salary(models.Model):
   
     WAGE_TYPE=[
-        ('Monthly_wage','Monthly_wage'),
+        ('Monthly','Monthly'),
         ('Daily', 'Daily'),
         ('Wage','Wage'),
     ]

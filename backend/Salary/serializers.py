@@ -25,7 +25,7 @@ class MonthlySalarySerializer(serializers.ModelSerializer):
         fields = ['employee', 'date', 'description', 'salary_amount', 'wage_type']
     
     def create(self, validated_data):
-        validated_data['wage_type'] = 'Monthly_wage'
+        validated_data['wage_type'] = 'Monthly'
         validated_data['amount'] = validated_data['salary_amount']
         validated_data['total_paid'] = validated_data['salary_amount']
         validated_data['month'] = validated_data['date']
@@ -53,7 +53,7 @@ class MonthlySalaryWithAdvanceSerializer(serializers.ModelSerializer):
     
     def get_total_advance_taken(self, obj):
         """Calculate total advance taken for the employee in the given month"""
-        if obj.wage_type == 'Monthly_wage':
+        if obj.wage_type == 'Monthly':
             # Get advances for the employee in the same month
             advances = AdvanceHistory.objects.filter(
                 employee=obj.employee,
@@ -65,7 +65,7 @@ class MonthlySalaryWithAdvanceSerializer(serializers.ModelSerializer):
     
     def get_remaining_salary(self, obj):
         """Calculate remaining salary after deducting advances"""
-        if obj.wage_type == 'Monthly_wage':
+        if obj.wage_type == 'Monthly':
             total_advance = self.get_total_advance_taken(obj)
             base_salary = float(obj.amount)
             return base_salary - total_advance
@@ -73,7 +73,7 @@ class MonthlySalaryWithAdvanceSerializer(serializers.ModelSerializer):
     
     def get_advance_history(self, obj):
         """Get advance history for the employee in the given month"""
-        if obj.wage_type == 'Monthly_wage':
+        if obj.wage_type == 'Monthly':
             advances = AdvanceHistory.objects.filter(
                 employee=obj.employee,
                 date__year=obj.month.year,

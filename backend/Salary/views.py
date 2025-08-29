@@ -84,7 +84,7 @@ class MonthlySalaryView(APIView):
     
     def get(self, request):
         """Get all monthly salaries"""
-        monthly_salaries = Salary.objects.filter(wage_type='Monthly_wage')
+        monthly_salaries = Salary.objects.filter(wage_type='Monthly')
         if not monthly_salaries.exists():
             return Response({'error': 'No monthly salaries found'}, status=status.HTTP_204_NO_CONTENT)
         
@@ -170,7 +170,7 @@ class EmployeeSalarySummaryView(APIView):
         month = request.query_params.get('month', None)
         year = request.query_params.get('year', None)
         
-        salary_filter = {'employee': employee_name, 'wage_type': 'Monthly_wage'}
+        salary_filter = {'employee': employee_name, 'wage_type': 'Monthly'}
         if month and year:
             salary_filter['month__year'] = year
             salary_filter['month__month'] = month
