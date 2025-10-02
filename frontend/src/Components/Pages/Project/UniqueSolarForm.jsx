@@ -17,16 +17,16 @@ const UniqueSolarForm = ({ onBack, onSubmit, initialData }) => {
     date: new Date().toISOString().split('T')[0],
     valid_until: '',
     project_type: '',
-    installation_type: 'none',
+    installation_type: 'no_installation',
     tax_percentage: '0.00',
-    advance_payment: '0.00',
-    status: 'pending',
+    advance_payment: '',
+    status: '',
     installation_amount: ''
   });
 
   const [formErrors, setFormErrors] = useState({});
   const [products, setProducts] = useState([
-    { id: Date.now(), product_type: 'solar_panel', specify_product: '', quantity: 1, unit_price: '0.00', line_total: '0.00' }
+    { id: Date.now(), product_type: '', specify_product: '', quantity: "", unit_price: '', line_total: '' }
   ]);
 
   const [checklist, setChecklist] = useState({});
@@ -78,16 +78,46 @@ const UniqueSolarForm = ({ onBack, onSubmit, initialData }) => {
 
   const validateForm = () => {
     const errors = {};
+    
+    // Required fields validation
     if (!formData.customer_name.trim()) errors.customer_name = "This field is required";
     if (!formData.contact_no.trim()) errors.contact_no = "This field is required";
     if (!formData.address.trim()) errors.address = "This field is required";
     if (!formData.date.trim()) errors.date = "This field is required";
     if (!formData.valid_until.trim()) errors.valid_until = "This field is required";
     if (!formData.project_type.trim()) errors.project_type = "This field is required";
+    if (!formData.status.trim()) errors.status = "This field is required";
     
-    // Validate installation type if not "none"
-    if (formData.installation_type !== 'none' && !formData.installation_amount) {
-      errors.installation_amount = "Installation amount is required";
+    // Installation type validation
+    if (formData.installation_type === 'standard' || formData.installation_type === 'elevated') {
+      if (!formData.installation_amount || formData.installation_amount <= 0) {
+        errors.installation_amount = "Installation amount is required";
+      }
+    }
+    
+    // Product validation
+    let hasProductErrors = false;
+    products.forEach((product, index) => {
+      if (!product.product_type.trim()) {
+        errors[`products[${product.id}].product_type`] = "Product type is required";
+        hasProductErrors = true;
+      }
+      if (product.product_type === "Others" && !product.specify_product.trim()) {
+        errors[`products[${product.id}].specify_product`] = "Please specify the product";
+        hasProductErrors = true;
+      }
+      if (!product.quantity || product.quantity <= 0) {
+        errors[`products[${product.id}].quantity`] = "Quantity is required";
+        hasProductErrors = true;
+      }
+      if (!product.unit_price || product.unit_price <= 0) {
+        errors[`products[${product.id}].unit_price`] = "Unit price is required";
+        hasProductErrors = true;
+      }
+    });
+    
+    if (hasProductErrors) {
+      errors.products = "Please fill all product details";
     }
     
     return errors;
@@ -118,11 +148,11 @@ const UniqueSolarForm = ({ onBack, onSubmit, initialData }) => {
       ...prev,
       {
         id: Date.now(),
-        product_type: 'solar_panel',
+        product_type: '',
         specify_product: '',
-        quantity: 1,
-        unit_price: '0.00',
-        line_total: '0.00'
+        quantity: "",
+        unit_price: '',
+        line_total: ''
       }
     ]);
   };
@@ -138,7 +168,7 @@ const UniqueSolarForm = ({ onBack, onSubmit, initialData }) => {
   };
 
   const subtotal = products.reduce((sum, p) => sum + (parseFloat(p.line_total) || 0), 0);
-  const installationCost = (formData.installation_type !== 'none')
+  const installationCost = (formData.installation_type !== 'no_installation')
     ? parseFloat(formData.installation_amount) || 0
     : 0;
   const taxAmount = ((subtotal + installationCost) * parseFloat(formData.tax_percentage || 0)) / 100;
@@ -163,6 +193,13 @@ const UniqueSolarForm = ({ onBack, onSubmit, initialData }) => {
     setApiErrors({});
 
     if (Object.keys(errors).length > 0) {
+      // Scroll to first error
+      const firstErrorField = Object.keys(errors)[0];
+      const element = document.querySelector(`[name="${firstErrorField}"]`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        element.focus();
+      }
       return;
     }
 
@@ -172,7 +209,7 @@ const UniqueSolarForm = ({ onBack, onSubmit, initialData }) => {
       // Prepare data for API - ensure proper formatting
       const apiData = {
         customer_name: formData.customer_name,
-        contact_no: formData.contact_no,
+        contact_no: formData.contact_no.toString(), // Ensure string format
         address: formData.address,
         date: formData.date,
         valid_until: formData.valid_until,
@@ -182,11 +219,11 @@ const UniqueSolarForm = ({ onBack, onSubmit, initialData }) => {
         advance_payment: formData.advance_payment || "0.00",
         total_payment: grandTotal.toFixed(2),
         completion_payment: (grandTotal - (parseFloat(formData.advance_payment) || 0)).toFixed(2),
-        status: formData.status || 'pending',
+        status: formData.status,
         products: products.map(product => ({
           product_type: product.product_type,
           specify_product: product.specify_product || '',
-          quantity: product.quantity,
+          quantity: product.quantity.toString(),
           unit_price: product.unit_price.toString(),
           line_total: product.line_total.toString()
         })),
@@ -194,7 +231,7 @@ const UniqueSolarForm = ({ onBack, onSubmit, initialData }) => {
       };
 
       // Add installation amount if applicable
-      if (formData.installation_type !== 'none' && formData.installation_amount) {
+      if (formData.installation_type !== 'no_installation' && formData.installation_amount) {
         apiData.installation_amount = formData.installation_amount.toString();
       }
 
@@ -246,7 +283,11 @@ const UniqueSolarForm = ({ onBack, onSubmit, initialData }) => {
       <div className="bg-white rounded-xl shadow-lg overflow-hidden">
         {/* Header */}
         <div className="bg-[#181829] text-white p-6 flex items-center gap-3">
-          <button onClick={onBack} className="text-[#d8f276] hover:text-white transition-colors">
+          <button 
+            type="button"
+            onClick={onBack} 
+            className="text-[#d8f276] hover:text-white transition-colors"
+          >
             <ArrowLeft className="h-5 w-5" />
           </button>
           <h2 className="text-xl font-semibold">UNIQUE SOLAR PROJECT ENTRY</h2>
@@ -271,14 +312,13 @@ const UniqueSolarForm = ({ onBack, onSubmit, initialData }) => {
               handleProductChange={handleProductChange}
               addProduct={addProduct}
               removeProduct={removeProduct}
+              formErrors={{...formErrors, ...apiErrors}}
             />
             <InstallationType 
               formData={formData} 
-              handleInputChange={handleInputChange} 
+              handleInputChange={handleInputChange}
+              formErrors={{...formErrors, ...apiErrors}}
             />
-            {apiErrors.installation_type && (
-              <div className="text-red-600 text-sm mt-1">{apiErrors.installation_type}</div>
-            )}
             <TotalsSummary
               subtotal={subtotal}
               installationCost={installationCost}
@@ -288,9 +328,6 @@ const UniqueSolarForm = ({ onBack, onSubmit, initialData }) => {
             />
             <ReceiptUpload handleReceiptUpload={handleReceiptUpload} receiptImage={receiptImage} />
             <PaymentTerms formData={formData} handleInputChange={handleInputChange} />
-            {apiErrors.advance_payment && (
-              <div className="text-red-600 text-sm mt-1">{apiErrors.advance_payment}</div>
-            )}
             <ProjectChecklist 
               checklist={checklist} 
               handleChecklistChange={handleChecklistChange} 
@@ -302,14 +339,14 @@ const UniqueSolarForm = ({ onBack, onSubmit, initialData }) => {
               <button
                 type="button"
                 onClick={onBack}
-                className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
               >
                 Back
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-6 py-2 bg-[#181829] text-white rounded-lg hover:bg-[#d8f276] hover:text-[#181829] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-6 py-2 bg-[#181829] text-white rounded-lg hover:bg-[#d8f276] hover:text-[#181829] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {isSubmitting ? 'Saving...' : 'Save Project'}
               </button>

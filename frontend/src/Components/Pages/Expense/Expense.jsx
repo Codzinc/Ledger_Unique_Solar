@@ -15,8 +15,27 @@ const Expense = () => {
   const [editingExpense, setEditingExpense] = useState(null);
 
   useEffect(() => {
+    // Try to load from localStorage first
+    const localExpenses = localStorage.getItem("expenses");
+    if (localExpenses) {
+      try {
+        const parsed = JSON.parse(localExpenses);
+        setExpenses(parsed);
+        setLoading(false);
+        return;
+      } catch (e) {
+        // fallback to API if parsing fails
+      }
+    }
     loadExpenses();
   }, []);
+
+  // Save to localStorage whenever expenses change
+  useEffect(() => {
+    if (!loading) {
+      localStorage.setItem("expenses", JSON.stringify(expenses));
+    }
+  }, [expenses, loading]);
 
   const loadExpenses = async () => {
     try {

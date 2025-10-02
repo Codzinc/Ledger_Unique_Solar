@@ -31,7 +31,16 @@ const ExpenseListing = ({
     setSelectedDate(e.target.value);
   };
 
-  const filteredExpenses = expenses.filter((expense) => {
+  // Filter out invalid/empty expenses (e.g., missing id, title, or amount)
+  const validExpenses = expenses.filter(
+    (expense) =>
+      expense &&
+      expense.id != null &&
+      expense.title &&
+      (typeof expense.amount === "number" || (typeof expense.amount === "string" && expense.amount !== ""))
+  );
+
+  const filteredExpenses = validExpenses.filter((expense) => {
     const title = expense.title || "";
     const description = expense.description || "";
     const amount = (typeof expense.amount === "number" || typeof expense.amount === "string") ? expense.amount : "";
@@ -214,11 +223,11 @@ const ExpenseListing = ({
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredExpenses.length === 0 ? (
                   <tr>
-                    <td colSpan="6" className="px-6 py-8 text-center text-gray-500">
-                      <div className="flex flex-col items-center">
-                        <DollarSign className="w-12 h-12 text-gray-300 mb-3" />
-                        <p className="text-lg font-medium">No expenses found</p>
-                        <p className="text-sm">Start by adding your first expense</p>
+                    <td colSpan="6" className="px-6 py-16 text-center text-gray-500">
+                      <div className="flex flex-col items-center gap-2">
+                        <DollarSign className="w-12 h-12 text-gray-300" />
+                        <p className="text-lg font-medium">No expense record found.</p>
+                        <p className="text-sm">Add your first expense to get started</p>
                       </div>
                     </td>
                   </tr>
@@ -255,7 +264,10 @@ const ExpenseListing = ({
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-xs font-medium">
-                        ${expense.amount.toLocaleString()}
+                        $
+                        {expense.amount != null && !isNaN(expense.amount)
+                          ? Number(expense.amount).toLocaleString()
+                          : "0"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         <div className="relative dropdown-container">

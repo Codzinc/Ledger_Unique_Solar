@@ -20,7 +20,7 @@ const PaymentTerms = ({ formData, handleInputChange }) => (
         placeholder="0.00"
         value={formData.total_payment}
         onChange={handleInputChange}
-        disabled
+        
       />
       <InputField
         label="Completion Payment"
@@ -29,7 +29,7 @@ const PaymentTerms = ({ formData, handleInputChange }) => (
         placeholder="0.00"
         value={formData.completion_payment}
         onChange={handleInputChange}
-        disabled
+        
       />
     </div>
   </Section>

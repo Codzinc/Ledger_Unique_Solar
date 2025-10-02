@@ -7,14 +7,17 @@ export function AuthProvider({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     return !!localStorage.getItem("access") && !!localStorage.getItem("refresh");
   });
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    const storedUser = localStorage.getItem("user");
+    return storedUser ? JSON.parse(storedUser) : null;
+  });
 
-  // Restore user info from token if needed (optional: decode JWT for user info)
   useEffect(() => {
     if (isAuthenticated && !user) {
-      // Optionally, decode JWT to get user info here
-      // For now, just set user as "restored"
-      setUser({ restored: true });
+      const storedUser = localStorage.getItem("user");
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
+      }
     }
   }, [isAuthenticated, user]);
 
@@ -22,14 +25,18 @@ export function AuthProvider({ children }) {
     const data = await loginUser(credentials);
     localStorage.setItem("access", data.access);
     localStorage.setItem("refresh", data.refresh);
+    if (data.user) {
+      localStorage.setItem("user", JSON.stringify(data.user));
+      setUser(data.user);
+    }
     setIsAuthenticated(true);
-    setUser(data.user || {});
     return data;
   }, []);
 
   const logout = useCallback(() => {
     localStorage.removeItem("access");
     localStorage.removeItem("refresh");
+    localStorage.removeItem("user");
     setIsAuthenticated(false);
     setUser(null);
   }, []);

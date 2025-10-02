@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   MoreVertical,
   Eye,
@@ -12,63 +12,21 @@ import {
   Loader2,
   AlertCircle,
 } from "lucide-react";
-import { getProducts } from "../../../ApiComps/Product/ProductList";
-const ProductList = React.forwardRef(({
+
+const ProductList = ({
+  products,
+  loading,
+  error,
   onViewProduct,
   onEditProduct,
   onDeleteProduct,
   onAddProduct,
-  isDeleting = false,
-}, ref) => {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  isDeleting,
+  onRetry
+}) => {
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
-
-  // Fetch products on component mount
-  useEffect(() => {
-    fetchProducts();
-  }, []);
-
-  const fetchProducts = async () => {
-    setLoading(true);
-    setError(null);
-    
-    const result = await getProducts();
-    
-    if (result.success) {
-      // Transform API data to match component expected format
-      const transformedProducts = result.data.results.map((product, index) => ({
-        id: product.id,
-        srNo: index + 1,
-        product: product.name,
-        brand: product.brand,
-        cName: product.customer_name,
-        dateAdded: product.date,
-        purchPrice: parseFloat(product.purchase_price),
-        salePrice: parseFloat(product.sale_price),
-        profit: product.total_profit,
-        category: product.category,
-        quantity: product.quantity,
-        description: product.description,
-        images: product.images,
-        totalPurchaseCost: product.total_purchase_cost,
-        totalSaleValue: product.total_sale_value,
-        profitPerUnit: product.profit_per_unit,
-        profitMarginPercentage: product.profit_margin_percentage,
-        createdAt: product.created_at,
-        updatedAt: product.updated_at,
-      }));
-      
-      setProducts(transformedProducts);
-    } else {
-      setError(result.error);
-    }
-    
-    setLoading(false);
-  };
 
   // Function to filter products by selected month and year
   const filterByDate = (products) => {
@@ -131,8 +89,6 @@ const ProductList = React.forwardRef(({
     setSelectedDate("");
   };
 
-  // ...removed refreshProducts and imperative handle...
-
   // Loading state
   if (loading) {
     return (
@@ -170,7 +126,7 @@ const ProductList = React.forwardRef(({
               {error}
             </p>
             <button
-              onClick={fetchProducts}
+              onClick={onRetry}
               className="bg-[#181829] text-white px-4 py-2 rounded-lg hover:bg-[#d8f276] hover:text-[#181829] transition-colors"
             >
               Try Again
@@ -339,24 +295,7 @@ const ProductList = React.forwardRef(({
                         </div>
                       </div>
                     </td>
-                      {/* <td className="px-6 py-4 text-sm text-gray-900">
-                        <div className="flex items-center">
-                          <div>
-                            <div className="font-medium">{product.product}</div>
-                            <div className="text-gray-500 text-xs flex items-center gap-2">
-                              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
-                                className={`flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left ${
-                                  isDeleting ? 'opacity-50 cursor-not-allowed' : ''
-                                }`}
-                                disabled={isDeleting}
-                              </span>
-                              <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs">
-                                {isDeleting ? 'Deleting...' : 'Delete Product'}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </td> */}
+                      
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         <div className="font-medium">{product.cName}</div>
                         <div className="text-gray-500 text-xs">
@@ -463,8 +402,6 @@ const ProductList = React.forwardRef(({
       </div>
     </div>
   );
-});
-
-ProductList.displayName = 'ProductList';
+};
 
 export default ProductList;

@@ -39,14 +39,16 @@ const SalaryContent = () => {
   };
 
   const stats = {
-    totalEmployees: salaries.length,
-    totalSalaries: salaries.reduce(
-      (sum, salary) => sum + Number(salary.salary),
-      0
-    ),
-    monthlyWageEmployees: salaries.filter((s) => s.wageType === "Monthly")
-      .length,
-    dailyWageEmployees: salaries.filter((s) => s.wageType === "Daily").length,
+    totalEmployees: Array.isArray(salaries) ? salaries.length : 0,
+    totalSalaries: Array.isArray(salaries)
+      ? salaries.reduce((sum, salary) => sum + Number(salary.salary), 0)
+      : 0,
+    monthlyWageEmployees: Array.isArray(salaries)
+      ? salaries.filter((s) => s.wageType === "Monthly").length
+      : 0,
+    dailyWageEmployees: Array.isArray(salaries)
+      ? salaries.filter((s) => s.wageType === "Daily").length
+      : 0,
   };
 
   const handleAddSalary = () => {

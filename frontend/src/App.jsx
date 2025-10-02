@@ -7,6 +7,10 @@ import Project from "./Components/Pages/Project/Project";
 import Expense from "./Components/Pages/Expense/Expense";
 import Salary from "./Components/Pages/Salaries/Salary";
 import Profile from "./Components/Common/Profile";
+
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 import { FaUserCircle } from "react-icons/fa";
 import { HiMenuAlt3 } from "react-icons/hi";
 import { AuthProvider, useAuth } from "./Components/Common/Auth/AuthProvider";
@@ -109,6 +113,16 @@ export default function RootApp() {
   return (
     <AuthProvider>
       <App />
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        pauseOnHover
+        draggable
+        theme="colored"
+      />
     </AuthProvider>
   );
 }

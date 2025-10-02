@@ -109,9 +109,8 @@ const AddProduct = ({ product, onAddProduct, onProductUpdated, onClose, isEdit =
       const result = await addProduct(formDataToSend);
       
       if (result.success) {
-        // Call the appropriate callback based on whether it's edit or add
         if (isEdit && onProductUpdated) {
-          onProductUpdated();
+          onProductUpdated(result.data);
         } else if (onAddProduct) {
           onAddProduct(result.data);
         }
