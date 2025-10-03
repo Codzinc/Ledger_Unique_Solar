@@ -53,8 +53,8 @@ const ProductList = ({
 
   const totals = filteredProducts.reduce(
     (acc, product) => ({
-      totalPurchase: acc.totalPurchase + product.purchPrice,
-      totalSale: acc.totalSale + product.salePrice,
+      totalPurchase: acc.totalPurchase + product.totalPurchaseCost,
+      totalSale: acc.totalSale + product.totalSaleValue,
       totalProfit: acc.totalProfit + product.profit,
     }),
     { totalPurchase: 0, totalSale: 0, totalProfit: 0 }
@@ -283,30 +283,38 @@ const ProductList = ({
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         #{product.srNo}
                       </td>
-                       <td className="px-6 py-4 text-sm text-gray-900">
-                      <div className="flex items-center">
-                        <div>
-                          <div className="font-medium">{product.product}</div>
-                          <div className="text-gray-500 text-xs flex items-center gap-2">
-                            <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
-                              {product.category}
-                            </span>
+                      <td className="px-6 py-4 text-sm text-gray-900">
+                        <div className="flex items-center">
+                          <div>
+                            <div className="font-medium">{product.product}</div>
+                            <div className="text-gray-500 text-xs flex items-center gap-2">
+                              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
+                                {product.category}
+                              </span>
+                              <span className="text-gray-500">
+                                Qty: {product.quantity}
+                              </span>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </td>
-                      
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         <div className="font-medium">{product.cName}</div>
                         <div className="text-gray-500 text-xs">
                           {new Date(product.dateAdded).toLocaleDateString()}
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
-                        ${product.purchPrice.toLocaleString()}
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <div className="font-medium">${product.totalPurchaseCost.toLocaleString()}</div>
+                        <div className="text-gray-500 text-xs">
+                          ${product.purchPrice.toLocaleString()} per unit
+                        </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
-                        ${product.salePrice.toLocaleString()}
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <div className="font-medium">${product.totalSaleValue.toLocaleString()}</div>
+                        <div className="text-gray-500 text-xs">
+                          ${product.salePrice.toLocaleString()} per unit
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
                         <span className={`font-medium ${product.profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>

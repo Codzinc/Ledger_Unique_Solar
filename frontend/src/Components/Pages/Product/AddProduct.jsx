@@ -109,9 +109,9 @@ const AddProduct = ({ product, onAddProduct, onProductUpdated, onClose, isEdit =
       const result = await addProduct(formDataToSend);
       
       if (result.success) {
-        if (isEdit && onProductUpdated) {
+        if (isEdit) {
           onProductUpdated(result.data);
-        } else if (onAddProduct) {
+        } else {
           onAddProduct(result.data);
         }
         onClose();
