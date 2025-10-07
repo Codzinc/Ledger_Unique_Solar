@@ -3,7 +3,7 @@ import AddExpense from "./AddExpense";
 import ExpenseListing from "./ExpenseListing";
 import ViewExpense from "./ViewExpense";
 import expenseService from "../../../ApiComps/Expense/Expense";
-import { utilizers, expenseCategories } from "./SampleExpense";
+import { utilizers } from "./SampleUtilizers";
 
 const Expense = () => {
   const [expenses, setExpenses] = useState([]);
@@ -91,12 +91,15 @@ const Expense = () => {
     setShowExpenseDetail(true);
   };
 
-  const handleEditExpense = (expense) => {
-    setEditingExpense(expense);
-    setSelectedExpense(null);
-    setShowExpenseDetail(false);
-    setShowAddExpense(true);
-  };
+ // Aur handleEditExpense mein
+const handleEditExpense = (expense) => {
+  console.log("Edit button clicked for:", expense);
+  setEditingExpense(expense);
+  setShowAddExpense(true);
+  // Clear other states
+  setSelectedExpense(null);
+  setShowExpenseDetail(false);
+};
 
   const handleDeleteExpense = async (expenseId) => {
     if (window.confirm("Are you sure you want to delete this expense?")) {
@@ -177,7 +180,6 @@ const Expense = () => {
           onEditExpense={handleEditExpense}
           onDeleteExpense={handleDeleteExpense}
           onAddExpense={() => setShowAddExpense(true)}
-          expenseCategories={expenseCategories}
           utilizers={utilizers}
         />
 

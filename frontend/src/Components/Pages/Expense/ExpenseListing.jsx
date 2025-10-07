@@ -18,7 +18,6 @@ const ExpenseListing = ({
   onEditExpense,
   onDeleteExpense,
   onAddExpense,
-  expenseCategories,
   utilizers
 }) => {
   const [activeDropdown, setActiveDropdown] = useState(null);
@@ -144,19 +143,6 @@ const ExpenseListing = ({
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3 flex-1">
-            <select
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg bg-[#181829] text-white font-medium"
-            >
-              <option key="_category_default" value="">Category</option>
-              {expenseCategories.map((category, idx) => (
-                <option key={`category_${category}_${idx}`} value={category}>
-                  {category}
-                </option>
-              ))}
-            </select>
-
             <select
               value={utilizerFilter}
               onChange={(e) => setUtilizerFilter(e.target.value)}

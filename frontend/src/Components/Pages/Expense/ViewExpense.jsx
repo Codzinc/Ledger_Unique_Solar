@@ -13,6 +13,31 @@ import {
 const ViewExpense = ({ expense, onClose, onEdit }) => {
   if (!expense) return null;
 
+  // ✅ Image URL properly handle karo
+  const getImageUrl = () => {
+    if (!expense.receiptImage) return null;
+    
+    // Agar receiptImage full URL hai
+    if (typeof expense.receiptImage === 'string' && expense.receiptImage.startsWith('http')) {
+      return expense.receiptImage;
+    }
+    
+    // Agar receiptImage relative path hai
+    if (typeof expense.receiptImage === 'string') {
+      // Server base URL add karo (adjust according to your backend)
+      return `http://localhost:8000${expense.receiptImage}`;
+    }
+    
+    // Agar File object hai
+    if (expense.receiptImage instanceof File) {
+      return URL.createObjectURL(expense.receiptImage);
+    }
+    
+    return null;
+  };
+
+  const imageUrl = getImageUrl();
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -114,32 +139,20 @@ const ViewExpense = ({ expense, onClose, onEdit }) => {
                 <Receipt className="w-5 h-5 text-indigo-600" />
                 <h4 className="font-semibold text-gray-800">Receipt Image</h4>
               </div>
-              {expense.receiptImage ? (
+              {imageUrl ? (
                 <div className="space-y-2">
                   <img
-                    src={expense.receiptImage}
+                    src={imageUrl}
                     alt="Receipt"
                     className="w-full max-w-xs rounded-md border border-gray-300 cursor-pointer hover:shadow-lg transition-shadow"
-                    onClick={() => window.open(expense.receiptImage, '_blank')}
+                    onClick={() => window.open(imageUrl, '_blank')}
                   />
-                  <p className="text-xs text-gray-500">Click to view full size</p>
                 </div>
               ) : (
                 <p className="text-sm text-gray-500 italic">
                   No receipt image uploaded
                 </p>
               )}
-            </div>
-
-            <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-              <div className="flex items-center gap-3 mb-3">
-                <FileText className="w-5 h-5 text-gray-600" />
-                <h4 className="font-semibold text-gray-800">Reference</h4>
-              </div>
-              <p className="text-lg font-medium text-gray-900">
-                ID: {expense.id}
-              </p>
-              <p className="text-sm text-gray-600 mt-1">Expense reference ID</p>
             </div>
           </div>
 

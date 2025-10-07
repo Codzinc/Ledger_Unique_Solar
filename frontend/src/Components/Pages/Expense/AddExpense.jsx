@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   X,
   Plus,
@@ -9,7 +9,7 @@ import {
   Calendar,
   Image as ImageIcon,
 } from "lucide-react";
-import { utilizers } from "./SampleExpense";
+import { utilizers } from "./SampleUtilizers";
 
 const AddExpense = ({
   onAddExpense,
@@ -18,17 +18,41 @@ const AddExpense = ({
   editExpense = null,
 }) => {
   const [formData, setFormData] = useState({
-    title: editExpense?.title || "",
-    category: editExpense?.category || "",
-    utilizer: editExpense?.utilizer || "",
-    amount: editExpense?.amount || "",
-    description: editExpense?.description || "",
-    date: editExpense?.date || new Date().toISOString().split("T")[0],
-    receiptImage: editExpense?.receiptImage || null,
+    title: "",
+    category: "",
+    utilizer: "",
+    amount: "",
+    description: "",
+    date: new Date().toISOString().split("T")[0],
+    receiptImage: null,
   });
-
+  const [imagePreview, setImagePreview] = useState(null);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+
+  // ✅ EditExpense change par formData update karo
+ useEffect(() => {
+  if (editExpense) {
+    console.log("Editing expense data:", editExpense); // Debug
+    
+    setFormData({
+      title: editExpense?.title || "",
+      category: editExpense?.category || "",
+      utilizer: editExpense?.utilizer || "",
+      amount: editExpense?.amount || "",
+      description: editExpense?.description || "",
+      date: editExpense?.date || new Date().toISOString().split("T")[0],
+      receiptImage: editExpense?.receiptImage || null,
+    });
+    
+    // ✅ Image preview properly set karo
+    if (editExpense?.receiptImage) {
+      setImagePreview(editExpense.receiptImage);
+    } else {
+      setImagePreview(null);
+    }
+  }
+}, [editExpense]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -49,11 +73,24 @@ const AddExpense = ({
     const file = e.target.files[0];
     if (!file) return;
 
+    // ✅ Create preview for new file
+    const previewUrl = URL.createObjectURL(file);
+    setImagePreview(previewUrl);
+    
     setFormData((prev) => ({
       ...prev,
-      receiptImage: file, // File object store karna hai, base64 nahi
+      receiptImage: file,
     }));
   };
+
+  // ✅ Cleanup URL object when component unmounts
+  useEffect(() => {
+    return () => {
+      if (imagePreview && imagePreview.startsWith('blob:')) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
 
   const validateForm = () => {
     const newErrors = {};
@@ -95,6 +132,25 @@ const AddExpense = ({
       setLoading(false);
     }
   };
+
+  // ✅ Get image source safely
+  const getImageSrc = () => {
+    if (!formData.receiptImage) return null;
+    
+    // Agar receiptImage string hai (existing image URL/base64)
+    if (typeof formData.receiptImage === 'string') {
+      return formData.receiptImage;
+    }
+    
+    // Agar receiptImage File object hai
+    if (formData.receiptImage instanceof File) {
+      return URL.createObjectURL(formData.receiptImage);
+    }
+    
+    return null;
+  };
+
+  const imageSrc = getImageSrc();
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -246,10 +302,11 @@ const AddExpense = ({
                 )}
               </div>
 
-              {formData.receiptImage && (
+              {/* ✅ Fixed image display - safely handle both File objects and strings */}
+              {imageSrc && (
                 <div className="mt-2">
                   <img
-                    src={URL.createObjectURL(formData.receiptImage)}
+                    src={imageSrc}
                     alt="Receipt Preview"
                     className="h-24 object-contain rounded-md border"
                   />
