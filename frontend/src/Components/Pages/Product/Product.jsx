@@ -20,16 +20,15 @@ const Product = () => {
   const fetchProducts = async () => {
     setLoading(true);
     setError(null);
-    
+
     const result = await getProducts();
-    
-    if (result.success) {
+
+    if (result.success && result.data) {
       const transformedProducts = result.data.results.map((product, index) => {
-        const purchPrice = parseFloat(product.purchase_price);
-        const salePrice = parseFloat(product.sale_price);
-        const quantity = parseInt(product.quantity) || 1;
-        
-        // Calculate accurate profits
+        const purchPrice = parseFloat(product.purchase_price.toString());
+        const salePrice = parseFloat(product.sale_price.toString());
+        const quantity = parseInt(product.quantity.toString()) || 1;
+
         const profitPerUnit = salePrice - purchPrice;
         const totalPurchaseCost = purchPrice * quantity;
         const totalSaleValue = salePrice * quantity;
@@ -37,80 +36,77 @@ const Product = () => {
         const profitMarginPercentage = (profitPerUnit / purchPrice) * 100;
 
         return {
-          id: product.id,
+          ...product,
           srNo: index + 1,
           product: product.name,
-          brand: product.brand,
           cName: product.customer_name,
           dateAdded: product.date,
           purchPrice: purchPrice,
           salePrice: salePrice,
           profit: totalProfit,
-          category: product.category,
-          quantity: quantity,
-          description: product.description,
-          images: product.images,
           totalPurchaseCost: totalPurchaseCost,
           totalSaleValue: totalSaleValue,
           profitPerUnit: profitPerUnit,
           profitMarginPercentage: profitMarginPercentage,
-          createdAt: product.created_at,
-          updatedAt: product.updated_at,
         };
       });
-      
+
       setProducts(transformedProducts);
     } else {
-      setError(result.error);
+      setError(result.error || 'Failed to fetch products');
     }
-    
+
     setLoading(false);
   };
 
-  const handleAddProduct = (newProduct) => {
-    // Only handle new product additions here
-    if (selectedProduct) {
-      // If we have a selectedProduct, this is an edit operation
-      handleProductUpdated(newProduct);
-      return;
-    }
+ const handleAddOrUpdateProduct = (savedProduct) => {
+  const purchPrice = parseFloat(savedProduct.purchase_price.toString());
+  const salePrice = parseFloat(savedProduct.sale_price.toString());
+  const quantity = parseInt(savedProduct.quantity.toString()) || 1;
 
-    const purchPrice = parseFloat(newProduct.purchase_price);
-    const salePrice = parseFloat(newProduct.sale_price);
-    const quantity = parseInt(newProduct.quantity) || 1;
-    
-    // Calculate accurate profits
-    const profitPerUnit = salePrice - purchPrice;
-    const totalPurchaseCost = purchPrice * quantity;
-    const totalSaleValue = salePrice * quantity;
-    const totalProfit = totalSaleValue - totalPurchaseCost;
-    const profitMarginPercentage = (profitPerUnit / purchPrice) * 100;
+  const profitPerUnit = salePrice - purchPrice;
+  const totalPurchaseCost = purchPrice * quantity;
+  const totalSaleValue = salePrice * quantity;
+  const totalProfit = totalSaleValue - totalPurchaseCost;
+  const profitMarginPercentage = purchPrice > 0 ? ((profitPerUnit / purchPrice) * 100) : 0;
 
-    const transformedProduct = {
-      id: newProduct.id,
-      srNo: products.length + 1,
-      product: newProduct.name,
-      brand: newProduct.brand,
-      cName: newProduct.customer_name,
-      dateAdded: newProduct.date,
-      purchPrice: purchPrice,
-      salePrice: salePrice,
-      profit: totalProfit,
-      category: newProduct.category,
-      quantity: quantity,
-      description: newProduct.description,
-      images: newProduct.images,
-      totalPurchaseCost: totalPurchaseCost,
-      totalSaleValue: totalSaleValue,
-      profitPerUnit: profitPerUnit,
-      profitMarginPercentage: profitMarginPercentage,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    setProducts(prevProducts => [...prevProducts, transformedProduct]);
-    setShowAddProduct(false);
+  const transformedProduct = {
+    ...savedProduct,
+    srNo: 0, // This will be set based on position
+    product: savedProduct.name,
+    cName: savedProduct.customer_name,
+    dateAdded: savedProduct.date,
+    purchPrice: purchPrice,
+    salePrice: salePrice,
+    profit: totalProfit,
+    totalPurchaseCost: totalPurchaseCost,
+    totalSaleValue: totalSaleValue,
+    profitPerUnit: profitPerUnit,
+    profitMarginPercentage: profitMarginPercentage,
   };
+
+  setProducts(prevProducts => {
+    if (selectedProduct && selectedProduct.id === savedProduct.id) {
+      // Update existing product
+      return prevProducts.map(product => {
+        if (product.id === savedProduct.id) {
+          return { ...transformedProduct, srNo: product.srNo };
+        }
+        return product;
+      });
+    } else {
+      // Add new product - insert at beginning
+      const newProducts = [
+        { ...transformedProduct, srNo: 1 },
+        ...prevProducts.map(p => ({ ...p, srNo: p.srNo + 1 }))
+      ];
+      return newProducts;
+    }
+  });
+
+  setShowAddProduct(false);
+  setSelectedProduct(null);
+};
 
   const handleViewProduct = (product) => {
     setSelectedProduct(product);
@@ -128,14 +124,12 @@ const Product = () => {
       setIsDeleting(true);
       const result = await deleteProduct(productId);
       if (result.success) {
-        // Remove the product from the local state
-        setProducts(prevProducts => 
+        setProducts(prevProducts =>
           prevProducts
             .filter(product => product.id !== productId)
             .map((product, index) => ({ ...product, srNo: index + 1 }))
         );
-        
-        // Close product detail modal if the deleted product was being viewed
+
         if (selectedProduct && selectedProduct.id === productId) {
           setShowProductDetail(false);
           setSelectedProduct(null);
@@ -147,53 +141,18 @@ const Product = () => {
     }
   };
 
-  const handleProductUpdated = (updatedProduct) => {
-    if (updatedProduct) {
-      const purchPrice = parseFloat(updatedProduct.purchase_price);
-      const salePrice = parseFloat(updatedProduct.sale_price);
-      const quantity = parseInt(updatedProduct.quantity) || 1;
-      
-      // Calculate accurate profits
-      const profitPerUnit = salePrice - purchPrice;
-      const totalPurchaseCost = purchPrice * quantity;
-      const totalSaleValue = salePrice * quantity;
-      const totalProfit = totalSaleValue - totalPurchaseCost;
-      const profitMarginPercentage = (profitPerUnit / purchPrice) * 100;
-
-      setProducts(prevProducts =>
-        prevProducts.map(product => {
-          if (product.id === selectedProduct.id) {  // Use selectedProduct.id instead of updatedProduct.id
-            return {
-              ...product,
-              product: updatedProduct.name,
-              brand: updatedProduct.brand,
-              cName: updatedProduct.customer_name,
-              dateAdded: updatedProduct.date,
-              purchPrice: purchPrice,
-              salePrice: salePrice,
-              profit: totalProfit,
-              category: updatedProduct.category,
-              quantity: quantity,
-              description: updatedProduct.description,
-              images: updatedProduct.images,
-              totalPurchaseCost: totalPurchaseCost,
-              totalSaleValue: totalSaleValue,
-              profitPerUnit: profitPerUnit,
-              profitMarginPercentage: profitMarginPercentage,
-              updatedAt: new Date().toISOString(),
-            };
-          }
-          return product;
-        })
-      );
-    }
+  const handleCloseAddProduct = () => {
     setShowAddProduct(false);
+    setSelectedProduct(null);
+  };
+
+  const handleCloseProductDetail = () => {
     setShowProductDetail(false);
     setSelectedProduct(null);
   };
 
   return (
-    <div className="">
+    <div>
       <ProductList
         products={products}
         loading={loading}
@@ -201,7 +160,10 @@ const Product = () => {
         onViewProduct={handleViewProduct}
         onEditProduct={handleEditProduct}
         onDeleteProduct={handleDeleteProduct}
-        onAddProduct={() => setShowAddProduct(true)}
+        onAddProduct={() => {
+          setSelectedProduct(null);
+          setShowAddProduct(true);
+        }}
         isDeleting={isDeleting}
         onRetry={fetchProducts}
       />
@@ -209,12 +171,8 @@ const Product = () => {
       {showAddProduct && (
         <AddProduct
           product={selectedProduct}
-          onAddProduct={handleAddProduct}
-          onProductUpdated={handleProductUpdated}
-          onClose={() => {
-            setShowAddProduct(false);
-            setSelectedProduct(null);
-          }}
+          onSave={handleAddOrUpdateProduct}
+          onClose={handleCloseAddProduct}
           isEdit={!!selectedProduct}
         />
       )}
@@ -222,13 +180,9 @@ const Product = () => {
       {showProductDetail && selectedProduct && (
         <ProductDetail
           product={selectedProduct}
-          onClose={() => {
-            setShowProductDetail(false);
-            setSelectedProduct(null);
-          }}
+          onClose={handleCloseProductDetail}
           onEdit={handleEditProduct}
           onDelete={handleDeleteProduct}
-          onProductUpdated={handleProductUpdated}
         />
       )}
     </div>

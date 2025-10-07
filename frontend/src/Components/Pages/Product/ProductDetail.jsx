@@ -7,64 +7,58 @@ import {
   TrendingUp,
   Calendar,
   Receipt,
-  Ruler,
   Tag,
   Loader2,
   AlertCircle,
   Trash2,
   Hash,
-  ShoppingCart,
 } from "lucide-react";
 import { getProduct } from "../../../ApiComps/Product/ProductList";
 
-const ProductDetail = ({ product, onClose, onEdit, onDelete, onProductUpdated }) => {
+const ProductDetail = ({ product, onClose, onEdit, onDelete }) => {
   const [productDetails, setProductDetails] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (product && product.id) {
-      fetchProductDetails(product.id);
-    }
-  }, [product]);
+    const fetchDetails = async () => {
+      if (!product || !product.id) {
+        setProductDetails(product);
+        setLoading(false);
+        return;
+      }
 
-  const fetchProductDetails = async (productId) => {
-    setLoading(true);
-    setError(null);
-    
-    const result = await getProduct(productId);
-    
-    if (result.success) {
-      // Transform API data to match component expected format
-      const transformedProduct = {
-        id: result.data.id,
-        srNo: product.srNo || result.data.id, // Use srNo from list or fallback to id
-        product: result.data.name,
-        brand: result.data.brand,
-        cName: result.data.customer_name,
-        dateAdded: result.data.date,
-        purchPrice: parseFloat(result.data.purchase_price),
-        salePrice: parseFloat(result.data.sale_price),
-        profit: result.data.total_profit,
-        category: result.data.category,
-        quantity: result.data.quantity,
-        description: result.data.description,
-        images: result.data.images,
-        totalPurchaseCost: result.data.total_purchase_cost,
-        totalSaleValue: result.data.total_sale_value,
-        profitPerUnit: result.data.profit_per_unit,
-        profitMarginPercentage: result.data.profit_margin_percentage,
-        createdAt: result.data.created_at,
-        updatedAt: result.data.updated_at,
-      };
-      
-      setProductDetails(transformedProduct);
-    } else {
-      setError(result.error);
-    }
-    
-    setLoading(false);
-  };
+      setLoading(true);
+      setError(null);
+
+      const result = await getProduct(product.id);
+
+      if (result.success && result.data) {
+        const transformedProduct = {
+          ...result.data,
+          srNo: product.srNo || result.data.id,
+          product: result.data.name,
+          cName: result.data.customer_name,
+          dateAdded: result.data.date,
+          purchPrice: parseFloat(result.data.purchase_price.toString()),
+          salePrice: parseFloat(result.data.sale_price.toString()),
+          profit: result.data.total_profit,
+          totalPurchaseCost: result.data.total_purchase_cost,
+          totalSaleValue: result.data.total_sale_value,
+          profitPerUnit: result.data.profit_per_unit,
+          profitMarginPercentage: result.data.profit_margin_percentage,
+        };
+
+        setProductDetails(transformedProduct);
+      } else {
+        setError(result.error || 'Failed to fetch product details');
+      }
+
+      setLoading(false);
+    };
+
+    fetchDetails();
+  }, [product?.id]);
 
   const handleDelete = () => {
     if (window.confirm("Are you sure you want to delete this product?")) {
@@ -74,7 +68,6 @@ const ProductDetail = ({ product, onClose, onEdit, onDelete, onProductUpdated })
 
   if (!product) return null;
 
-  // Loading state
   if (loading) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -105,7 +98,6 @@ const ProductDetail = ({ product, onClose, onEdit, onDelete, onProductUpdated })
     );
   }
 
-  // Error state
   if (error) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -130,10 +122,10 @@ const ProductDetail = ({ product, onClose, onEdit, onDelete, onProductUpdated })
               <AlertCircle className="w-12 h-12 text-red-500" />
               <p className="text-red-600 text-center">{error}</p>
               <button
-                onClick={() => fetchProductDetails(product.id)}
+                onClick={onClose}
                 className="bg-[#181829] text-white px-4 py-2 rounded-lg hover:bg-[#d8f276] hover:text-[#181829] transition-colors"
               >
-                Try Again
+                Close
               </button>
             </div>
           </div>
@@ -144,10 +136,19 @@ const ProductDetail = ({ product, onClose, onEdit, onDelete, onProductUpdated })
 
   if (!productDetails) return null;
 
+  const purchPrice = productDetails.purchPrice || 0;
+  const salePrice = productDetails.salePrice || 0;
+  const quantity = productDetails.quantity || 1;
+  const profitPerUnit = productDetails.profitPerUnit || (salePrice - purchPrice);
+  const totalPurchaseCost = productDetails.totalPurchaseCost || (purchPrice * quantity);
+  const totalSaleValue = productDetails.totalSaleValue || (salePrice * quantity);
+  const profit = productDetails.profit || (totalSaleValue - totalPurchaseCost);
+  const profitMarginPercentage = productDetails.profitMarginPercentage ||
+    (purchPrice > 0 ? ((profitPerUnit / purchPrice) * 100) : 0);
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-        {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
             <Package className="w-7 h-7 text-[#d8f276]" />
@@ -166,10 +167,8 @@ const ProductDetail = ({ product, onClose, onEdit, onDelete, onProductUpdated })
           </button>
         </div>
 
-        {/* Content */}
         <div className="p-6 space-y-6">
-          {/* Product Overview */}
-          <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-6">
+          <div className="bg-gradient-to-r from-blue-50 to-green-50 rounded-lg p-6">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
                 <h3 className="text-2xl font-bold text-gray-800 mb-2">
@@ -179,7 +178,7 @@ const ProductDetail = ({ product, onClose, onEdit, onDelete, onProductUpdated })
                   <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
                     {productDetails.category}
                   </span>
-                  <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">
+                  <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
                     {productDetails.brand}
                   </span>
                 </div>
@@ -194,22 +193,20 @@ const ProductDetail = ({ product, onClose, onEdit, onDelete, onProductUpdated })
                   </p>
                   <p
                     className={`text-3xl font-bold ${
-                      productDetails.profit > 0 ? "text-green-600" : "text-red-600"
+                      profit > 0 ? "text-green-600" : "text-red-600"
                     }`}
                   >
-                    ${productDetails.profit.toLocaleString()}
+                    ${profit.toLocaleString()}
                   </p>
                   <p className="text-sm text-gray-500 mt-1">
-                    {productDetails.profitMarginPercentage.toFixed(1)}% margin
+                    {profitMarginPercentage.toFixed(1)}% margin
                   </p>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Details Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-            {/* Customer Info */}
             <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
               <div className="flex items-center gap-3 mb-3">
                 <Building className="w-5 h-5 text-blue-600" />
@@ -220,7 +217,6 @@ const ProductDetail = ({ product, onClose, onEdit, onDelete, onProductUpdated })
               </p>
             </div>
 
-            {/* Brand Info */}
             <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
               <div className="flex items-center gap-3 mb-3">
                 <Tag className="w-5 h-5 text-pink-600" />
@@ -231,64 +227,59 @@ const ProductDetail = ({ product, onClose, onEdit, onDelete, onProductUpdated })
               </p>
             </div>
 
-            {/* Purchase Price */}
             <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
               <div className="flex items-center gap-3 mb-3">
                 <DollarSign className="w-5 h-5 text-orange-600" />
                 <h4 className="font-semibold text-gray-800">Purchase Price</h4>
               </div>
               <p className="text-lg font-medium text-gray-900">
-                ${productDetails.purchPrice.toLocaleString()}
+                ${purchPrice.toLocaleString()}
               </p>
               <p className="text-sm text-gray-500">
-                Total: ${productDetails.totalPurchaseCost.toLocaleString()}
+                Total: ${totalPurchaseCost.toLocaleString()}
               </p>
             </div>
 
-            {/* Sale Price */}
             <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
               <div className="flex items-center gap-3 mb-3">
                 <TrendingUp className="w-5 h-5 text-green-600" />
                 <h4 className="font-semibold text-gray-800">Sale Price</h4>
               </div>
               <p className="text-lg font-medium text-gray-900">
-                ${productDetails.salePrice.toLocaleString()}
+                ${salePrice.toLocaleString()}
               </p>
               <p className="text-sm text-gray-500">
-                Total: ${productDetails.totalSaleValue.toLocaleString()}
+                Total: ${totalSaleValue.toLocaleString()}
               </p>
             </div>
 
-            {/* Quantity */}
             <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
               <div className="flex items-center gap-3 mb-3">
                 <Hash className="w-5 h-5 text-indigo-600" />
                 <h4 className="font-semibold text-gray-800">Quantity</h4>
               </div>
               <p className="text-lg font-medium text-gray-900">
-                {productDetails.quantity} units
+                {quantity} units
               </p>
               <p className="text-sm text-gray-500">
-                Profit per unit: ${productDetails.profitPerUnit.toLocaleString()}
+                Profit per unit: ${profitPerUnit.toLocaleString()}
               </p>
             </div>
 
-            {/* Date Added */}
             <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
               <div className="flex items-center gap-3 mb-3">
-                <Calendar className="w-5 h-5 text-purple-600" />
+                <Calendar className="w-5 h-5 text-blue-600" />
                 <h4 className="font-semibold text-gray-800">Date Added</h4>
               </div>
               <p className="text-lg font-medium text-gray-900">
                 {new Date(productDetails.dateAdded).toLocaleDateString()}
               </p>
               <p className="text-sm text-gray-500">
-                Updated: {new Date(productDetails.updatedAt).toLocaleDateString()}
+                Updated: {new Date(productDetails.updated_at || productDetails.dateAdded).toLocaleDateString()}
               </p>
             </div>
           </div>
 
-          {/* Images Section */}
           {productDetails.images && productDetails.images.length > 0 && (
             <div className="bg-white border border-gray-200 rounded-lg p-4">
               <div className="flex items-center gap-3 mb-3">
@@ -299,7 +290,7 @@ const ProductDetail = ({ product, onClose, onEdit, onDelete, onProductUpdated })
                 {productDetails.images.map((image, index) => (
                   <div key={image.id || index} className="relative">
                     <img
-                      src={`http://localhost:8000${image.image}`}
+                      src={image.image_url || image.image}
                       alt={`Product ${index + 1}`}
                       className="w-full h-32 object-cover rounded-md border border-gray-300"
                     />
@@ -312,37 +303,6 @@ const ProductDetail = ({ product, onClose, onEdit, onDelete, onProductUpdated })
             </div>
           )}
 
-          {/* Technical Specifications */}
-          <div className="bg-gray-50 rounded-lg p-6">
-            <h4 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
-              <Ruler className="w-5 h-5 text-gray-600" />
-              Product Information
-            </h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-gray-600">Category</p>
-                <p className="font-medium text-gray-900">{productDetails.category}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Product ID</p>
-                <p className="font-medium text-gray-900">#{productDetails.id}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Created At</p>
-                <p className="font-medium text-gray-900">
-                  {new Date(productDetails.createdAt).toLocaleString()}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Last Updated</p>
-                <p className="font-medium text-gray-900">
-                  {new Date(productDetails.updatedAt).toLocaleString()}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Profit Analysis */}
           <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-6">
             <h4 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-green-600" />
@@ -352,40 +312,39 @@ const ProductDetail = ({ product, onClose, onEdit, onDelete, onProductUpdated })
               <div className="text-center">
                 <p className="text-sm text-gray-600">Purchase Cost</p>
                 <p className="text-xl font-bold text-orange-600">
-                  ${productDetails.totalPurchaseCost.toLocaleString()}
+                  ${totalPurchaseCost.toLocaleString()}
                 </p>
               </div>
               <div className="text-center">
                 <p className="text-sm text-gray-600">Sale Value</p>
                 <p className="text-xl font-bold text-blue-600">
-                  ${productDetails.totalSaleValue.toLocaleString()}
+                  ${totalSaleValue.toLocaleString()}
                 </p>
               </div>
               <div className="text-center">
                 <p className="text-sm text-gray-600">Total Profit</p>
                 <p
                   className={`text-xl font-bold ${
-                    productDetails.profit > 0 ? "text-green-600" : "text-red-600"
+                    profit > 0 ? "text-green-600" : "text-red-600"
                   }`}
                 >
-                  ${productDetails.profit.toLocaleString()}
+                  ${profit.toLocaleString()}
                 </p>
               </div>
               <div className="text-center">
                 <p className="text-sm text-gray-600">Profit Margin</p>
                 <p
                   className={`text-xl font-bold ${
-                    productDetails.profitMarginPercentage > 0 ? "text-green-600" : "text-red-600"
+                    profitMarginPercentage > 0 ? "text-green-600" : "text-red-600"
                   }`}
                 >
-                  {productDetails.profitMarginPercentage.toFixed(1)}%
+                  {profitMarginPercentage.toFixed(1)}%
                 </p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Footer */}
         <div className="flex items-center justify-between p-6 border-t border-gray-200">
           <button
             onClick={handleDelete}

@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Plus, X, Calendar, Image as ImageIcon } from 'lucide-react';
-import { addProduct } from '../../../ApiComps/Product/ProductList';
+// ✅ Import both add and update functions
+import { addProduct, updateProduct } from '../../../ApiComps/Product/ProductList';
 
-const AddProduct = ({ product, onAddProduct, onProductUpdated, onClose, isEdit = false }) => {
-  // Map product fields for edit mode
+const AddProduct = ({ product, onSave, onClose, isEdit = false }) => {
   const getInitialFormData = () => {
     if (!product) {
       return {
@@ -14,7 +14,7 @@ const AddProduct = ({ product, onAddProduct, onProductUpdated, onClose, isEdit =
         sale_price: '',
         description: '',
         category: '',
-        quantity: '',
+        quantity: '1',
         date: new Date().toISOString().split('T')[0],
       };
     }
@@ -26,7 +26,7 @@ const AddProduct = ({ product, onAddProduct, onProductUpdated, onClose, isEdit =
       sale_price: product.sale_price?.toString() || product.salePrice?.toString() || '',
       description: product.description || '',
       category: product.category || '',
-      quantity: product.quantity?.toString() || '',
+      quantity: product.quantity?.toString() || '1',
       date: product.date || product.dateAdded || new Date().toISOString().split('T')[0],
     };
   };
@@ -37,32 +37,35 @@ const AddProduct = ({ product, onAddProduct, onProductUpdated, onClose, isEdit =
   const [error, setError] = useState('');
   const fileInputRef = useRef(null);
 
+  useEffect(() => {
+    setFormData(getInitialFormData());
+    setImages([]);
+  }, [product]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    // Clear error when user starts typing
+    setFormData((prev) => ({ ...prev, [name]: value }));
     if (error) setError('');
   };
 
   const handleImageUpload = (e) => {
-    const files = Array.from(e.target.files);
+    const files = Array.from(e.target.files || []);
     if (!files.length) return;
-    
-    setImages(prev => [...prev, ...files]);
+    setImages((prev) => [...prev, ...files]);
   };
 
   const removeImage = (index) => {
-    setImages(prev => prev.filter((_, i) => i !== index));
+    setImages((prev) => prev.filter((_, i) => i !== index));
   };
 
   const triggerFileInput = () => {
-    fileInputRef.current.click();
+    fileInputRef.current?.click();
   };
 
   const validateForm = () => {
     const requiredFields = ['name', 'brand', 'customer_name', 'purchase_price', 'sale_price', 'category', 'date'];
-    const missingFields = requiredFields.filter(field => !formData[field]);
-    
+    const missingFields = requiredFields.filter((field) => !formData[field]);
+
     if (missingFields.length > 0) {
       setError(`Please fill in all required fields: ${missingFields.join(', ')}`);
       return false;
@@ -76,74 +79,78 @@ const AddProduct = ({ product, onAddProduct, onProductUpdated, onClose, isEdit =
     return true;
   };
 
+  // ✅ Updated handleSubmit with correct product.id handling
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
-    }
+
+    if (!validateForm()) return;
 
     setIsSubmitting(true);
     setError('');
 
-    // Create FormData for multipart upload
     const formDataToSend = new FormData();
-    
-    // Append text fields
+
     Object.entries(formData).forEach(([key, value]) => {
       if (key === 'purchase_price' || key === 'sale_price') {
-        formDataToSend.append(key, parseFloat(value));
+        formDataToSend.append(key, parseFloat(value).toString());
       } else if (key === 'quantity') {
-        formDataToSend.append(key, parseInt(value, 10) || 1);
+        formDataToSend.append(key, (parseInt(value, 10) || 1).toString());
       } else {
         formDataToSend.append(key, value);
       }
     });
-    
-    // Append images
+
     images.forEach((image) => {
       formDataToSend.append('images', image);
     });
 
+    console.log('Submitting product:', {
+      isEdit,
+      productId: product?.id,
+      formData,
+    });
+
     try {
-      const result = await addProduct(formDataToSend);
-      
-      if (result.success) {
-        if (isEdit) {
-          onProductUpdated(result.data);
-        } else {
-          onAddProduct(result.data);
-        }
-        onClose();
+      // ✅ FIXED HERE: include product.id for update calls
+      const result = isEdit
+        ? await updateProduct(product.id, formDataToSend)
+        : await addProduct(formDataToSend);
+
+      console.log('API Response:', result);
+
+      if (result.success && result.data) {
+        onSave(result.data);
       } else {
-        setError(result.error);
+        setError(result.error || `Failed to ${isEdit ? 'update' : 'save'} product`);
       }
     } catch (error) {
-      console.error("Submission error:", error);
+      console.error('Submission error:', error);
       setError('An unexpected error occurred. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Calculate profit for display
-  const profit = formData.sale_price && formData.purchase_price
-    ? (parseFloat(formData.sale_price) - parseFloat(formData.purchase_price)).toFixed(2)
-    : '0.00';
+  const profit =
+    formData.sale_price && formData.purchase_price
+      ? (parseFloat(formData.sale_price) - parseFloat(formData.purchase_price)).toFixed(2)
+      : '0.00';
 
-  const profitMargin = formData.sale_price && formData.purchase_price && parseFloat(formData.purchase_price) > 0
-    ? (((parseFloat(formData.sale_price) - parseFloat(formData.purchase_price)) / parseFloat(formData.purchase_price)) * 100).toFixed(1)
-    : '0.0';
+  const profitMargin =
+    formData.sale_price &&
+    formData.purchase_price &&
+    parseFloat(formData.purchase_price) > 0
+      ? (
+          ((parseFloat(formData.sale_price) - parseFloat(formData.purchase_price)) /
+            parseFloat(formData.purchase_price)) *
+          100
+        ).toFixed(1)
+      : '0.0';
 
-  // When product changes (edit mode), update form fields
-  useEffect(() => {
-    setFormData(getInitialFormData());
-  }, [product]);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-        {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
             <Plus className="w-6 h-6 text-blue-600" />
@@ -157,17 +164,14 @@ const AddProduct = ({ product, onAddProduct, onProductUpdated, onClose, isEdit =
           </button>
         </div>
 
-        {/* Error Message */}
         {error && (
           <div className="mx-6 mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
             <p className="text-red-600 text-sm">{error}</p>
           </div>
         )}
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Product Name */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Product Name *
@@ -183,7 +187,6 @@ const AddProduct = ({ product, onAddProduct, onProductUpdated, onClose, isEdit =
               />
             </div>
 
-            {/* Brand */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Brand *
@@ -199,7 +202,6 @@ const AddProduct = ({ product, onAddProduct, onProductUpdated, onClose, isEdit =
               />
             </div>
 
-            {/* Customer Name */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Customer Name *
@@ -215,7 +217,6 @@ const AddProduct = ({ product, onAddProduct, onProductUpdated, onClose, isEdit =
               />
             </div>
 
-            {/* Purchase Price */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Purchase Price *
@@ -233,7 +234,6 @@ const AddProduct = ({ product, onAddProduct, onProductUpdated, onClose, isEdit =
               />
             </div>
 
-            {/* Sale Price */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Sale Price *
@@ -251,7 +251,6 @@ const AddProduct = ({ product, onAddProduct, onProductUpdated, onClose, isEdit =
               />
             </div>
 
-            {/* Category */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Category *
@@ -267,7 +266,6 @@ const AddProduct = ({ product, onAddProduct, onProductUpdated, onClose, isEdit =
               />
             </div>
 
-            {/* Quantity */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Quantity
@@ -283,7 +281,6 @@ const AddProduct = ({ product, onAddProduct, onProductUpdated, onClose, isEdit =
               />
             </div>
 
-            {/* Date */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 <Calendar className="w-4 h-4 inline mr-2" />
@@ -300,7 +297,6 @@ const AddProduct = ({ product, onAddProduct, onProductUpdated, onClose, isEdit =
             </div>
           </div>
 
-          {/* Description */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Description
@@ -315,13 +311,12 @@ const AddProduct = ({ product, onAddProduct, onProductUpdated, onClose, isEdit =
             />
           </div>
 
-          {/* Upload Images */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               <ImageIcon className="w-4 h-4 inline mr-2" />
               Product Images
             </label>
-            
+
             <div className="flex flex-wrap gap-4 items-center">
               <button
                 type="button"
@@ -339,14 +334,14 @@ const AddProduct = ({ product, onAddProduct, onProductUpdated, onClose, isEdit =
                 multiple
                 className="hidden"
               />
-              
+
               {images.length > 0 && (
                 <span className="text-sm text-gray-600">
                   {images.length} image{images.length !== 1 ? 's' : ''} selected
                 </span>
               )}
             </div>
-            
+
             {images.length > 0 && (
               <div className="mt-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {images.map((image, index) => (
@@ -370,7 +365,6 @@ const AddProduct = ({ product, onAddProduct, onProductUpdated, onClose, isEdit =
             )}
           </div>
 
-          {/* Profit Analysis */}
           {(formData.purchase_price && formData.sale_price) && (
             <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-4">
               <h4 className="font-semibold text-gray-800 mb-3">Profit Analysis</h4>
@@ -397,7 +391,6 @@ const AddProduct = ({ product, onAddProduct, onProductUpdated, onClose, isEdit =
             </div>
           )}
 
-          {/* Footer */}
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
             <button
               type="button"
@@ -410,8 +403,8 @@ const AddProduct = ({ product, onAddProduct, onProductUpdated, onClose, isEdit =
               type="submit"
               disabled={isSubmitting}
               className={`px-6 py-2 text-white rounded-lg ${
-                isSubmitting 
-                  ? 'bg-gray-400 cursor-not-allowed' 
+                isSubmitting
+                  ? 'bg-gray-400 cursor-not-allowed'
                   : 'bg-[#181829] hover:text-[#181829] hover:bg-[#d8f276]'
               } transition-colors flex items-center gap-2`}
             >

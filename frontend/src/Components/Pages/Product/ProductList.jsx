@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import {
   MoreVertical,
   Eye,
-  Edit,
+  CreditCard as Edit,
   Trash2,
   Plus,
   Search,
@@ -10,8 +10,11 @@ import {
   TrendingUp,
   Calendar,
   Loader2,
-  AlertCircle,
+  AlertCircle
 } from "lucide-react";
+
+// ✅ Use the centralized API function from your API folder
+import { updateProduct } from "../../../ApiComps/Product/ProductList";
 
 const ProductList = ({
   products,
@@ -28,7 +31,7 @@ const ProductList = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
 
-  // Function to filter products by selected month and year
+  // ✅ Filter products by date
   const filterByDate = (products) => {
     if (!selectedDate) return products;
 
@@ -42,6 +45,7 @@ const ProductList = ({
     });
   };
 
+  // ✅ Apply filters and search
   const filteredProducts = filterByDate(
     products.filter(
       (product) =>
@@ -51,6 +55,7 @@ const ProductList = ({
     )
   );
 
+  // ✅ Calculate totals
   const totals = filteredProducts.reduce(
     (acc, product) => ({
       totalPurchase: acc.totalPurchase + product.totalPurchaseCost,
@@ -76,20 +81,20 @@ const ProductList = ({
       case "delete":
         onDeleteProduct(product.id);
         break;
+      default:
+        break;
     }
   };
 
-  // Function to handle month-year selection
   const handleDateChange = (e) => {
     setSelectedDate(e.target.value);
   };
 
-  // Function to clear date filter
   const clearDateFilter = () => {
     setSelectedDate("");
   };
 
-  // Loading state
+  // ✅ Handle Loading State
   if (loading) {
     return (
       <div className="bg-white rounded-xl shadow-lg">
@@ -109,7 +114,7 @@ const ProductList = ({
     );
   }
 
-  // Error state
+  // ✅ Handle Error State
   if (error) {
     return (
       <div className="bg-white rounded-xl shadow-lg">
@@ -122,9 +127,7 @@ const ProductList = ({
         <div className="flex items-center justify-center py-20">
           <div className="flex flex-col items-center gap-4">
             <AlertCircle className="w-12 h-12 text-red-500" />
-            <p className="text-red-600 text-center">
-              {error}
-            </p>
+            <p className="text-red-600 text-center">{error}</p>
             <button
               onClick={onRetry}
               className="bg-[#181829] text-white px-4 py-2 rounded-lg hover:bg-[#d8f276] hover:text-[#181829] transition-colors"
@@ -135,11 +138,10 @@ const ProductList = ({
         </div>
       </div>
     );
-  }
+  } 
 
   return (
     <div className="bg-white rounded-xl shadow-lg">
-      {/* Header */}
       <div className="p-6 border-b border-gray-200">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
@@ -185,22 +187,16 @@ const ProductList = ({
               </div>
             </div>
             <button
-              onClick={() => {
-                onAddProduct();
-                // You might want to refresh products after adding
-                // This could be handled by the parent component calling refreshProducts
-              }}
+              onClick={onAddProduct}
               className="bg-[#181829] cursor-pointer text-white hover:text-[#181829] px-4 py-2 rounded-lg hover:bg-[#d8f276] transition-colors flex items-center gap-2 whitespace-nowrap"
             >
               <Plus className="w-4 h-4" />
               Add Product
             </button>
-            {/* Refresh button removed */}
           </div>
         </div>
       </div>
 
-      {/* Stats Cards */}
       <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-[#181829] rounded-lg p-4">
           <div className="flex items-center justify-between">
@@ -237,10 +233,8 @@ const ProductList = ({
         </div>
       </div>
 
-      {/* Table Container with Horizontal Scroll */}
       <div className="overflow-x-auto">
         <div className="min-w-full">
-          {/* Table */}
           <div className="max-h-96 overflow-y-auto">
             <table className="w-full">
               <thead className="bg-[#181829] sticky top-0 z-10">
@@ -275,7 +269,7 @@ const ProductList = ({
                       key={product.id}
                       className="hover:bg-gray-50 transition-colors cursor-pointer"
                       onClick={(e) => {
-                        if (!e.target.closest(".dropdown-container")) {
+                        if (!e.currentTarget.querySelector('.dropdown-container')?.contains(e.target)) {
                           onViewProduct(product);
                         }
                       }}
@@ -366,7 +360,7 @@ const ProductList = ({
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="7" className="px-6 py-8 text-center text-gray-500">
+                    <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
                       <div className="flex flex-col items-center gap-2">
                         <Package className="w-12 h-12 text-gray-300" />
                         <p>No products found</p>
@@ -381,7 +375,6 @@ const ProductList = ({
         </div>
       </div>
 
-      {/* Totals Section */}
       <div className="p-6 bg-[#181829] text-white border-t border-gray-200 rounded-b-xl">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="text-center">
