@@ -372,7 +372,7 @@ const AddProduct = ({ product, onSave, onClose, isEdit = false }) => {
                 <div>
                   <p className="text-sm text-gray-600">Profit Amount</p>
                   <p className={`text-xl font-bold ${parseFloat(profit) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    ${profit}
+                    {profit}
                   </p>
                 </div>
                 <div>

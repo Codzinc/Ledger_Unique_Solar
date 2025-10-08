@@ -61,7 +61,7 @@ const ProductDetails = ({
                   "turnkey_activities",
                   "earthing_boring",
                   "net_metering",
-                  "Others"
+                  "others"
                 ].map((type) => (
                   <option key={type} value={type}>
                     {type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
@@ -71,7 +71,7 @@ const ProductDetails = ({
               {errorMsg("product_type", product.id)}
             </div>
             
-            {product.product_type === "Others" && (
+            {product.product_type === "others" && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Specify Product <span className="text-red-500">*</span>
@@ -123,7 +123,7 @@ const ProductDetails = ({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Line Total
+                Total
               </label>
               <input
                 type="number"

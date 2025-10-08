@@ -214,7 +214,7 @@ const ProductList = ({
             <div>
               <p className="text-sm text-white font-medium">Total Revenue</p>
               <p className="text-2xl font-bold text-white">
-                ${totals.totalSale.toLocaleString()}
+                {totals.totalSale.toLocaleString()}
               </p>
             </div>
             <TrendingUp className="w-8 h-8 text-[#d8f276]" />
@@ -225,7 +225,7 @@ const ProductList = ({
             <div>
               <p className="text-sm text-white font-medium">Total Profit</p>
               <p className="text-2xl font-bold text-white">
-                ${totals.totalProfit.toLocaleString()}
+                {totals.totalProfit.toLocaleString()}
               </p>
             </div>
             <TrendingUp className="w-8 h-8 text-[#d8f276]" />
@@ -299,20 +299,20 @@ const ProductList = ({
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <div className="font-medium">${product.totalPurchaseCost.toLocaleString()}</div>
+                        <div className="font-medium">{product.totalPurchaseCost.toLocaleString()}</div>
                         <div className="text-gray-500 text-xs">
-                          ${product.purchPrice.toLocaleString()} per unit
+                          {product.purchPrice.toLocaleString()} per unit
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <div className="font-medium">${product.totalSaleValue.toLocaleString()}</div>
+                        <div className="font-medium">{product.totalSaleValue.toLocaleString()}</div>
                         <div className="text-gray-500 text-xs">
-                          ${product.salePrice.toLocaleString()} per unit
+                          {product.salePrice.toLocaleString()} per unit
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
                         <span className={`font-medium ${product.profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                          ${product.profit.toLocaleString()}
+                          {product.profit.toLocaleString()}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -384,19 +384,19 @@ const ProductList = ({
           <div className="text-center">
             <p className="text-sm">Total Purchase</p>
             <p className="text-lg font-bold">
-              ${totals.totalPurchase.toLocaleString()}
+              {totals.totalPurchase.toLocaleString()}
             </p>
           </div>
           <div className="text-center">
             <p className="text-sm">Total Sale</p>
             <p className="text-lg font-bold">
-              ${totals.totalSale.toLocaleString()}
+              {totals.totalSale.toLocaleString()}
             </p>
           </div>
           <div className="text-center">
             <p className="text-sm">Total Profit</p>
             <p className="text-lg font-bold">
-              ${totals.totalProfit.toLocaleString()}
+              {totals.totalProfit.toLocaleString()}
             </p>
           </div>
         </div>

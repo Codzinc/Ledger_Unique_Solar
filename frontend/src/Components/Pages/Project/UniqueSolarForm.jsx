@@ -18,7 +18,7 @@ const UniqueSolarForm = ({ onBack, onSubmit, initialData }) => {
     valid_until: '',
     project_type: '',
     installation_type: 'no_installation',
-    tax_percentage: '0.00',
+    tax_percentage: '',
     advance_payment: '',
     status: '',
     installation_amount: ''
@@ -55,6 +55,20 @@ const UniqueSolarForm = ({ onBack, onSubmit, initialData }) => {
     
     loadChecklistItems();
   }, []);
+
+  // Add this useEffect for automatic payment calculation
+useEffect(() => {
+  const advance = parseFloat(formData.advance_payment) || 0;
+  const total = parseFloat(formData.total_payment) || 0;
+  const pending = total - advance;
+  
+  if (pending !== parseFloat(formData.completion_payment || 0)) {
+    setFormData(prev => ({
+      ...prev,
+      completion_payment: pending > 0 ? pending.toString() : "0"
+    }));
+  }
+}, [formData.advance_payment, formData.total_payment]);
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;

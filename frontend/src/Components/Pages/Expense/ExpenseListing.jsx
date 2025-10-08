@@ -250,7 +250,7 @@ const ExpenseListing = ({
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-xs font-medium">
-                        $
+                        
                         {expense.amount != null && !isNaN(expense.amount)
                           ? Number(expense.amount).toLocaleString()
                           : "0"}
@@ -313,7 +313,7 @@ const ExpenseListing = ({
           </div>
           <div className="text-center">
             <p className="text-sm">Total Amount</p>
-            <p className="text-lg font-bold">${totalAmount.toLocaleString()}</p>
+            <p className="text-lg font-bold">{totalAmount.toLocaleString()}</p>
           </div>
         </div>
       </div>

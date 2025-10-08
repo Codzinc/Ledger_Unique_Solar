@@ -196,7 +196,7 @@ const ProductDetail = ({ product, onClose, onEdit, onDelete }) => {
                       profit > 0 ? "text-green-600" : "text-red-600"
                     }`}
                   >
-                    ${profit.toLocaleString()}
+                    {profit.toLocaleString()}
                   </p>
                   <p className="text-sm text-gray-500 mt-1">
                     {profitMarginPercentage.toFixed(1)}% margin
@@ -233,10 +233,10 @@ const ProductDetail = ({ product, onClose, onEdit, onDelete }) => {
                 <h4 className="font-semibold text-gray-800">Purchase Price</h4>
               </div>
               <p className="text-lg font-medium text-gray-900">
-                ${purchPrice.toLocaleString()}
+                {purchPrice.toLocaleString()}
               </p>
               <p className="text-sm text-gray-500">
-                Total: ${totalPurchaseCost.toLocaleString()}
+                Total: {totalPurchaseCost.toLocaleString()}
               </p>
             </div>
 
@@ -246,10 +246,10 @@ const ProductDetail = ({ product, onClose, onEdit, onDelete }) => {
                 <h4 className="font-semibold text-gray-800">Sale Price</h4>
               </div>
               <p className="text-lg font-medium text-gray-900">
-                ${salePrice.toLocaleString()}
+                {salePrice.toLocaleString()}
               </p>
               <p className="text-sm text-gray-500">
-                Total: ${totalSaleValue.toLocaleString()}
+                Total: {totalSaleValue.toLocaleString()}
               </p>
             </div>
 
@@ -262,7 +262,7 @@ const ProductDetail = ({ product, onClose, onEdit, onDelete }) => {
                 {quantity} units
               </p>
               <p className="text-sm text-gray-500">
-                Profit per unit: ${profitPerUnit.toLocaleString()}
+                Profit per unit: {profitPerUnit.toLocaleString()}
               </p>
             </div>
 
@@ -312,13 +312,13 @@ const ProductDetail = ({ product, onClose, onEdit, onDelete }) => {
               <div className="text-center">
                 <p className="text-sm text-gray-600">Purchase Cost</p>
                 <p className="text-xl font-bold text-orange-600">
-                  ${totalPurchaseCost.toLocaleString()}
+                  {totalPurchaseCost.toLocaleString()}
                 </p>
               </div>
               <div className="text-center">
                 <p className="text-sm text-gray-600">Sale Value</p>
                 <p className="text-xl font-bold text-blue-600">
-                  ${totalSaleValue.toLocaleString()}
+                  {totalSaleValue.toLocaleString()}
                 </p>
               </div>
               <div className="text-center">
@@ -328,7 +328,7 @@ const ProductDetail = ({ product, onClose, onEdit, onDelete }) => {
                     profit > 0 ? "text-green-600" : "text-red-600"
                   }`}
                 >
-                  ${profit.toLocaleString()}
+                  {profit.toLocaleString()}
                 </p>
               </div>
               <div className="text-center">

@@ -82,7 +82,7 @@ const ViewExpense = ({ expense, onClose, onEdit }) => {
                 <div className="bg-white rounded-lg p-4 shadow-sm whitespace-nowrap">
                   <p className="text-sm text-gray-600 mb-1">Total Amount</p>
                   <p className="text-3xl font-bold text-red-600">
-                    ${expense.amount.toLocaleString()}
+                    {expense.amount.toLocaleString()}
                   </p>
                 </div>
               </div>
@@ -118,7 +118,7 @@ const ViewExpense = ({ expense, onClose, onEdit }) => {
                 <h4 className="font-semibold text-gray-800">Amount</h4>
               </div>
               <p className="text-lg font-medium text-red-600">
-                ${expense.amount.toLocaleString()}
+                {expense.amount.toLocaleString()}
               </p>
               <p className="text-sm text-gray-600 mt-1">Total expense</p>
             </div>
@@ -177,7 +177,7 @@ const ViewExpense = ({ expense, onClose, onEdit }) => {
               <div className="text-center">
                 <p className="text-sm text-gray-600">Total Amount</p>
                 <p className="text-xl font-bold text-red-600">
-                  ${expense.amount.toLocaleString()}
+                  {expense.amount.toLocaleString()}
                 </p>
               </div>
             </div>

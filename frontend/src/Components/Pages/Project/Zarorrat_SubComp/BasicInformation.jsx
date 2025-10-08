@@ -118,7 +118,7 @@ const BasicInformation = ({ formData, handleInputChange, errors }) => {
             <option value="">Select status</option>
             <option value="pending">Pending</option>
             <option value="in_progress">In Progress</option>
-            <option value="completed">Completed</option>
+            <option value="completed">Complete</option>
           </select>
           {errorText("status")}
         </div>

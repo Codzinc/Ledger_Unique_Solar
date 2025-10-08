@@ -145,7 +145,7 @@ const ProjectInformation = ({ formData, handleInputChange, formErrors }) => {
             <option value="">Select Status</option>
             <option value="pending">Pending</option>
             <option value="in_progress">In Progress</option>
-            <option value="completed">Completed</option>
+            <option value="complete">Complete</option>
           </select>
           {errorMsg("status")}
         </div>

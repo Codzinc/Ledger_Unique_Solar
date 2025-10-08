@@ -15,9 +15,9 @@ const ZarorratForm = ({ onBack, onSubmit, initialData }) => {
     date: new Date().toISOString().split('T')[0],
     valid_until: '',
     notes: '',
-    amount: '0.00',
-    advance_received: '0.00',
-    status: 'pending'
+    amount: '',
+    advance_received: '',
+    status: ''
   });
 
   const [errors, setErrors] = useState({});
