@@ -45,7 +45,21 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=200)),
-                ('product_type', models.CharField(choices=[('solar_panel', 'Solar Panel'), ('inverter', 'Inverter'), ('battery', 'Battery'), ('mounting', 'Mounting System'), ('cable', 'Cable'), ('others', 'Others')], max_length=50)),
+                ('product_type', models.CharField(choices=[
+                    
+                    ('solar_panel', 'Solar Panel'),
+        ('inverter', 'Inverter'),
+        ('structure', 'Structure'),
+        ('allied_material', 'Allied Material'), 
+        ('battery', 'Battery'),
+        ('turnkey_activities', 'Turnkey Activities'),
+        ('earthing_boring', 'Earthing Boring'),
+        ('net_metering', 'Net Metering'),
+        ('others', 'Others')
+
+                    # ('solar_panel', 'Solar Panel'), ('inverter', 'Inverter'), ('battery', 'Battery'), ('mounting', 'Mounting System'), ('cable', 'Cable'), ('others', 'Others')
+                    
+                    ], max_length=50)),
                 ('specification', models.TextField(blank=True, null=True)),
                 ('is_active', models.BooleanField(default=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
@@ -72,7 +86,7 @@ class Migration(migrations.Migration):
                 ('advance_payment', models.DecimalField(decimal_places=2, default=0, max_digits=12, validators=[django.core.validators.MinValueValidator(Decimal('0.00'))])),
                 ('total_payment', models.DecimalField(decimal_places=2, default=0, max_digits=12, validators=[django.core.validators.MinValueValidator(Decimal('0.00'))])),
                 ('completion_payment', models.DecimalField(decimal_places=2, default=0, max_digits=12, validators=[django.core.validators.MinValueValidator(Decimal('0.00'))])),
-                ('status', models.CharField(choices=[('pending', 'Pending'), ('in_progress', 'In Progress'), ('complete', 'Complete'), ('cancelled', 'Cancelled')], default='pending', max_length=20)),
+                ('status', models.CharField(choices=[('pending', 'Pending'), ('in_progress', 'In Progress'), ('complete', 'Complete')], default='pending', max_length=20)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
             ],
@@ -93,7 +107,7 @@ class Migration(migrations.Migration):
                 ('valid_until', models.DateField()),
                 ('notes', models.TextField(blank=True, null=True)),
                 ('amount', models.DecimalField(decimal_places=2, default=0, max_digits=12, validators=[django.core.validators.MinValueValidator(Decimal('0.01'))])),
-                ('status', models.CharField(choices=[('pending', 'Pending'), ('in_progress', 'In Progress'), ('complete', 'Complete'), ('cancelled', 'Cancelled')], default='pending', max_length=20)),
+                ('status', models.CharField(choices=[('pending', 'Pending'), ('in_progress', 'In Progress'), ('complete', 'Complete')], default='pending', max_length=20)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
             ],
@@ -150,7 +164,21 @@ class Migration(migrations.Migration):
             name='UniqueSolarProjectProduct',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('product_type', models.CharField(choices=[('solar_panel', 'Solar Panel'), ('inverter', 'Inverter'), ('battery', 'Battery'), ('mounting', 'Mounting System'), ('cable', 'Cable'), ('others', 'Others')], max_length=50)),
+                ('product_type', models.CharField(choices=[
+
+                    ('solar_panel', 'Solar Panel'),
+        ('inverter', 'Inverter'),
+        ('structure', 'Structure'),
+        ('allied_material', 'Allied Material'), 
+        ('battery', 'Battery'),
+        ('turnkey_activities', 'Turnkey Activities'),
+        ('earthing_boring', 'Earthing Boring'),
+        ('net_metering', 'Net Metering'),
+        ('others', 'Others')
+                    
+                    # ('solar_panel', 'Solar Panel'), ('inverter', 'Inverter'), ('battery', 'Battery'), ('mounting', 'Mounting System'), ('cable', 'Cable'), ('others', 'Others')
+                    
+                    ], max_length=50)),
                 ('specify_product', models.CharField(max_length=200)),
                 ('quantity', models.PositiveIntegerField(default=0)),
                 ('unit_price', models.DecimalField(decimal_places=2, default=0, max_digits=12, validators=[django.core.validators.MinValueValidator(Decimal('0.00'))])),

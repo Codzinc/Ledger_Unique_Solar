@@ -10,7 +10,7 @@ import { createZarorratProject, getZarorratServices } from '../../../ApiComps/Pr
 const ZarorratForm = ({ onBack, onSubmit, initialData }) => {
   const [formData, setFormData] = useState(initialData || {
     customer_name: '',
-    contact_no: '',
+    contact_number: '',
     address: '',
     date: new Date().toISOString().split('T')[0],
     valid_until: '',
@@ -72,7 +72,7 @@ const ZarorratForm = ({ onBack, onSubmit, initialData }) => {
     const newErrors = {};
 
     if (!formData.customer_name.trim()) newErrors.customer_name = 'This field is required';
-    if (!formData.contact_no.trim()) newErrors.contact_no = 'This field is required';
+    if (!formData.contact_number.trim()) newErrors.contact_number = 'This field is required';
     if (!formData.address.trim()) newErrors.address = 'This field is required';
     if (!formData.date) newErrors.date = 'This field is required';
     if (!formData.valid_until) newErrors.valid_until = 'This field is required';
@@ -87,66 +87,67 @@ const ZarorratForm = ({ onBack, onSubmit, initialData }) => {
   const advanceReceived = parseFloat(formData.advance_received) || 0;
   const pendingAmount = totalAmount - advanceReceived;
 
-  const handleFormSubmit = async (e) => {
-    e.preventDefault();
+ const handleFormSubmit = async (e) => {
+  e.preventDefault();
+  
+  if (!validate()) return;
+
+  setIsSubmitting(true);
+  setApiErrors({});
+
+  try {
+    // ✅ CORRECT API DATA MAPPING
+    const submitData = {
+      customer_name: formData.customer_name,
+      contact_number: formData.contact_number, // ✅ This will now be saved in backend
+      address: formData.address,
+      date: formData.date,
+      valid_until: formData.valid_until,
+      notes: formData.notes || '',
+      amount: totalAmount.toFixed(2),
+      advance_received: advanceReceived.toFixed(2), // ✅ Correct backend field name
+      status: formData.status,
+      service_ids: selectedServices // ✅ Correct field name for services
+    };
+
+    console.log('✅ Submitting Zarorrat data:', submitData);
+
+    const response = await createZarorratProject(submitData);
     
-    if (!validate()) return;
-
-    setIsSubmitting(true);
-    setApiErrors({});
-
-    try {
-      const submitData = {
-        customer_name: formData.customer_name,
-        contact_no: formData.contact_no,
-        address: formData.address,
-        date: formData.date,
-        valid_until: formData.valid_until,
-        notes: formData.notes || '',
-        amount: totalAmount.toFixed(2),
-        advance_received: advanceReceived.toFixed(2),
-        status: formData.status,
-        selected_services: selectedServices
-      };
-
-      console.log('Submitting Zarorrat data:', submitData);
-
-      const response = await createZarorratProject(submitData);
-      
-      if (onSubmit) {
-        onSubmit(response);
-      }
-      
-      alert('Zarorrat project created successfully!');
-      
-    } catch (error) {
-      console.error('Error submitting Zarorrat form:', error);
-      
-      if (error.message.includes('Validation failed:')) {
-        setApiErrors({ general: error.message });
-      } else {
-        let errorMessage = 'Error creating project. Please try again.';
-        
-        if (error.response) {
-          const apiErrorData = error.response.data;
-          const fieldErrors = {};
-          
-          Object.keys(apiErrorData).forEach(field => {
-            fieldErrors[field] = apiErrorData[field].join(', ');
-          });
-          
-          setApiErrors(fieldErrors);
-          errorMessage = 'Please check the form for errors.';
-        } else if (error.request) {
-          errorMessage = 'No response from server. Please check your connection.';
-        }
-        
-        setApiErrors({ general: errorMessage });
-      }
-    } finally {
-      setIsSubmitting(false);
+    if (onSubmit) {
+      onSubmit(response);
     }
-  };
+    
+    alert('Zarorrat project created successfully!');
+    
+  } catch (error) {
+    console.error('Error submitting Zarorrat form:', error);
+    
+    if (error.message.includes('Validation failed:')) {
+      setApiErrors({ general: error.message });
+    } else {
+      let errorMessage = 'Error creating project. Please try again.';
+      
+      if (error.response) {
+        const apiErrorData = error.response.data;
+        const fieldErrors = {};
+        
+        Object.keys(apiErrorData).forEach(field => {
+          fieldErrors[field] = apiErrorData[field].join(', ');
+        });
+        
+        setApiErrors(fieldErrors);
+        errorMessage = 'Please check the form for errors.';
+      } else if (error.request) {
+        errorMessage = 'No response from server. Please check your connection.';
+      }
+      
+      setApiErrors({ general: errorMessage });
+    }
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">

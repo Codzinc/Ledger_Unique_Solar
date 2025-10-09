@@ -19,7 +19,7 @@ const ProjectStats = ({ stats }) => {
     },
     {
       label: "TOTAL VALUE",
-      value: `₹${stats.totalValue.toLocaleString()}`,
+      value: `${stats.totalValue.toLocaleString()}`,
       color: "border-orange-500",
     },
   ];

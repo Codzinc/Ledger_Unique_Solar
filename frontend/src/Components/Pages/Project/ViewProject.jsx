@@ -88,7 +88,7 @@ const ViewProject = ({ project, onClose, onEdit, onDelete }) => {
                 <div className="bg-white rounded-lg p-4 shadow-sm">
                   <p className="text-sm text-gray-600 mb-1">Total Amount</p>
                   <p className="text-3xl font-bold text-green-600">
-                    ₹{project.amount?.toLocaleString() || "0"}
+                    {project.amount?.toLocaleString() || "0"}
                   </p>
                 </div>
               </div>
@@ -98,7 +98,7 @@ const ViewProject = ({ project, onClose, onEdit, onDelete }) => {
           {/* Basic Info Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {renderField("Project Type", project.projectType)}
-            {renderField("Contact Number", project.contact_no)}
+            {renderField("Contact Number", project.contact_number)}
             {renderField(
               "Valid Until",
               project.validUntil &&
@@ -106,18 +106,16 @@ const ViewProject = ({ project, onClose, onEdit, onDelete }) => {
             )}
             {renderField(
               "Advance Payment",
-              `₹${project.advanceReceived?.toLocaleString() || "0"}`
+              `${project.advanceReceived?.toLocaleString() || "0"}`
             )}
             {renderField(
               "Pending Amount",
-              `₹${project.pending?.toLocaleString() || "0"}`
+              `${project.pending?.toLocaleString() || "0"}`
             )}
             {renderField("Status", renderStatus(project.status))}
             {renderField("Notes", project.notes)}
             {renderField("Address", project.address)}
-            {isUniqueSolar &&
-              renderField("Tax Rate", project.tax ? `${project.tax}%` : "0%")}
-            {isUniqueSolar &&
+            {
               renderField("Installation Type", project.installationType)}
           </div>
 
@@ -156,10 +154,10 @@ const ViewProject = ({ project, onClose, onEdit, onDelete }) => {
                         <td className="px-6 py-4">{product.description}</td>
                         <td className="px-6 py-4">{product.quantity}</td>
                         <td className="px-6 py-4">
-                          ₹{product.unitPrice?.toLocaleString()}
+                          {product.unitPrice?.toLocaleString()}
                         </td>
                         <td className="px-6 py-4">
-                          ₹{product.Total?.toLocaleString()}
+                          {product.Total?.toLocaleString()}
                         </td>
                       </tr>
                     ))}

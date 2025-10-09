@@ -31,16 +31,34 @@ class ZarorratProjectSerializer(serializers.ModelSerializer):
     )
     company_name = serializers.SerializerMethodField()
     
+    # ✅ ADD THESE COMPUTED FIELDS FOR FRONTEND
+    paid = serializers.DecimalField(
+        source='advance_received', 
+        max_digits=12, 
+        decimal_places=2,
+        read_only=True
+    )
+    total_amount = serializers.DecimalField(
+        source='amount', 
+        max_digits=12, 
+        decimal_places=2,
+        read_only=True
+    )
+    pending = serializers.SerializerMethodField()
+
     class Meta:
         model = ZarorratProject
         fields = '__all__'
         read_only_fields = ['project_id', 'created_at', 'updated_at']
     
     def get_company_name(self, obj):
-        """Return company name based on project ID"""
-        if obj.project_id and obj.project_id.startswith('ZR-'):
-            return 'ZROORAT.COM'
-        return None
+        return 'ZARORRAT.COM'
+    
+    def get_pending(self, obj):
+        """Calculate pending amount"""
+        amount = obj.amount or 0
+        advance_received = obj.advance_received or 0
+        return amount - advance_received
     
     def create(self, validated_data):
         service_ids = validated_data.pop('service_ids', [])
@@ -66,10 +84,7 @@ class ZarorratProjectSerializer(serializers.ModelSerializer):
         
         # Update services if provided
         if service_ids is not None:
-            # Remove existing services
             instance.selected_services.all().delete()
-            
-            # Add new services
             for service_id in service_ids:
                 try:
                     service = ZarorratService.objects.get(id=service_id)
@@ -78,9 +93,6 @@ class ZarorratProjectSerializer(serializers.ModelSerializer):
                     pass
         
         return instance
-
-
-
 
 
 
@@ -124,6 +136,26 @@ class UniqueSolarProjectSerializer(serializers.ModelSerializer):
     checklist_items = UniqueSolarProjectChecklistSerializer(many=True, read_only=True)
     image_count = serializers.SerializerMethodField()
 
+  # ✅ Add these computed fields for frontend
+    paid = serializers.DecimalField(
+        source='advance_payment', 
+        max_digits=12, 
+        decimal_places=2,
+        read_only=True
+    )
+    total_amount = serializers.DecimalField(
+        source='grand_total', 
+        max_digits=12, 
+        decimal_places=2,
+        read_only=True
+    )
+    pending = serializers.DecimalField(
+        source='completion_payment', 
+        max_digits=12, 
+        decimal_places=2,
+        read_only=True
+    )
+    
     class Meta:
         model = UniqueSolarProject
         fields = '__all__'

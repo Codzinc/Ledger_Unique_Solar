@@ -1,9 +1,9 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { 
-  getUniqueSolarProjects, 
+import {
+  getUniqueSolarProjects,
   getZarorratProjects,
   deleteUniqueSolarProject,
-  deleteZarorratProject 
+  deleteZarorratProject,
 } from "../../../ApiComps/Project/ProjectApi";
 
 const ProjectContext = createContext();
@@ -32,34 +32,43 @@ export const ProjectProvider = ({ children }) => {
       setLoading(true);
       const [uniqueSolarProjects, zarorratProjects] = await Promise.all([
         getUniqueSolarProjects(),
-        getZarorratProjects()
+        getZarorratProjects(),
       ]);
 
       // Transform projects to common format
       const transformedProjects = [
-        ...(uniqueSolarProjects.results || uniqueSolarProjects).map(project => ({
+        ...(uniqueSolarProjects.results || uniqueSolarProjects).map(
+          (project) => ({
+            ...project,
+            company: "UNIQUE SOLAR",
+            projectType: project.project_type,
+            total_amount: parseFloat(
+              project.total_amount || project.grand_total || 0
+            ),
+            paid: parseFloat(project.paid || project.advance_payment || 0),
+            pending: parseFloat(
+              project.pending || project.completion_payment || 0
+            ),
+            contact_number: project.contact_number || project.contact_no || "-",
+            id: project.id || project.project_id,
+          })
+        ),
+        ...(zarorratProjects.results || zarorratProjects).map((project) => ({
           ...project,
-          company: 'UNIQUE SOLAR',
-          projectType: project.project_type,
-          totalAmount: parseFloat(project.grand_total || project.total_payment || 0),
-          paid: parseFloat(project.advance_payment || 0),
-          pending: parseFloat(project.completion_payment || 0),
-          id: project.id || project.project_id
-        })),
-        ...(zarorratProjects.results || zarorratProjects).map(project => ({
-          ...project,
-          company: 'ZARORRAT.COM',
-          projectType: 'Service',
-          totalAmount: parseFloat(project.amount || 0),
+          company: "ZARORRAT.COM",
+          projectType: "Service",
+          total_amount: parseFloat(project.amount || 0),
           paid: parseFloat(project.advance_received || 0),
-          pending: parseFloat(project.amount || 0) - parseFloat(project.advance_received || 0),
-          id: project.id || project.project_id
-        }))
+          pending:
+            parseFloat(project.amount || 0) -
+            parseFloat(project.advance_received || 0),
+          id: project.id || project.project_id,
+        })),
       ];
 
       setProjects(transformedProjects);
     } catch (error) {
-      console.error('Error loading projects:', error);
+      console.error("Error loading projects:", error);
     } finally {
       setLoading(false);
     }
@@ -69,19 +78,19 @@ export const ProjectProvider = ({ children }) => {
   const deleteProject = async (projectId) => {
     try {
       // Determine project type and call appropriate API
-      const project = projects.find(p => p.id === projectId);
+      const project = projects.find((p) => p.id === projectId);
       if (project) {
-        if (project.company === 'UNIQUE SOLAR') {
+        if (project.company === "UNIQUE SOLAR") {
           await deleteUniqueSolarProject(projectId);
         } else {
           await deleteZarorratProject(projectId);
         }
-        
+
         // Reload projects after deletion
         await loadProjects();
       }
     } catch (error) {
-      console.error('Error deleting project:', error);
+      console.error("Error deleting project:", error);
       throw error;
     }
   };
@@ -95,9 +104,11 @@ export const ProjectProvider = ({ children }) => {
   useEffect(() => {
     const newStats = {
       totalProjects: projects.length,
-      uniqueSolarProjects: projects.filter((p) => p.company === "UNIQUE SOLAR").length,
-      zarorratProjects: projects.filter((p) => p.company === "ZARORRAT.COM").length,
-      totalValue: projects.reduce((sum, p) => sum + (p.totalAmount || 0), 0),
+      uniqueSolarProjects: projects.filter((p) => p.company === "UNIQUE SOLAR")
+        .length,
+      zarorratProjects: projects.filter((p) => p.company === "ZARORRAT.COM")
+        .length,
+      totalValue: projects.reduce((sum, p) => sum + (p.total_amount || 0), 0),
     };
     setStats(newStats);
   }, [projects]);
@@ -109,7 +120,7 @@ export const ProjectProvider = ({ children }) => {
         stats,
         loading,
         deleteProject,
-        refreshProjects: loadProjects
+        refreshProjects: loadProjects,
       }}
     >
       {children}

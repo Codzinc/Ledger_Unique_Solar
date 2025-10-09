@@ -52,13 +52,13 @@ const ProjectInformation = ({ formData, handleInputChange, formErrors }) => {
           </label>
           <input
             type="number"
-            name="contact_no"
-            value={formData.contact_no}
+            name="contact_number"
+            value={formData.contact_number}
             onChange={handleInputChange}
-            className={inputClass("contact_no")}
+            className={inputClass("contact_number")}
             placeholder="Enter contact number"
           />
-          {errorMsg("contact_no")}
+          {errorMsg("contact_number")}
         </div>
 
         {/* Address */}

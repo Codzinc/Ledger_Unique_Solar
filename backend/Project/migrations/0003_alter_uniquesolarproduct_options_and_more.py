@@ -42,11 +42,39 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='uniquesolarproduct',
             name='product_type',
-            field=models.CharField(choices=[('solar_panel', 'Solar Panel'), ('inverter', 'Inverter'), ('others', 'Others')], max_length=50),
+            field=models.CharField(choices=[
+
+                ('solar_panel', 'Solar Panel'),
+        ('inverter', 'Inverter'),
+        ('structure', 'Structure'),
+        ('allied_material', 'Allied Material'), 
+        ('battery', 'Battery'),
+        ('turnkey_activities', 'Turnkey Activities'),
+        ('earthing_boring', 'Earthing Boring'),
+        ('net_metering', 'Net Metering'),
+        ('others', 'Others')
+                
+                # ('solar_panel', 'Solar Panel'), ('inverter', 'Inverter'), ('others', 'Others')
+                
+                ], max_length=50),
         ),
         migrations.AlterField(
             model_name='uniquesolarprojectproduct',
             name='product_type',
-            field=models.CharField(choices=[('solar_panel', 'Solar Panel'), ('inverter', 'Inverter'), ('others', 'Others')], max_length=50),
+            field=models.CharField(choices=[
+
+                ('solar_panel', 'Solar Panel'),
+        ('inverter', 'Inverter'),
+        ('structure', 'Structure'),
+        ('allied_material', 'Allied Material'), 
+        ('battery', 'Battery'),
+        ('turnkey_activities', 'Turnkey Activities'),
+        ('earthing_boring', 'Earthing Boring'),
+        ('net_metering', 'Net Metering'),
+        ('others', 'Others')
+                
+                # ('solar_panel', 'Solar Panel'), ('inverter', 'Inverter'), ('others', 'Others')
+                
+                ], max_length=50),
         ),
     ]

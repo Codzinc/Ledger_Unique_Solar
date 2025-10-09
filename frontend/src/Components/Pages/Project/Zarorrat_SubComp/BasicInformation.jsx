@@ -45,13 +45,13 @@ const BasicInformation = ({ formData, handleInputChange, errors }) => {
           </label>
           <input
             type="tel"
-            name="contact_no"
-            value={formData.contact_no}
+            name="contact_number"
+            value={formData.contact_number}
             onChange={handleInputChange}
-            className={inputStyle("contact_no")}
+            className={inputStyle("contact_number")}
             placeholder="Enter contact number"
           />
-          {errorText("contact_no")}
+          {errorText("contact_number")}
         </div>
 
         {/* Address */}

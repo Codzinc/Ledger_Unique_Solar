@@ -10,7 +10,7 @@ const TableHeader = ({ onSort, sortConfig }) => {
     { key: "project_id", label: "Project ID" },
     { key: "company_name", label: "Company" },
     { key: "customer_name", label: "Customer Name" },
-    { key: "contact_no", label: "Contact No" },
+    { key: "contact_number", label: "Contact No" },
     { key: "address", label: "Address" },
     { key: "date", label: "Date" },
     { key: "project_type", label: "Project Type" },
@@ -166,25 +166,41 @@ const ProjectTable = ({
               ...project,
               company_name: "UNIQUE SOLAR",
               project_type: project.project_type,
-              amount: project.grand_total || project.total_payment,
-              advance_payment: project.advance_payment,
-              pending_amount: project.completion_payment,
-              project_id: project.project_id,
-              id: `unique-${project.id || project.project_id}`, // ← CHANGE YAHAN
+
+              // Correct field mapping as per API
+              total_amount: parseFloat(
+                project.total_amount ||
+                  project.grand_total ||
+                  project.total_payment ||
+                  0
+              ),
+              paid: parseFloat(project.paid || project.advance_payment || 0),
+              pending: parseFloat(
+                project.pending || project.completion_payment || 0
+              ),
+
+              contact_number:
+                project.contact_number || project.contact_no || "-",
+              project_id: project.project_id || project.id,
+              id: `unique-${project.id || project.project_id}`,
             })
           ),
           ...(zarorratProjects.results || zarorratProjects).map((project) => ({
-            ...project,
-            company_name: "ZARORRAT.COM",
-            project_type: "Service",
-            amount: project.amount,
-            advance_payment: project.advance_received,
-            pending_amount: (
-              parseFloat(project.amount) -
-              parseFloat(project.advance_received || 0)
-            ).toString(),
-            project_id: project.project_id,
-            id: `zarorrat-${project.id || project.project_id}`, // ← CHANGE YAHAN
+  ...project,
+  company_name: "ZARORRAT.COM",
+  project_type: "Service",
+  
+  // ✅ CORRECT FIELD MAPPING for table display
+  total_amount: parseFloat(project.total_amount || project.amount || 0),
+  paid: parseFloat(project.paid || project.advance_received || 0),
+  pending: parseFloat(
+    project.pending || 
+    (parseFloat(project.amount || 0) - parseFloat(project.advance_received || 0))
+  ),
+  
+  contact_number: project.contact_number || "-", // ✅ Now this field exists
+  project_id: project.project_id,
+  id: `zarorrat-${project.id || project.project_id}`,
           })),
         ];
 
@@ -226,7 +242,7 @@ const ProjectTable = ({
         project.customer_name || "",
         project.project_id || "",
         project.company_name || "",
-        project.contact_no || "",
+        project.contact_number || "",
         project.address || "",
       ];
 
@@ -342,10 +358,8 @@ const ProjectTable = ({
                   value={project.customer_name}
                   className="text-gray-700"
                 />
-                <TableCell
-                  value={project.contact_no}
-                  className="text-gray-700"
-                />
+                <TableCell value={project.contact_number} />
+
                 <TableCell value={project.address} className="text-gray-700" />
                 <TableCell
                   value={
@@ -361,21 +375,17 @@ const ProjectTable = ({
                 />
                 <StatusBadge status={project.status} />
                 <TableCell
-                  value={`₹${parseFloat(project.amount || 0).toLocaleString()}`}
-                  className="text-gray-700"
+                  value={`${parseFloat(
+                    project.total_amount || 0
+                  ).toLocaleString()}`}
                 />
                 <TableCell
-                  value={`₹${parseFloat(
-                    project.advance_payment || 0
-                  ).toLocaleString()}`}
-                  className="text-green-600"
+                  value={`${parseFloat(project.paid || 0).toLocaleString()}`}
                 />
                 <TableCell
-                  value={`₹${parseFloat(
-                    project.pending_amount || 0
-                  ).toLocaleString()}`}
-                  className="text-red-600"
+                  value={`${parseFloat(project.pending || 0).toLocaleString()}`}
                 />
+
                 <ActionButtons
                   project={project}
                   activeDropdown={activeDropdown}

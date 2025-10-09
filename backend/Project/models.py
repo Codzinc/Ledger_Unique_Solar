@@ -26,11 +26,11 @@ class ZarorratProject(models.Model):
         ('pending', 'Pending'),
         ('in_progress', 'In Progress'),
         ('complete', 'Complete'),
-        ('cancelled', 'Cancelled'),
     ]
     
     project_id = models.CharField(max_length=20, unique=True, blank=True)
     customer_name = models.CharField(max_length=200)
+    contact_number = models.CharField(max_length=20, blank=True, null=True)  # ✅ ADD THIS FIELD
     address = models.TextField()
     date = models.DateField(default=timezone.now)
     valid_until = models.DateField()
@@ -39,6 +39,12 @@ class ZarorratProject(models.Model):
         max_digits=12, 
         decimal_places=2,
         validators=[MinValueValidator(Decimal('0.01'))],
+        default=0
+    )
+    advance_received = models.DecimalField(  # ✅ ADD THIS FIELD FOR PAID AMOUNT
+        max_digits=12, 
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal('0.00'))],
         default=0
     )
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
@@ -52,7 +58,6 @@ class ZarorratProject(models.Model):
         """Generate project ID for Zarorrat projects"""
         current_year = timezone.now().year
         
-        # Get the next unique ID for Zarorrat projects this year
         last_project = ZarorratProject.objects.filter(
             project_id__startswith=f'ZR-{current_year}-'
         ).order_by('-project_id').first()
@@ -77,7 +82,7 @@ class ZarorratProject(models.Model):
         ordering = ['-created_at']
         verbose_name = "Zarorrat Project"
         verbose_name_plural = "Zarorrat Projects"
-
+        
 class ZarorratProjectService(models.Model):
     """Many-to-many relationship between ZarorratProject and ZarorratService"""
     project = models.ForeignKey(
@@ -105,7 +110,6 @@ class UniqueSolarProject(models.Model):
         ('pending', 'Pending'),
         ('in_progress', 'In Progress'),
         ('complete', 'Complete'),
-        ('cancelled', 'Cancelled'),
     ]
     
     INSTALLATION_TYPE_CHOICES = [
@@ -121,6 +125,7 @@ class UniqueSolarProject(models.Model):
     
     project_id = models.CharField(max_length=20, unique=True, blank=True)
     customer_name = models.CharField(max_length=200)
+    contact_number = models.CharField(max_length=20, blank=True, null=True)  # <-- Add this line
     address = models.TextField()
     date = models.DateField(default=timezone.now)
     valid_until = models.DateField()
@@ -195,27 +200,25 @@ class UniqueSolarProject(models.Model):
     
     def calculate_totals(self):
         """Calculate subtotal, tax, and grand total"""
-        if self.pk:
-            self.subtotal = sum(item.line_total for item in self.products.all())
-        else:
-            self.subtotal = Decimal('0.00')
-        
+        self.subtotal = sum(item.line_total for item in self.products.all())
         tax_amount = (self.subtotal * self.tax_percentage) / 100
-        
         self.grand_total = self.subtotal + tax_amount
-        
         self.total_payment = self.grand_total
         self.completion_payment = self.total_payment - self.advance_payment
     
     def save(self, *args, **kwargs):
+       # Generate project ID if not exists
         if not self.project_id:
             self.project_id = self.generate_project_id()
-        
+    
         super().save(*args, **kwargs)
-        
+    
+    # Recalculate totals after product changes
         self.calculate_totals()
-        
+    
+    # Save only the totals fields to avoid recursion
         super().save(update_fields=['subtotal', 'grand_total', 'total_payment', 'completion_payment'])
+        
     
     class Meta:
         ordering = ['-created_at']
@@ -225,10 +228,20 @@ class UniqueSolarProject(models.Model):
 class UniqueSolarProjectProduct(models.Model):
 
     PRODUCT_TYPE_CHOICES = [
+        # ('solar_panel', 'Solar Panel'),
+        # ('inverter', 'Inverter'),
+
+        # ('others', 'Others'),  
+
         ('solar_panel', 'Solar Panel'),
         ('inverter', 'Inverter'),
-
-        ('others', 'Others'),
+        ('structure', 'Structure'),
+        ('allied_material', 'Allied Material'), 
+        ('battery', 'Battery'),
+        ('turnkey_activities', 'Turnkey Activities'),
+        ('earthing_boring', 'Earthing Boring'),
+        ('net_metering', 'Net Metering'),
+        ('others', 'Others')
     ]
     """Products associated with Unique Solar projects"""
     project = models.ForeignKey(
@@ -261,6 +274,11 @@ class UniqueSolarProjectProduct(models.Model):
         # Calculate line total
         self.line_total = self.quantity * self.unit_price
         super().save(*args, **kwargs)
+
+        # Update parent project totals automatically
+        project = self.project
+        project.calculate_totals()
+        project.save(update_fields=['subtotal', 'grand_total', 'total_payment', 'completion_payment'])
     
     class Meta:
         ordering = ['order']
@@ -304,7 +322,6 @@ class UniqueSolarProjectImage(models.Model):
 
 class UniqueSolarChecklist(models.Model):
     """Checklist items for Unique Solar projects"""
-   
     item_name = models.CharField(max_length=100)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
