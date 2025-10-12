@@ -18,7 +18,7 @@ const ProjectStats = ({ stats }) => {
       color: "border-teal-500",
     },
     {
-      label: "TOTAL VALUE",
+      label: "TOTAL Amount",
       value: `${stats.totalValue.toLocaleString()}`,
       color: "border-orange-500",
     },

@@ -123,9 +123,9 @@ const ProjectInformation = ({ formData, handleInputChange, formErrors }) => {
             className={inputClass("project_type")}
           >
             <option value="">Select Project Type</option>
-            <option value="on_grid">On-Grid</option>
-            <option value="off_grid">Off-Grid</option>
-            <option value="hybrid">Hybrid</option>
+            <option value="on_grid">on_grid</option>
+            <option value="off_grid">off_grid</option>
+            <option value="hybrid">hybrid</option>
           </select>
           {errorMsg("project_type")}
         </div>

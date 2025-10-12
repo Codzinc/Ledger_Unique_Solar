@@ -7,7 +7,7 @@ const AddProjectModal = ({ onClose, onSelectType }) => {
       id: "unique-solar",
       name: "Unique Solar",
       description: "Solar Panel Projects",
-      subtitle: "On-Grid, Hybrid, Off-Grid",
+      subtitle: "on_grid, hybrid, off_grid",
     },
     {
       id: "zarorrat",

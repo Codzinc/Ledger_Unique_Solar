@@ -1,4 +1,3 @@
-// Correct imports - each API file se correct exports import karo
 import { 
   getUniqueSolarProjects,
   deleteUniqueSolarProject 
@@ -9,7 +8,6 @@ import {
   deleteZarorratProject 
 } from './ZarorratApi';
 
-// Export directly without renaming
 export { 
   getUniqueSolarProjects, 
   getZarorratProjects,
@@ -21,7 +19,7 @@ export const getAllProjects = async () => {
   try {
     const [uniqueSolarProjects, zarorratProjects] = await Promise.all([
       getUniqueSolarProjects(),
-      getZarorratProjects() // Direct call without renaming
+      getZarorratProjects()
     ]);
 
     return {

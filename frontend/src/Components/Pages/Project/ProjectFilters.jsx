@@ -4,7 +4,7 @@ import { Filter, RotateCcw } from "lucide-react";
 const ProjectFilters = ({ filters, onFiltersChange }) => {
   const filterOptions = {
     company: ["All Companies", "UNIQUE SOLAR", "ZARORRAT.COM"],
-    projectType: ["All Types", "On-Grid", "Hybrid", "Off-Grid", "Services"],
+    projectType: ["All Types", "on_grid", "hybrid", "off_grid", "Service"],
     status: ["All Status", "Pending", "IN PROGRESS", "COMPLETED"],
   };
 

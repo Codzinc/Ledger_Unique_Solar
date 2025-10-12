@@ -4,6 +4,7 @@ import {
   getUniqueSolarProjects,
   getZarorratProjects,
 } from "../../../ApiComps/Project/ProjectApi";
+
 // Component for the table header
 const TableHeader = ({ onSort, sortConfig }) => {
   const headers = [
@@ -15,9 +16,9 @@ const TableHeader = ({ onSort, sortConfig }) => {
     { key: "date", label: "Date" },
     { key: "project_type", label: "Project Type" },
     { key: "status", label: "Status" },
-    { key: "amount", label: "Total Amount" },
-    { key: "advance_payment", label: "Paid" },
-    { key: "pending_amount", label: "Pending" },
+    { key: "total_amount", label: "Total Amount" },
+    { key: "paid", label: "Paid" },
+    { key: "pending", label: "Pending" },
     { key: "actions", label: "Actions" },
   ];
 
@@ -137,6 +138,7 @@ const ProjectTable = ({
   onViewProject,
   onEditProject,
   onDeleteProject,
+  refreshTrigger,
 }) => {
   const [sortConfig, setSortConfig] = useState({
     key: "created_at",
@@ -149,76 +151,76 @@ const ProjectTable = ({
   const [error, setError] = useState(null);
   const itemsPerPage = 10;
 
-  // Fetch projects from API
+  // ✅ Local helper for refreshing project list after delete
+  const refreshProjects = async () => {
+    try {
+      setLoading(true);
+      const [uniqueSolarProjects, zarorratProjects] = await Promise.all([
+        getUniqueSolarProjects(),
+        getZarorratProjects(),
+      ]);
+
+      // ✅ Merge + normalize both sources
+      const allProjects = [
+        ...(uniqueSolarProjects.results || uniqueSolarProjects).map((p) => ({
+          ...p,
+          company_name: "UNIQUE SOLAR",
+          project_type: p.project_type,
+          total_amount: parseFloat(p.total_amount || p.grand_total || 0),
+          paid: parseFloat(p.paid || p.advance_payment || 0),
+          pending: parseFloat(p.pending || p.completion_payment || 0),
+          contact_number: p.contact_number || p.contact_no || "-",
+          project_id: p.project_id,
+          id: p.project_id,
+        })),
+        ...(zarorratProjects.results || zarorratProjects).map((p) => ({
+          ...p,
+          company_name: "ZARORRAT.COM",
+          project_type: "Service",
+          total_amount: parseFloat(p.total_amount || p.amount || 0),
+          paid: parseFloat(p.paid || p.advance_received || 0),
+          pending:
+            parseFloat(p.pending) ||
+            parseFloat(p.amount || 0) - parseFloat(p.advance_received || 0),
+          contact_number: p.contact_number || "-",
+          project_id: p.project_id,
+          id: p.project_id,
+        })),
+      ];
+
+      setProjects(allProjects);
+    } catch (err) {
+      console.error("❌ Error loading projects:", err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ✅ Load on mount + whenever refreshTrigger changes
   useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        setLoading(true);
-        const [uniqueSolarProjects, zarorratProjects] = await Promise.all([
-          getUniqueSolarProjects(),
-          getZarorratProjects(),
-        ]);
+    refreshProjects();
+  }, [refreshTrigger]);
 
-        // Transform projects to common format
-        const transformedProjects = [
-          ...(uniqueSolarProjects.results || uniqueSolarProjects).map(
-            (project) => ({
-              ...project,
-              company_name: "UNIQUE SOLAR",
-              project_type: project.project_type,
-
-              // Correct field mapping as per API
-              total_amount: parseFloat(
-                project.total_amount ||
-                  project.grand_total ||
-                  project.total_payment ||
-                  0
-              ),
-              paid: parseFloat(project.paid || project.advance_payment || 0),
-              pending: parseFloat(
-                project.pending || project.completion_payment || 0
-              ),
-
-              contact_number:
-                project.contact_number || project.contact_no || "-",
-              project_id: project.project_id || project.id,
-              id: `unique-${project.id || project.project_id}`,
-            })
-          ),
-          ...(zarorratProjects.results || zarorratProjects).map((project) => ({
-  ...project,
-  company_name: "ZARORRAT.COM",
-  project_type: "Service",
-  
-  // ✅ CORRECT FIELD MAPPING for table display
-  total_amount: parseFloat(project.total_amount || project.amount || 0),
-  paid: parseFloat(project.paid || project.advance_received || 0),
-  pending: parseFloat(
-    project.pending || 
-    (parseFloat(project.amount || 0) - parseFloat(project.advance_received || 0))
-  ),
-  
-  contact_number: project.contact_number || "-", // ✅ Now this field exists
-  project_id: project.project_id,
-  id: `zarorrat-${project.id || project.project_id}`,
-          })),
-        ];
-
-        setProjects(transformedProjects);
-      } catch (err) {
-        setError(err.message);
-        console.error("Error fetching projects:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProjects();
-  }, []);
+  // ✅ Delete handler (removes project instantly from table)
+  const handleProjectDelete = async (project) => {
+    try {
+      await onDeleteProject(project); // run delete logic from parent (API + context)
+      setProjects((prev) =>
+        prev.filter(
+          (p) => p.project_id !== project.project_id && p.id !== project.id
+        )
+      );
+    } catch (err) {
+      console.error("❌ Local delete failed:", err);
+    }
+  };
 
   const handleSort = (key) => {
     const direction =
-      sortConfig.key === key && sortConfig.direction === "asc" ? "desc" : "asc";
+      sortConfig.key === key && sortConfig.direction === "asc"
+        ? "desc"
+        : "asc";
     setSortConfig({ key, direction });
   };
 
@@ -230,8 +232,9 @@ const ProjectTable = ({
     setActiveDropdown(null);
     if (action === "view") onViewProject(project);
     else if (action === "edit") onEditProject(project);
-    else if (action === "delete") onDeleteProject(project.id);
+    else if (action === "delete") handleProjectDelete(project);
   };
+
 
   const filteredProjects = useMemo(() => {
     if (!projects.length) return [];
@@ -306,6 +309,11 @@ const ProjectTable = ({
 
   const totalPages = Math.ceil(sortedProjects.length / itemsPerPage);
 
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filters, dateFilter]);
+
   if (loading) {
     return (
       <div className="bg-white rounded-xl shadow-lg p-8 text-center">
@@ -321,8 +329,8 @@ const ProjectTable = ({
         <div className="text-red-500 text-lg">Error loading projects</div>
         <p className="text-gray-600 mt-2">{error}</p>
         <button
-          onClick={() => window.location.reload()}
-          className="mt-4 px-4 py-2 bg-[#181829] text-white rounded-lg hover:bg-[#d8f276] hover:text-[#181829]"
+          onClick={fetchProjects}
+          className="mt-4 px-4 py-2 bg-[#181829] text-white rounded-lg hover:bg-[#d8f276] hover:text-[#181829] transition-colors"
         >
           Retry
         </button>
@@ -377,13 +385,17 @@ const ProjectTable = ({
                 <TableCell
                   value={`${parseFloat(
                     project.total_amount || 0
-                  ).toLocaleString()}`}
+                  ).toLocaleString("en-IN")}`}
                 />
                 <TableCell
-                  value={`${parseFloat(project.paid || 0).toLocaleString()}`}
+                  value={`${parseFloat(project.paid || 0).toLocaleString(
+                    "en-IN"
+                  )}`}
                 />
                 <TableCell
-                  value={`${parseFloat(project.pending || 0).toLocaleString()}`}
+                  value={`${parseFloat(project.pending || 0).toLocaleString(
+                    "en-IN"
+                  )}`}
                 />
 
                 <ActionButtons
@@ -419,7 +431,7 @@ const ProjectTable = ({
             <button
               onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
               disabled={currentPage === 1}
-              className="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
             >
               Previous
             </button>
@@ -427,10 +439,10 @@ const ProjectTable = ({
               <button
                 key={page}
                 onClick={() => setCurrentPage(page)}
-                className={`px-3 py-1 border rounded-md text-sm ${
+                className={`px-3 py-1 border rounded-md text-sm transition-colors ${
                   currentPage === page
                     ? "bg-[#181829] text-white border-[#181829]"
-                    : "border-gray-300 text-gray-700"
+                    : "border-gray-300 text-gray-700 hover:bg-gray-50"
                 }`}
               >
                 {page}
@@ -441,7 +453,7 @@ const ProjectTable = ({
                 setCurrentPage((prev) => Math.min(prev + 1, totalPages))
               }
               disabled={currentPage === totalPages}
-              className="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
             >
               Next
             </button>

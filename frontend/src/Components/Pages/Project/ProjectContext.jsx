@@ -75,24 +75,13 @@ export const ProjectProvider = ({ children }) => {
   };
 
   // Delete project
-  const deleteProject = async (projectId) => {
-    try {
-      // Determine project type and call appropriate API
-      const project = projects.find((p) => p.id === projectId);
-      if (project) {
-        if (project.company === "UNIQUE SOLAR") {
-          await deleteUniqueSolarProject(projectId);
-        } else {
-          await deleteZarorratProject(projectId);
-        }
-
-        // Reload projects after deletion
-        await loadProjects();
-      }
-    } catch (error) {
-      console.error("Error deleting project:", error);
-      throw error;
-    }
+  // Delete project instantly from UI (no duplicate API call)
+  const deleteProject = (projectId) => {
+    setProjects((prevProjects) =>
+      prevProjects.filter(
+        (p) => p.project_id !== projectId && p.id !== projectId
+      )
+    );
   };
 
   // Load projects on component mount

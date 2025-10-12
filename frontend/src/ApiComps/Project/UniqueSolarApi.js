@@ -1,8 +1,5 @@
 import api from "../Config";
 
-// ----------------------------
-// CREATE PROJECT
-// ----------------------------
 export const createUniqueSolarProject = async (projectData) => {
   try {
     console.log('Sending project data to API:', projectData);
@@ -10,11 +7,11 @@ export const createUniqueSolarProject = async (projectData) => {
     return response.data;
   } catch (error) {
     console.error('Error creating project:', error);
-    
+
     if (error.response) {
       const errorData = error.response.data;
       let errorMessage = 'Validation failed: ';
-      
+
       if (typeof errorData === 'object') {
         if (errorData.error) {
           errorMessage = errorData.error;
@@ -44,7 +41,7 @@ export const createUniqueSolarProject = async (projectData) => {
       } else if (typeof errorData === 'string') {
         errorMessage = errorData;
       }
-      
+
       throw new Error(errorMessage);
     } else if (error.request) {
       throw new Error('No response received from server. Please check your connection.');
@@ -54,45 +51,50 @@ export const createUniqueSolarProject = async (projectData) => {
   }
 };
 
-// ----------------------------
-// GET ALL PROJECTS (with mapping)
-// ----------------------------
+// ✅ Fetch all projects
+// UniqueSolarApi.js mein getUniqueSolarProjects function update karein
 export const getUniqueSolarProjects = async () => {
   try {
     const response = await api.get("/project/unique-solar-projects/");
     const projects = response.data;
 
-    // ----------------------------
-    // TRANSFORM PROJECTS FOR FRONTEND
-    // ----------------------------
-    const transformedProjects = (projects.results || projects).map(project => ({
-      ...project,
-      company_name: "UNIQUE SOLAR",
-      project_type: project.project_type,
-      total_amount: parseFloat(project.total_amount || project.grand_total || 0),
-      paid: parseFloat(project.paid || project.advance_payment || 0),
-      pending: parseFloat(project.pending || project.completion_payment || 0),
-      contact_number: project.contact_number || project.contact_no || "-",
-      project_id: project.project_id || project.id,
-      id: `unique-${project.id || project.project_id}`,
-    }));
+    console.log('📋 RAW UNIQUE SOLAR PROJECTS FROM API:', projects);
+
+    const transformedProjects = (projects.results || projects).map(project => {
+      // ✅ CORRECT ID MAPPING
+      const projectData = {
+        ...project,
+        company_name: "UNIQUE SOLAR",
+        project_type: project.project_type,
+        total_amount: parseFloat(project.total_amount || project.grand_total || 0),
+        paid: parseFloat(project.paid || project.advance_payment || 0),
+        pending: parseFloat(project.pending || project.completion_payment || 0),
+        contact_number: project.contact_number || project.contact_no || "-",
+        // ✅ Use project_id as the primary identifier
+        project_id: project.project_id,
+        id: project.project_id, // Same as project_id for consistency
+      };
+
+      console.log(`🔄 TRANSFORMED PROJECT: ${project.project_id}`, projectData);
+      return projectData;
+    });
 
     return transformedProjects;
   } catch (error) {
-    console.error('Error fetching projects:', error);
+    console.error('❌ Error fetching projects:', error);
     throw error;
   }
 };
 
-// ----------------------------
-// GET SINGLE PROJECT BY ID
-// ----------------------------
-export const getUniqueSolarProjectById = async (id) => {
+// ✅ Corrected getUniqueSolarProjectById
+export const getUniqueSolarProjectById = async (projectId) => {
   try {
-    const response = await api.get(`/project/unique-solar-projects/${id}/`);
+    console.log('🔍 FETCHING UNIQUE SOLAR PROJECT BY project_id:', projectId);
+    const response = await api.get(`/project/unique-solar-projects/${projectId}/`);
     const project = response.data;
 
-    // Optional: map single project
+    console.log('✅ UNIQUE SOLAR PROJECT DATA:', project);
+
     return {
       ...project,
       company_name: "UNIQUE SOLAR",
@@ -101,44 +103,39 @@ export const getUniqueSolarProjectById = async (id) => {
       paid: parseFloat(project.paid || project.advance_payment || 0),
       pending: parseFloat(project.pending || project.completion_payment || 0),
       contact_number: project.contact_number || project.contact_no || "-",
-      project_id: project.project_id || project.id,
-      id: `unique-${project.id || project.project_id}`,
+      project_id: project.project_id,
+      id: project.project_id, // frontend reference consistency
     };
   } catch (error) {
-    console.error('Error fetching project:', error);
+    console.error('❌ Error fetching Unique Solar project:', error);
     throw error;
   }
 };
 
-// ----------------------------
-// UPDATE PROJECT
-// ----------------------------
-export const updateUniqueSolarProject = async (id, projectData) => {
+// ✅ Corrected update function
+export const updateUniqueSolarProject = async (projectId, projectData) => {
   try {
-    const response = await api.put(`/project/unique-solar-projects/${id}/`, projectData);
+    console.log('🔄 UPDATING UNIQUE SOLAR PROJECT:', projectId, projectData);
+    const response = await api.put(`/project/unique-solar-projects/${projectId}/`, projectData);
     return response.data;
   } catch (error) {
-    console.error('Error updating project:', error);
+    console.error('❌ Error updating Unique Solar project:', error);
     throw error;
   }
 };
 
-// ----------------------------
-// DELETE PROJECT
-// ----------------------------
-export const deleteUniqueSolarProject = async (id) => {
+// ✅ Corrected delete function
+export const deleteUniqueSolarProject = async (projectId) => {
   try {
-    const response = await api.delete(`/project/unique-solar-projects/${id}/`);
+    console.log('🗑️ DELETING UNIQUE SOLAR PROJECT:', projectId);
+    const response = await api.delete(`/project/unique-solar-projects/${projectId}/`);
     return response.data;
   } catch (error) {
-    console.error('Error deleting project:', error);
+    console.error('❌ Error deleting Unique Solar project:', error);
     throw error;
   }
 };
 
-// ----------------------------
-// GET CHECKLIST ITEMS
-// ----------------------------
 export const getChecklistItems = async () => {
   try {
     const response = await api.get("/project/unique-solar-checklist/");
@@ -149,9 +146,6 @@ export const getChecklistItems = async () => {
   }
 };
 
-// ----------------------------
-// EXPORT DEFAULT
-// ----------------------------
 export default {
   createUniqueSolarProject,
   getUniqueSolarProjects,
