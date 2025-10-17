@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   MoreVertical,
   Eye,
@@ -18,31 +18,49 @@ const ExpenseListing = ({
   onEditExpense,
   onDeleteExpense,
   onAddExpense,
-  utilizers
+  utilizers,
 }) => {
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [utilizerFilter, setUtilizerFilter] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const handleDateChange = (e) => {
     setSelectedDate(e.target.value);
   };
 
-  // Filter out invalid/empty expenses (e.g., missing id, title, or amount)
+  // ✅ Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (!e.target.closest(".dropdown-container")) {
+        setActiveDropdown(null);
+      }
+    };
+    window.addEventListener("click", handleClickOutside);
+    return () => window.removeEventListener("click", handleClickOutside);
+  }, []);
+
+  // Filter valid expenses
   const validExpenses = expenses.filter(
     (expense) =>
       expense &&
       expense.id != null &&
       expense.title &&
-      (typeof expense.amount === "number" || (typeof expense.amount === "string" && expense.amount !== ""))
+      (typeof expense.amount === "number" ||
+        (typeof expense.amount === "string" && expense.amount !== ""))
   );
 
+  // Filtered results
   const filteredExpenses = validExpenses.filter((expense) => {
     const title = expense.title || "";
     const description = expense.description || "";
-    const amount = (typeof expense.amount === "number" || typeof expense.amount === "string") ? expense.amount : "";
+    const amount =
+      typeof expense.amount === "number" || typeof expense.amount === "string"
+        ? expense.amount
+        : "";
     const matchesSearch =
       title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       description.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -67,8 +85,16 @@ const ExpenseListing = ({
     return matchesSearch && matchesCategory && matchesUtilizer && matchesDate;
   });
 
+  // ✅ Pagination logic
+  const totalPages = Math.ceil(filteredExpenses.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedExpenses = filteredExpenses.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
+
   const totalAmount = filteredExpenses.reduce(
-    (sum, expense) => sum + expense.amount,
+    (sum, expense) => sum + Number(expense.amount || 0),
     0
   );
 
@@ -87,6 +113,8 @@ const ExpenseListing = ({
         break;
       case "delete":
         onDeleteExpense(expense.id);
+        break;
+      default:
         break;
     }
   };
@@ -148,7 +176,9 @@ const ExpenseListing = ({
               onChange={(e) => setUtilizerFilter(e.target.value)}
               className="px-4 py-2 border border-gray-300 rounded-lg bg-[#181829] text-white font-medium"
             >
-              <option key="_utilizer_default" value="">Utilizer</option>
+              <option key="_utilizer_default" value="">
+                Utilizer
+              </option>
               {utilizers.map((utilizer, idx) => (
                 <option key={`utilizer_${utilizer}_${idx}`} value={utilizer}>
                   {utilizer}
@@ -207,18 +237,25 @@ const ExpenseListing = ({
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredExpenses.length === 0 ? (
+                {paginatedExpenses.length === 0 ? (
                   <tr>
-                    <td colSpan="6" className="px-6 py-16 text-center text-gray-500">
+                    <td
+                      colSpan="6"
+                      className="px-6 py-16 text-center text-gray-500"
+                    >
                       <div className="flex flex-col items-center gap-2">
                         <DollarSign className="w-12 h-12 text-gray-300" />
-                        <p className="text-lg font-medium">No expense record found.</p>
-                        <p className="text-sm">Add your first expense to get started</p>
+                        <p className="text-lg font-medium">
+                          No expense record found.
+                        </p>
+                        <p className="text-sm">
+                          Add your first expense to get started
+                        </p>
                       </div>
                     </td>
                   </tr>
                 ) : (
-                  filteredExpenses.map((expense) => (
+                  paginatedExpenses.map((expense) => (
                     <tr
                       key={expense.id}
                       className="hover:bg-gray-50 transition-colors cursor-pointer"
@@ -250,7 +287,6 @@ const ExpenseListing = ({
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-xs font-medium">
-                        
                         {expense.amount != null && !isNaN(expense.amount)
                           ? Number(expense.amount).toLocaleString()
                           : "0"}
@@ -285,7 +321,9 @@ const ExpenseListing = ({
                                   Edit Expense
                                 </button>
                                 <button
-                                  onClick={() => handleAction("delete", expense)}
+                                  onClick={() =>
+                                    handleAction("delete", expense)
+                                  }
                                   className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left"
                                 >
                                   <Trash2 className="w-4 h-4" />
@@ -305,6 +343,29 @@ const ExpenseListing = ({
         </div>
       </div>
 
+      {/* ✅ Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex justify-between items-center p-4 border-t border-gray-200 bg-gray-50">
+          <button
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((p) => p - 1)}
+            className="px-3 py-1 text-sm bg-[#181829] text-white rounded disabled:opacity-50"
+          >
+            Previous
+          </button>
+          <span className="text-sm text-gray-700">
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage((p) => p + 1)}
+            className="px-3 py-1 text-sm bg-[#181829] text-white rounded disabled:opacity-50"
+          >
+            Next
+          </button>
+        </div>
+      )}
+
       <div className="p-6 bg-[#181829] text-white border-t border-gray-200 rounded-b-xl">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="text-center">
@@ -313,7 +374,9 @@ const ExpenseListing = ({
           </div>
           <div className="text-center">
             <p className="text-sm">Total Amount</p>
-            <p className="text-lg font-bold">{totalAmount.toLocaleString()}</p>
+            <p className="text-lg font-bold">
+              {totalAmount.toLocaleString()}
+            </p>
           </div>
         </div>
       </div>

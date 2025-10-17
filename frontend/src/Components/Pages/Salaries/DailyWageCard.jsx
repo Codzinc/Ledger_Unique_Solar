@@ -17,7 +17,6 @@ const DailyWageCard = ({ salary, onClose, onUpdate }) => {
   const [advances, setAdvances] = useState([]);
   const [loadingAdvances, setLoadingAdvances] = useState(true);
 
-  // Edit state
   const [editAdvanceId, setEditAdvanceId] = useState(null);
   const [editAdvance, setEditAdvance] = useState({
     date: "",
@@ -25,7 +24,11 @@ const DailyWageCard = ({ salary, onClose, onUpdate }) => {
     purpose: "",
   });
 
-  // Fetch advances from API on mount or when salary changes
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  // Fetch Advances
   useEffect(() => {
     const fetchAdvances = async () => {
       setLoadingAdvances(true);
@@ -50,7 +53,12 @@ const DailyWageCard = ({ salary, onClose, onUpdate }) => {
     fetchAdvances();
   }, [salary]);
 
-  // Add Advance (API)
+  // Pagination Logic
+  const totalPages = Math.ceil(advances.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedAdvances = advances.slice(startIndex, startIndex + itemsPerPage);
+
+  // Add Advance
   const handleAddAdvance = async (e) => {
     e.preventDefault();
     try {
@@ -72,7 +80,6 @@ const DailyWageCard = ({ salary, onClose, onUpdate }) => {
         },
       ];
       setAdvances(updatedAdvances);
-
       const totalAdvance = updatedAdvances.reduce((sum, adv) => sum + adv.amount, 0);
 
       onUpdate({
@@ -88,12 +95,12 @@ const DailyWageCard = ({ salary, onClose, onUpdate }) => {
         amount: "",
         purpose: "",
       });
-    } catch (err) {
+    } catch {
       alert("Failed to add advance");
     }
   };
 
-  // Delete Advance (API)
+  // Delete Advance
   const handleDeleteAdvance = async (advanceId) => {
     try {
       await deleteAdvance(advanceId);
@@ -108,12 +115,12 @@ const DailyWageCard = ({ salary, onClose, onUpdate }) => {
       });
 
       setAdvances(updatedAdvances);
-    } catch (err) {
+    } catch {
       alert("Failed to delete advance");
     }
   };
 
-  // Edit Advance Handlers
+  // Edit Logic
   const handleEditAdvance = (advance) => {
     setEditAdvanceId(advance.id);
     setEditAdvance({
@@ -125,13 +132,9 @@ const DailyWageCard = ({ salary, onClose, onUpdate }) => {
 
   const handleEditAdvanceChange = (e) => {
     const { name, value } = e.target;
-    setEditAdvance((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setEditAdvance((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Save edited advance (API)
   const handleEditAdvanceSave = async () => {
     try {
       const advanceData = {
@@ -152,8 +155,8 @@ const DailyWageCard = ({ salary, onClose, onUpdate }) => {
             }
           : adv
       );
-      setAdvances(updatedAdvances);
 
+      setAdvances(updatedAdvances);
       const totalAdvance = updatedAdvances.reduce((sum, adv) => sum + adv.amount, 0);
 
       onUpdate({
@@ -165,7 +168,7 @@ const DailyWageCard = ({ salary, onClose, onUpdate }) => {
 
       setEditAdvanceId(null);
       setEditAdvance({ date: "", amount: "", purpose: "" });
-    } catch (err) {
+    } catch {
       alert("Failed to update advance");
     }
   };
@@ -175,14 +178,14 @@ const DailyWageCard = ({ salary, onClose, onUpdate }) => {
     setEditAdvance({ date: "", amount: "", purpose: "" });
   };
 
-  // Calculate total paid (wages) and advances
+  // Totals
   const totalPaid = (salary.wages || []).reduce((sum, wage) => sum + wage.amount, 0);
   const totalAdvance = advances.reduce((sum, adv) => sum + adv.amount, 0);
   const totalEntries = (salary.wages || []).length;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl my-10">
         {/* Header */}
         <div className="bg-[#181829] p-6 rounded-t-xl">
           <div className="flex items-center justify-between">
@@ -195,20 +198,22 @@ const DailyWageCard = ({ salary, onClose, onUpdate }) => {
               </button>
               <div>
                 <h2 className="text-xl font-semibold text-white">
-                  {salary.employeeName} – Daily Wage
+                  {salary.employeeName || salary.employee} – Daily Wage
                 </h2>
                 <p className="text-sm text-gray-400">
-                  {new Date(salary.month + "-01").toLocaleDateString("en-US", {
-                    month: "long",
-                    year: "numeric",
-                  })}
+                  {salary?.month
+                    ? new Date(`${salary.month}-01`).toLocaleDateString("en-US", {
+                        month: "long",
+                        year: "numeric",
+                      })
+                    : "No Month Data"}
                 </p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Summary Section */}
+        {/* Summary */}
         <div className="grid grid-cols-3 gap-4 p-6 bg-gray-50 border-b">
           <div>
             <p className="text-sm text-gray-600">Total Paid This Month</p>
@@ -228,7 +233,7 @@ const DailyWageCard = ({ salary, onClose, onUpdate }) => {
           </div>
         </div>
 
-        {/* Advances List */}
+        {/* Advances */}
         <div className="p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-800">
@@ -242,7 +247,8 @@ const DailyWageCard = ({ salary, onClose, onUpdate }) => {
               Add More Advance
             </button>
           </div>
-          {/* Add Advance Form */}
+
+          {/* Add Form */}
           {showAdvanceForm && (
             <div className="mb-6 bg-gray-50 rounded-lg p-4 border border-gray-200">
               <form onSubmit={handleAddAdvance} className="space-y-4">
@@ -255,10 +261,7 @@ const DailyWageCard = ({ salary, onClose, onUpdate }) => {
                       type="date"
                       value={newAdvance.date}
                       onChange={(e) =>
-                        setNewAdvance((prev) => ({
-                          ...prev,
-                          date: e.target.value,
-                        }))
+                        setNewAdvance((prev) => ({ ...prev, date: e.target.value }))
                       }
                       className="w-full px-3 py-2 border rounded-lg"
                       required
@@ -272,10 +275,7 @@ const DailyWageCard = ({ salary, onClose, onUpdate }) => {
                       type="number"
                       value={newAdvance.amount}
                       onChange={(e) =>
-                        setNewAdvance((prev) => ({
-                          ...prev,
-                          amount: e.target.value,
-                        }))
+                        setNewAdvance((prev) => ({ ...prev, amount: e.target.value }))
                       }
                       placeholder="Enter amount"
                       className="w-full px-3 py-2 border rounded-lg"
@@ -290,10 +290,7 @@ const DailyWageCard = ({ salary, onClose, onUpdate }) => {
                       type="text"
                       value={newAdvance.purpose}
                       onChange={(e) =>
-                        setNewAdvance((prev) => ({
-                          ...prev,
-                          purpose: e.target.value,
-                        }))
+                        setNewAdvance((prev) => ({ ...prev, purpose: e.target.value }))
                       }
                       placeholder="Purpose of advance"
                       className="w-full px-3 py-2 border rounded-lg"
@@ -320,13 +317,13 @@ const DailyWageCard = ({ salary, onClose, onUpdate }) => {
             </div>
           )}
 
-          {/* Advances Table */}
-          <div className="overflow-x-auto">
-            {loadingAdvances ? (
-              <div className="text-center text-gray-500 py-4">
-                Loading advances...
-              </div>
-            ) : (
+          {/* Table */}
+          {loadingAdvances ? (
+            <div className="text-center text-gray-500 py-4">
+              Loading advances...
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-gray-50">
                   <tr>
@@ -345,84 +342,91 @@ const DailyWageCard = ({ salary, onClose, onUpdate }) => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                  {advances.map((advance) =>
-                    editAdvanceId === advance.id ? (
-                      <tr key={advance.id} className="bg-yellow-50">
-                        <td className="px-6 py-2">
-                          <input
-                            type="date"
-                            name="date"
-                            value={editAdvance.date}
-                            onChange={handleEditAdvanceChange}
-                            className="w-full px-2 py-1 border rounded"
-                          />
-                        </td>
-                        <td className="px-6 py-2">
-                          <input
-                            type="number"
-                            name="amount"
-                            value={editAdvance.amount}
-                            onChange={handleEditAdvanceChange}
-                            className="w-full px-2 py-1 border rounded"
-                          />
-                        </td>
-                        <td className="px-6 py-2">
-                          <input
-                            type="text"
-                            name="purpose"
-                            value={editAdvance.purpose}
-                            onChange={handleEditAdvanceChange}
-                            className="w-full px-2 py-1 border rounded"
-                          />
-                        </td>
-                        <td className="px-6 py-2 flex gap-2">
-                          <button
-                            onClick={handleEditAdvanceSave}
-                            className="text-green-600 hover:text-green-800 px-2"
-                          >
-                            Save
-                          </button>
-                          <button
-                            onClick={handleEditAdvanceCancel}
-                            className="text-gray-600 hover:text-gray-800 px-2"
-                          >
-                            Cancel
-                          </button>
-                        </td>
-                      </tr>
-                    ) : (
-                      <tr key={advance.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {new Date(advance.date).toLocaleDateString()}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          Rs. {advance.amount.toLocaleString()}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-900">
-                          {advance.purpose}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 flex gap-2">
-                          <button
-                            type="button"
-                            onClick={() => handleEditAdvance(advance)}
-                            className="text-blue-600 hover:text-blue-800 mr-2"
-                            title="Edit"
-                          >
-                            <Edit2 className="w-4 h-4" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteAdvance(advance.id)}
-                            className="text-red-600 hover:text-red-800"
-                            title="Delete"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </td>
-                      </tr>
+                  {paginatedAdvances.length > 0 ? (
+                    paginatedAdvances.map((advance) =>
+                      editAdvanceId === advance.id ? (
+                        <tr key={advance.id} className="bg-yellow-50">
+                          <td className="px-6 py-2">
+                            <input
+                              type="date"
+                              name="date"
+                              value={editAdvance.date}
+                              onChange={handleEditAdvanceChange}
+                              className="w-full px-2 py-1 border rounded"
+                            />
+                          </td>
+                          <td className="px-6 py-2">
+                            <input
+                              type="number"
+                              name="amount"
+                              value={editAdvance.amount}
+                              onChange={handleEditAdvanceChange}
+                              className="w-full px-2 py-1 border rounded"
+                            />
+                          </td>
+                          <td className="px-6 py-2">
+                            <input
+                              type="text"
+                              name="purpose"
+                              value={editAdvance.purpose}
+                              onChange={handleEditAdvanceChange}
+                              className="w-full px-2 py-1 border rounded"
+                            />
+                          </td>
+                          <td className="px-6 py-2 flex gap-2">
+                            <button
+                              onClick={handleEditAdvanceSave}
+                              className="text-green-600 hover:text-green-800 px-2"
+                            >
+                              Save
+                            </button>
+                            <button
+                              onClick={handleEditAdvanceCancel}
+                              className="text-gray-600 hover:text-gray-800 px-2"
+                            >
+                              Cancel
+                            </button>
+                          </td>
+                        </tr>
+                      ) : (
+                        <tr key={advance.id} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {advance.date
+                              ? new Date(advance.date).toLocaleDateString("en-GB", {
+                                  day: "2-digit",
+                                  month: "short",
+                                  year: "numeric",
+                                })
+                              : "—"}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            Rs. {advance.amount.toLocaleString()}
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-900">
+                            {advance.purpose}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 flex gap-2">
+                            <button
+                              type="button"
+                              onClick={() => handleEditAdvance(advance)}
+                              className="text-blue-600 hover:text-blue-800 mr-2"
+                              title="Edit"
+                            >
+                              <Edit2 className="w-4 h-4" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteAdvance(advance.id)}
+                              className="text-red-600 hover:text-red-800"
+                              title="Delete"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </td>
+                        </tr>
+                      )
                     )
-                  )}
-                  {advances.length === 0 && (
+                  ) : (
                     <tr>
                       <td
                         colSpan="4"
@@ -434,8 +438,31 @@ const DailyWageCard = ({ salary, onClose, onUpdate }) => {
                   )}
                 </tbody>
               </table>
-            )}
-          </div>
+
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <div className="flex justify-between items-center p-4 border-t bg-gray-50">
+                  <button
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage((p) => p - 1)}
+                    className="px-3 py-1 text-sm bg-[#181829] text-white rounded disabled:opacity-50"
+                  >
+                    Previous
+                  </button>
+                  <span className="text-sm text-gray-700">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <button
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage((p) => p + 1)}
+                    className="px-3 py-1 text-sm bg-[#181829] text-white rounded disabled:opacity-50"
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>

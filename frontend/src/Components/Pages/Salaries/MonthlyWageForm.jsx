@@ -1,35 +1,36 @@
 import React, { useState } from "react";
 import {
   ArrowLeft,
-  User,
-  Briefcase,
-  DollarSign,
-  Calendar,
-  FileText,
   HelpCircle,
 } from "lucide-react";
 
 const MonthlyWageForm = ({ onBack, onSubmit, initialData }) => {
+  const isEditMode = !!initialData; // ✅ detect edit vs create
+
   const [formData, setFormData] = useState({
+    id: initialData?.id || null,
     employeeName: initialData?.employeeName || "",
-    month:
-      initialData?.month ||
-      new Date().toISOString().split("T")[0].substring(0, 7),
-    baseSalary: initialData?.baseSalary || "",
-    totalAdvance: initialData?.totalAdvance || 0,
-    remainingSalary: initialData?.remainingSalary || 0,
-    note: initialData?.note || "",
+    date:
+      initialData?.date ||
+      new Date().toISOString().split("T")[0], // ✅ default full date (YYYY-MM-DD)
+    baseSalary: initialData?.baseSalary || initialData?.salary_amount || "",
+    totalAdvance:
+      initialData?.totalAdvance || initialData?.total_advance_taken || 0,
+    remainingSalary:
+      initialData?.remainingSalary || initialData?.remaining_salary || 0,
+    note: initialData?.note || initialData?.description || "",
     wageType: "Monthly",
   });
 
   const [errors, setErrors] = useState({});
 
+  // ✅ Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => {
       const newData = { ...prev, [name]: value };
 
-      // Calculate remaining salary
+      // ✅ Auto-calculate remaining salary
       if (name === "baseSalary" || name === "totalAdvance") {
         const base =
           parseFloat(name === "baseSalary" ? value : prev.baseSalary) || 0;
@@ -41,16 +42,15 @@ const MonthlyWageForm = ({ onBack, onSubmit, initialData }) => {
       return newData;
     });
 
-    if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: null }));
-    }
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: null }));
   };
 
+  // ✅ Validate form
   const validateForm = () => {
     const newErrors = {};
     if (!formData.employeeName)
       newErrors.employeeName = "Employee name is required";
-    if (!formData.month) newErrors.month = "Month & Year is required";
+    if (!formData.date) newErrors.date = "Date is required";
     if (!formData.baseSalary)
       newErrors.baseSalary = "Fixed salary amount is required";
 
@@ -58,45 +58,51 @@ const MonthlyWageForm = ({ onBack, onSubmit, initialData }) => {
     return Object.keys(newErrors).length === 0;
   };
 
+  // ✅ Handle form submit
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (validateForm()) {
-      const submitData = {
-        employee: formData.employeeName,
-        date: formData.month + "-01", // Format: YYYY-MM-DD
-        salary_amount: parseFloat(formData.baseSalary),
-        description: formData.note || "",
-        wage_type: "Monthly",
-        total_advance_taken: 0,
-        remaining_salary: parseFloat(formData.baseSalary),
-        status: "Active",
-        month: formData.month, // Add month field
-      };
-      onSubmit(submitData);
-    }
+    if (!validateForm()) return;
+
+    const submitData = {
+      id: formData.id,
+      employee: formData.employeeName,
+      date: formData.date, // ✅ use full date now
+      salary_amount: parseFloat(formData.baseSalary),
+      description: formData.note || "",
+      wage_type: "Monthly",
+      total_advance_taken: parseFloat(formData.totalAdvance) || 0,
+      remaining_salary: parseFloat(formData.remainingSalary) || 0,
+      status: "Active",
+      month: formData.date.substring(0, 7), // ✅ keep month info if needed in backend
+    };
+
+    onSubmit(submitData, isEditMode);
   };
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
       <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-        <div className="bg-[#181829] text-white p-6">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={onBack}
-              className="text-[#d8f276] hover:text-white transition-colors"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </button>
-            <h2 className="text-xl font-semibold">MONTHLY SALARY SETUP</h2>
-          </div>
+        {/* Header */}
+        <div className="bg-[#181829] text-white p-6 flex items-center gap-3">
+          <button
+            onClick={onBack}
+            className="text-[#d8f276] hover:text-white transition-colors"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+          <h2 className="text-xl font-semibold">
+            {isEditMode ? "EDIT MONTHLY SALARY" : "MONTHLY SALARY SETUP"}
+          </h2>
         </div>
 
+        {/* Form Body */}
         <div className="p-6">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Three inputs in a single responsive row */}
+            {/* Row 1: Employee, Date, Salary */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700 flex items-center">
+              {/* Employee Name */}
+              <div>
+                <label className="text-sm font-medium text-gray-700">
                   Employee Name *
                 </label>
                 <input
@@ -104,33 +110,37 @@ const MonthlyWageForm = ({ onBack, onSubmit, initialData }) => {
                   name="employeeName"
                   value={formData.employeeName}
                   onChange={handleChange}
+                  placeholder="Enter employee name"
                   className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#d8f276] focus:border-transparent ${
                     errors.employeeName ? "border-red-500" : "border-gray-300"
                   }`}
-                  placeholder="Enter employee name"
                 />
                 {errors.employeeName && (
                   <p className="text-red-500 text-sm">{errors.employeeName}</p>
                 )}
               </div>
-              <div className="space-y-2">
+
+              {/* Date */}
+              <div>
                 <label className="text-sm font-medium text-gray-700">
-                  Month & Year *
+                  Date *
                 </label>
                 <input
-                  type="month"
-                  name="month"
-                  value={formData.month}
+                  type="date"
+                  name="date"
+                  value={formData.date}
                   onChange={handleChange}
                   className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#d8f276] focus:border-transparent ${
-                    errors.month ? "border-red-500" : "border-gray-300"
+                    errors.date ? "border-red-500" : "border-gray-300"
                   }`}
                 />
-                {errors.month && (
-                  <p className="text-red-500 text-sm">{errors.month}</p>
+                {errors.date && (
+                  <p className="text-red-500 text-sm">{errors.date}</p>
                 )}
               </div>
-              <div className="space-y-2">
+
+              {/* Salary */}
+              <div>
                 <label className="text-sm font-medium text-gray-700">
                   Fixed Salary Amount *
                 </label>
@@ -139,7 +149,7 @@ const MonthlyWageForm = ({ onBack, onSubmit, initialData }) => {
                   name="baseSalary"
                   value={formData.baseSalary}
                   onChange={handleChange}
-                  placeholder="Enter base salary amount"
+                  placeholder="Enter base salary"
                   className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#d8f276] focus:border-transparent ${
                     errors.baseSalary ? "border-red-500" : "border-gray-300"
                   }`}
@@ -151,7 +161,7 @@ const MonthlyWageForm = ({ onBack, onSubmit, initialData }) => {
             </div>
 
             {/* Note */}
-            <div className="space-y-2">
+            <div>
               <label className="text-sm font-medium text-gray-700">
                 Note (Optional)
               </label>
@@ -165,74 +175,63 @@ const MonthlyWageForm = ({ onBack, onSubmit, initialData }) => {
               />
             </div>
 
-            {/* Card Preview */}
-            <div className="bg-gray-50 rounded-lg p-6 space-y-4">
+            {/* Preview */}
+            <div className="bg-gray-50 rounded-lg p-6 space-y-2">
               <h3 className="font-medium text-gray-800">Card Preview</h3>
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Type:</span>
-                  <span className="font-medium">Monthly Salary</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Employee:</span>
-                  <span className="font-medium">
-                    {formData.employeeName || "---"}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Month:</span>
-                  <span className="font-medium">
-                    {formData.month
-                      ? new Date(formData.month + "-01").toLocaleDateString(
-                          "en-US",
-                          { month: "long", year: "numeric" }
-                        )
-                      : "---"}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Base Salary:</span>
-                  <span className="font-medium">
-                    ₨ {formData.baseSalary || "0"}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Total Advance:</span>
-                  <span className="font-medium">
-                    ₨ {formData.totalAdvance || "0"}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Remaining Salary:</span>
-                  <span className="font-medium">
-                    ₨ {formData.remainingSalary || "0"}
-                  </span>
-                </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Type:</span>
+                <span className="font-medium">Monthly Salary</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Employee:</span>
+                <span className="font-medium">
+                  {formData.employeeName || "---"}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Date:</span>
+                <span className="font-medium">
+                  {formData.date
+                    ? new Date(formData.date).toLocaleDateString("en-US", {
+                        day: "2-digit",
+                        month: "long",
+                        year: "numeric",
+                      })
+                    : "---"}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Base Salary:</span>
+                <span className="font-medium">₨ {formData.baseSalary || 0}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Total Advance:</span>
+                <span className="font-medium">₨ {formData.totalAdvance || 0}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Remaining Salary:</span>
+                <span className="font-medium">₨ {formData.remainingSalary || 0}</span>
               </div>
             </div>
 
-            {/* How it Works */}
-            <div className="bg-blue-50 rounded-lg p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <HelpCircle className="w-5 h-5 text-blue-600" />
-                <h4 className="font-medium text-blue-800">How it Works</h4>
+            {/* How it Works (only in create mode) */}
+            {!isEditMode && (
+              <div className="bg-blue-50 rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <HelpCircle className="w-5 h-5 text-blue-600" />
+                  <h4 className="font-medium text-blue-800">How it Works</h4>
+                </div>
+                <ul className="space-y-1 text-sm text-blue-700">
+                  <li>• Use once per employee each month.</li>
+                  <li>• Add wages or advances after creation.</li>
+                  <li>• Prevents duplicate monthly cards.</li>
+                  <li>• Matches real-life salary cycle logic.</li>
+                </ul>
               </div>
-              <ul className="space-y-2 text-sm text-blue-700">
-                <li>
-                  • Use this form once per employee at the start of each month.
-                </li>
-                <li>
-                  • After creating, use "Add More Wage" or "Add More Advance"
-                  inside the card.
-                </li>
-                <li>• Keeps records organized by Employee + Month</li>
-                <li>• Prevents duplicate monthly cards.</li>
-                <li>• Matches real-life monthly salary cycle logic</li>
-              </ul>
-            </div>
+            )}
 
-            {/* Action Buttons */}
-            <div className="flex items-center justify-end gap-3 pt-4">
+            {/* Buttons */}
+            <div className="flex justify-end gap-3 pt-4">
               <button
                 type="button"
                 onClick={onBack}
@@ -242,9 +241,11 @@ const MonthlyWageForm = ({ onBack, onSubmit, initialData }) => {
               </button>
               <button
                 type="submit"
-                className="px-6 py-2 text-[#181829] rounded-lg bg-[#d8f276] hover:text-[#d8f276] hover:bg-[#181829] transition-colors"
+                className="px-6 py-2 text-[#181829] bg-[#d8f276] rounded-lg hover:bg-[#181829] hover:text-[#d8f276] transition-colors"
               >
-                Create Monthly Salary Card
+                {isEditMode
+                  ? "Update Monthly Salary Card"
+                  : "Create Monthly Salary Card"}
               </button>
             </div>
           </form>

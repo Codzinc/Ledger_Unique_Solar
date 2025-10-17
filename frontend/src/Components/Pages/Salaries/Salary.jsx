@@ -21,6 +21,7 @@ const SalaryContent = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Fetch salaries on mount
   useEffect(() => {
     fetchSalaries();
   }, []);
@@ -51,9 +52,9 @@ const SalaryContent = () => {
       : 0,
   };
 
-  const handleAddSalary = () => {
-    setShowAddModal(true);
-  };
+  // Modal and form handlers
+  const handleAddSalary = () => setShowAddModal(true);
+  const handleCloseModal = () => setShowAddModal(false);
 
   const handleWageTypeSelect = (type) => {
     setSelectedWageType(type);
@@ -67,38 +68,39 @@ const SalaryContent = () => {
     setSelectedSalary(null);
   };
 
-  const handleCloseModal = () => {
-    setShowAddModal(false);
-  };
-
   const handleViewSalary = (salary) => {
     setSelectedSalary(salary);
     let type = salary.wageType || salary.wage_type || "";
-  if (type.toLowerCase().includes("daily")) {
-    setSelectedWageType("Daily");
-  } else {
-    setSelectedWageType("Monthly");
-  }
-};
+    if (type.toLowerCase().includes("daily")) {
+      setSelectedWageType("Daily");
+    } else {
+      setSelectedWageType("Monthly");
+    }
+  };
 
   const handleEditSalary = (salary) => {
-    // Format the salary data for form consumption
     const formattedSalary = {
+      id: salary.id,
       employeeName: salary.employeeName || salary.employee_name,
       month: salary.month || salary.date?.substring(0, 7),
-      serviceDescription: salary.serviceDescription || salary.service_description || "",
+      serviceDescription:
+        salary.serviceDescription || salary.service_description || "",
       baseSalary: salary.baseSalary || salary.salary_amount || "",
       totalAdvance: salary.totalAdvance || salary.total_advance_taken || 0,
       remainingSalary: salary.remainingSalary || salary.remaining_salary || 0,
       note: salary.note || "",
       wages: salary.wages || [],
       advances: salary.advances || [],
-      wageType: salary.wageType || salary.wage_type
+      wageType: salary.wageType || salary.wage_type,
     };
-    
+
     setSelectedSalary(formattedSalary);
     setSelectedWageType(
-      (salary.wageType || salary.wage_type || "").toLowerCase().includes("daily") ? "daily-wage" : "monthly-wage"
+      (salary.wageType || salary.wage_type || "")
+        .toLowerCase()
+        .includes("daily")
+        ? "daily-wage"
+        : "monthly-wage"
     );
     setShowSalaryForm(true);
   };
@@ -117,53 +119,67 @@ const SalaryContent = () => {
     }
   };
 
-  const handleSalarySubmit = async (formData) => {
+  // ✅ UPDATED handleSalarySubmit with edit mode logic
+  const handleSalarySubmit = async (formData, isEditMode) => {
     try {
-      let response;
-      // Format the data according to API requirements
+      // Ensure month is converted to valid date format for backend
+      const safeMonth =
+        formData.month?.length === 7 ? `${formData.month}-01` : formData.month;
+
       const apiData = {
         ...formData,
-        date: formData.date || `${formData.month}-01`, // Ensure date is in YYYY-MM-DD format
+        date: formData.date || safeMonth,
+        month: safeMonth, // ✅ make sure both are YYYY-MM-DD
         salary_amount: parseFloat(formData.salary_amount) || 0,
         total_advance_taken: parseFloat(formData.total_advance_taken) || 0,
-        remaining_salary: parseFloat(formData.remaining_salary) || parseFloat(formData.salary_amount) || 0,
+        remaining_salary:
+          parseFloat(formData.remaining_salary) ||
+          parseFloat(formData.salary_amount) ||
+          0,
         status: formData.status || "Active",
-        month: formData.month || formData.date?.substring(0, 7) // Ensure month is in YYYY-MM format
       };
 
-      if (formData.wage_type === "Daily") {
-        response = await salaryApi.createDailyWage(apiData);
+      let response;
+
+      if (isEditMode) {
+        response = await salaryApi.updateSalary(formData.id, apiData);
+        setSalaries((prev) =>
+          prev.map((sal) => (sal.id === formData.id ? response : sal))
+        );
       } else {
-        response = await salaryApi.createMonthlySalary(apiData);
+        // ✅ Create new salary record
+        if (formData.wage_type === "Daily" || formData.wageType === "Daily") {
+          response = await salaryApi.createDailyWage(apiData);
+        } else {
+          response = await salaryApi.createMonthlySalary(apiData);
+        }
+
+        setSalaries((prev) => [...prev, response.data]);
       }
-      
-      if (response.data) {
-        await fetchSalaries();
-        handleBackToSalaries();
-      }
+
+      handleBackToSalaries();
     } catch (err) {
-      console.error('API Error:', err.response?.data || err);
-      const errorMessage = err.response?.data?.message || 
-                        Object.values(err.response?.data || {})[0]?.[0] ||
-                        'Failed to create salary record';
+      console.error("API Error:", err.response?.data || err);
+      const errorMessage =
+        err.response?.data?.message ||
+        Object.values(err.response?.data || {})[0]?.[0] ||
+        "Failed to save salary record";
       alert(errorMessage);
     }
   };
 
-  // Card update handler for wage/advance changes
   const handleCardUpdate = (updatedSalary) => {
-    setSalaries(
-      salaries.map((salary) =>
+    setSalaries((prev) =>
+      prev.map((salary) =>
         salary.id === updatedSalary.id ? updatedSalary : salary
       )
     );
     setSelectedSalary(updatedSalary);
   };
 
-  const handleDateFilterChange = (date) => {
-    setDateFilter(date);
-  };
+  const handleDateFilterChange = (date) => setDateFilter(date);
 
+  // Loading and Error states
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -180,6 +196,7 @@ const SalaryContent = () => {
     );
   }
 
+  // Show Form View
   if (showSalaryForm) {
     return (
       <div className="min-h-screen bg-gray-100">
@@ -200,6 +217,7 @@ const SalaryContent = () => {
     );
   }
 
+  // Main Salary Listing View
   return (
     <div className="min-h-screen bg-white p-4">
       <div className="max-w-7xl mx-auto">
@@ -229,27 +247,26 @@ const SalaryContent = () => {
         )}
 
         {selectedSalary &&
-          !showSalaryForm && (
-            selectedWageType === "Daily" ? (
-              <DailyWageCard
-                salary={selectedSalary}
-                onClose={() => {
-                  setSelectedSalary(null);
-                  setSelectedWageType("");
-                }}
-                onUpdate={handleCardUpdate}
-              />
-            ) : (
-              <MonthlyWageCard
-                salary={selectedSalary}
-                onClose={() => {
-                  setSelectedSalary(null);
-                  setSelectedWageType("");
-                }}
-                onUpdate={handleCardUpdate}
-              />
-            )
-          )}
+          !showSalaryForm &&
+          (selectedWageType === "Daily" ? (
+            <DailyWageCard
+              salary={selectedSalary}
+              onClose={() => {
+                setSelectedSalary(null);
+                setSelectedWageType("");
+              }}
+              onUpdate={handleCardUpdate}
+            />
+          ) : (
+            <MonthlyWageCard
+              salary={selectedSalary}
+              onClose={() => {
+                setSelectedSalary(null);
+                setSelectedWageType("");
+              }}
+              onUpdate={handleCardUpdate}
+            />
+          ))}
       </div>
     </div>
   );

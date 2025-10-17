@@ -151,6 +151,17 @@ const ProjectTable = ({
   const [error, setError] = useState(null);
   const itemsPerPage = 10;
 
+    useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (!e.target.closest(".dropdown-container") && !e.target.closest("button")) {
+        setActiveDropdown(null);
+      }
+    };
+    window.addEventListener("click", handleClickOutside);
+    return () => window.removeEventListener("click", handleClickOutside);
+  }, []);
+  
+
   // ✅ Local helper for refreshing project list after delete
   const refreshProjects = async () => {
     try {

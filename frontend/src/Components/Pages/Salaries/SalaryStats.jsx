@@ -26,7 +26,7 @@ const SalaryStats = ({ stats }) => {
         icon={Users}
       />
       <StatCard
-        title="Total Salaries"
+        title="Total Amount"
         value={stats.totalSalaries}
         icon={DollarSign}
       />

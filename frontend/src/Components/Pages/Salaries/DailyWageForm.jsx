@@ -1,15 +1,18 @@
 import React, { useState } from "react";
-import { ArrowLeft, User, Calendar, FileText, HelpCircle } from "lucide-react";
+import { ArrowLeft, HelpCircle } from "lucide-react";
 import DailyWageCard from "./DailyWageCard";
 
 const DailyWageForm = ({ onBack, onSubmit, initialData }) => {
+  const isEditMode = !!initialData; // ✅ detect if editing existing record
+
   const [formData, setFormData] = useState({
+    id: initialData?.id || null, // ✅ keep track of id for updates 
     employeeName: initialData?.employeeName || "",
-    month:
-      initialData?.month ||
-      new Date().toISOString().split("T")[0].substring(0, 7),
+    date: initialData?.date
+  ? new Date(initialData.date).toISOString().split("T")[0]
+  : new Date().toISOString().split("T")[0],
     serviceDescription: initialData?.serviceDescription || "",
-    wageType: "Daily",
+    wageType: initialData?.wageType || "Daily",
   });
 
   const [errors, setErrors] = useState({});
@@ -18,40 +21,42 @@ const DailyWageForm = ({ onBack, onSubmit, initialData }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-    if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: null }));
-    }
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: null }));
   };
 
   const validateForm = () => {
     const newErrors = {};
     if (!formData.employeeName)
       newErrors.employeeName = "Employee name is required";
-    if (!formData.month) newErrors.month = "Month & Year is required";
-
+    if (!formData.date) newErrors.date = "Date is required";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (validateForm()) {
-      const submitData = {
-        employee: formData.employeeName,
-        date: formData.month + "-01",
-        description: formData.serviceDescription || "",
-        wage_type: "Daily",
-        salary_amount: 0, // Added salary_amount field
-        status: "Active",
-        total_advance_taken: 0,
-        remaining_salary: 0,
-      };
-      onSubmit(submitData);
-    }
+    if (!validateForm()) return;
+
+    const submitData = {
+      id: formData.id, // ✅ include id for editing
+      employee: formData.employeeName,
+      date: formData.date,
+      month: formData.date.substring(0, 7), // ✅ derive month from full date
+      description: formData.serviceDescription || "",
+      wage_type: "Daily",
+      salary_amount: initialData?.salary_amount || 0,
+      status: "Active",
+      total_advance_taken: initialData?.total_advance_taken || 0,
+      remaining_salary: initialData?.remaining_salary || 0,
+    };
+
+    onSubmit(submitData, isEditMode); // ✅ pass edit flag
+  };
+
+  const handleWageCardUpdate = (updatedData) => {
+    setCurrentSalary(updatedData);
+    setShowWageCard(false);
   };
 
   if (showWageCard && currentSalary) {
@@ -67,22 +72,25 @@ const DailyWageForm = ({ onBack, onSubmit, initialData }) => {
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
       <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-        <div className="bg-[#181829] text-white p-6">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={onBack}
-              className="text-[#d8f276] hover:text-white transition-colors"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </button>
-            <h2 className="text-xl font-semibold">DAILY WAGE SETUP</h2>
-          </div>
+        {/* Header */}
+        <div className="bg-[#181829] text-white p-6 flex items-center gap-3">
+          <button
+            onClick={onBack}
+            className="text-[#d8f276] hover:text-white transition-colors"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+          <h2 className="text-xl font-semibold">
+            {isEditMode ? "EDIT DAILY WAGE" : "DAILY WAGE SETUP"}
+          </h2>
         </div>
 
+        {/* Form Body */}
         <div className="p-6">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Two inputs in a single responsive row */}
+            {/* Employee Name + Date */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Employee Name */}
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700">
                   Employee Name *
@@ -101,21 +109,23 @@ const DailyWageForm = ({ onBack, onSubmit, initialData }) => {
                   <p className="text-red-500 text-sm">{errors.employeeName}</p>
                 )}
               </div>
+
+              {/* Full Date */}
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700">
-                  Month & Year *
+                  Date *
                 </label>
                 <input
-                  type="month"
-                  name="month"
-                  value={formData.month}
+                  type="date"
+                  name="date"
+                  value={formData.date}
                   onChange={handleChange}
                   className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#d8f276] focus:border-transparent ${
-                    errors.month ? "border-red-500" : "border-gray-300"
+                    errors.date ? "border-red-500" : "border-gray-300"
                   }`}
                 />
-                {errors.month && (
-                  <p className="text-red-500 text-sm">{errors.month}</p>
+                {errors.date && (
+                  <p className="text-red-500 text-sm">{errors.date}</p>
                 )}
               </div>
             </div>
@@ -123,14 +133,14 @@ const DailyWageForm = ({ onBack, onSubmit, initialData }) => {
             {/* Service Description */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">
-                Service Description (Optional)
+                Note (Optional)
               </label>
               <textarea
                 name="serviceDescription"
                 value={formData.serviceDescription}
                 onChange={handleChange}
                 rows={3}
-                placeholder="General note for this monthly card..."
+                placeholder="General note for this daily wage card..."
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg resize-none"
               />
             </div>
@@ -150,47 +160,45 @@ const DailyWageForm = ({ onBack, onSubmit, initialData }) => {
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Month:</span>
+                  <span className="text-gray-600">Date:</span>
                   <span className="font-medium">
-                    {formData.month
-                      ? new Date(formData.month + "-01").toLocaleDateString(
-                          "en-US",
-                          { month: "long", year: "numeric" }
-                        )
+                    {formData.date
+                      ? new Date(formData.date).toLocaleDateString("en-US", {
+                          weekday: "short",
+                          month: "long",
+                          day: "numeric",
+                          year: "numeric",
+                        })
                       : "---"}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Status:</span>
                   <span className="font-medium">
-                    Empty - Ready for wage entries
+                    {isEditMode
+                      ? "Loaded from existing record"
+                      : "Empty - Ready for wage entries"}
                   </span>
                 </div>
               </div>
             </div>
 
-            {/* How it Works */}
+            {/* How It Works */}
             <div className="bg-blue-50 rounded-lg p-4">
               <div className="flex items-center gap-2 mb-2">
                 <HelpCircle className="w-5 h-5 text-blue-600" />
                 <h4 className="font-medium text-blue-800">How it Works</h4>
               </div>
               <ul className="space-y-2 text-sm text-blue-700">
-                <li>
-                  • Use this form once per employee at the start of each month.
-                </li>
-                <li>
-                  • After creating, use "Add More Wage" or "Add More Advance"
-                  inside the card.
-                </li>
-                <li>• Keeps records organized by Employee + Month</li>
-                <li>• Prevents duplicate monthly cards.</li>
-                <li>• Matches real-life monthly salary cycle logic</li>
+                <li>• Use this form once per employee per day.</li>
+                <li>• After creating, use "Add More Wage" or "Add More Advance" inside the card.</li>
+                <li>• Prevents duplicate daily entries and keeps salary records accurate.</li>
+                <li>• Matches real-life daily wage entry workflow.</li>
               </ul>
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex items-center justify-end gap-3 pt-4">
+            {/* Buttons */}
+            <div className="flex justify-end gap-3 pt-4">
               <button
                 type="button"
                 onClick={onBack}
@@ -200,9 +208,9 @@ const DailyWageForm = ({ onBack, onSubmit, initialData }) => {
               </button>
               <button
                 type="submit"
-                className="px-6 py-2 text-[#181829] rounded-lg bg-[#d8f276] hover:text-[#d8f276] hover:bg-[#181829] transition-colors"
+                className="px-6 py-2 text-[#181829] bg-[#d8f276] rounded-lg hover:bg-[#181829] hover:text-[#d8f276] transition-colors"
               >
-                Create Daily Wage Card
+                {isEditMode ? "Update Daily Wage Card" : "Create Daily Wage Card"}
               </button>
             </div>
           </form>
@@ -211,7 +219,5 @@ const DailyWageForm = ({ onBack, onSubmit, initialData }) => {
     </div>
   );
 };
-
-
 
 export default DailyWageForm;

@@ -39,14 +39,15 @@ export const salaryApi = {
     }
   },
 
-  updateSalary: async (id, data) => {
-    try {
-      const response = await api.put(`/salary/${id}/`, data);
-      return response.data;
-    } catch (error) {
-      throw error.response?.data || error.message;
-    }
-  },
+updateSalary: async (id, data) => {
+  try {
+    const response = await api.put(`/salary/${id}/`, data);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+},
+
 
   deleteSalary: async (id) => {
     try {
