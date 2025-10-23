@@ -45,10 +45,10 @@ const ViewProject = ({ project, onClose, onEdit, onDelete }) => {
     };
 
     const statusText = {
-      COMPLETED: "Completed",
-      PENDING: "Pending",
-      IN_PROGRESS: "In Progress",
-      DRAFT: "Draft",
+      complete: "complete",
+      pending: "pending",
+      in_progress: "in_progress",
+      draft: "draft",
     };
 
     const normalizedStatus = status?.toUpperCase();

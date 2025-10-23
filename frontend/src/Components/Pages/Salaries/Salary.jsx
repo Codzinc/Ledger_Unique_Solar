@@ -228,7 +228,7 @@ const SalaryContent = () => {
           onDateFilterChange={handleDateFilterChange}
         />
 
-        <SalaryStats stats={stats} />
+        <SalaryStats salaries={salaries} />
 
         <SalaryListing
           salaries={salaries}

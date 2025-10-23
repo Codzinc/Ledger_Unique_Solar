@@ -5,8 +5,10 @@ const ProjectFilters = ({ filters, onFiltersChange }) => {
   const filterOptions = {
     company: ["All Companies", "UNIQUE SOLAR", "ZARORRAT.COM"],
     projectType: ["All Types", "on_grid", "hybrid", "off_grid", "Service"],
-    status: ["All Status", "Pending", "IN PROGRESS", "COMPLETED"],
+    status: ["All Status", "pending", "in_progress", "complete"],
   };
+
+  
 
   const handleFilterChange = (filterType, value) => {
     onFiltersChange({

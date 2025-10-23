@@ -112,12 +112,12 @@ const StatusBadge = ({ status }) => {
   };
 
   const statusText = {
-    pending: "Pending",
-    in_progress: "In Progress",
-    completed: "Completed",
+    pending: "pending",
+    in_progress: "in_progress",
+    complete: "complete",
     draft: "Draft",
   };
-
+  
   const baseClasses = "px-3 py-1 rounded-full text-xs font-medium";
   const statusClass =
     statusClasses[status?.toLowerCase()] || statusClasses.draft;

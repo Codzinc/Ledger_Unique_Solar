@@ -57,6 +57,13 @@ const MonthlyWageCard = ({ salary, onClose, onUpdate }) => {
     fetchAdvances();
   }, [salary]);
 
+  // ✅ Ensure currentPage is valid whenever advances or itemsPerPage change
+  useEffect(() => {
+    const tp = Math.max(1, Math.ceil((advances?.length || 0) / itemsPerPage));
+    if (currentPage > tp) setCurrentPage(tp);
+    if (currentPage < 1) setCurrentPage(1);
+  }, [advances, itemsPerPage, currentPage]);
+
   // ✅ Utility calculations
   const calculateTotals = (list) => {
     const totalAdvance = list.reduce(
@@ -84,17 +91,14 @@ const MonthlyWageCard = ({ salary, onClose, onUpdate }) => {
         ...advances,
         {
           id: created.id,
-          date: created.date
-            ? created.date.split("T")[0]
-            : newAdvance.date,
+          date: created.date ? created.date.split("T")[0] : newAdvance.date,
           amount: parseFloat(created.advance_taken || newAdvance.amount),
           purpose: created.purpose,
           employee: created.employee,
         },
       ];
 
-      const { totalAdvance, remainingSalary } =
-        calculateTotals(updatedAdvances);
+      const { totalAdvance, remainingSalary } = calculateTotals(updatedAdvances);
 
       onUpdate({
         ...salary,
@@ -111,6 +115,10 @@ const MonthlyWageCard = ({ salary, onClose, onUpdate }) => {
         amount: "",
         purpose: "",
       });
+
+      // go to last page if new item added pushes to a new page
+      const newTotalPages = Math.max(1, Math.ceil(updatedAdvances.length / itemsPerPage));
+      setCurrentPage(newTotalPages);
     } catch (err) {
       console.error("Failed to add advance:", err);
       alert("Failed to add advance");
@@ -122,8 +130,7 @@ const MonthlyWageCard = ({ salary, onClose, onUpdate }) => {
     try {
       await deleteAdvance(advanceId);
       const updatedAdvances = advances.filter((adv) => adv.id !== advanceId);
-      const { totalAdvance, remainingSalary } =
-        calculateTotals(updatedAdvances);
+      const { totalAdvance, remainingSalary } = calculateTotals(updatedAdvances);
       onUpdate({
         ...salary,
         advances: updatedAdvances,
@@ -166,19 +173,14 @@ const MonthlyWageCard = ({ salary, onClose, onUpdate }) => {
         adv.id === editAdvanceId
           ? {
               id: updated.id,
-              date: updated.date
-                ? updated.date.split("T")[0]
-                : editAdvance.date,
-              amount: parseFloat(
-                updated.advance_taken || editAdvance.amount
-              ),
+              date: updated.date ? updated.date.split("T")[0] : editAdvance.date,
+              amount: parseFloat(updated.advance_taken || editAdvance.amount),
               purpose: updated.purpose || editAdvance.purpose,
               employee: updated.employee,
             }
           : adv
       );
-      const { totalAdvance, remainingSalary } =
-        calculateTotals(updatedAdvances);
+      const { totalAdvance, remainingSalary } = calculateTotals(updatedAdvances);
       onUpdate({
         ...salary,
         advances: updatedAdvances,
@@ -199,8 +201,8 @@ const MonthlyWageCard = ({ salary, onClose, onUpdate }) => {
     setEditAdvance({ date: "", amount: "", purpose: "" });
   };
 
-  // ✅ Pagination logic (FIXED)
-  const totalPages = Math.ceil(advances.length / itemsPerPage);
+  // ✅ Pagination logic (clamped totalPages >= 1)
+  const totalPages = Math.max(1, Math.ceil((advances?.length || 0) / itemsPerPage));
   const paginatedAdvances = advances.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
@@ -224,7 +226,7 @@ const MonthlyWageCard = ({ salary, onClose, onUpdate }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl my-8"> {/* Removed max-height constraint */}
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl my-8">
         {/* Header */}
         <div className="bg-[#181829] p-6 rounded-t-xl flex justify-between items-center">
           <div className="flex items-center gap-3">
@@ -240,9 +242,7 @@ const MonthlyWageCard = ({ salary, onClose, onUpdate }) => {
                 Salary
               </h2>
               <p className="text-sm text-gray-400">
-                {formatDate(
-                  salary.date || salary.month || new Date().toISOString()
-                )}
+                {formatDate(salary.date || salary.month || new Date().toISOString())}
               </p>
             </div>
           </div>
@@ -253,32 +253,27 @@ const MonthlyWageCard = ({ salary, onClose, onUpdate }) => {
           <div>
             <p className="text-sm text-gray-600">Base Salary</p>
             <p className="text-xl font-bold text-[#181829]">
-              Rs.{" "}
-              {(salary.baseSalary || salary.salary_amount || 0).toLocaleString()}
+              Rs. {(salary.baseSalary || salary.salary_amount || 0).toLocaleString()}
             </p>
           </div>
           <div>
             <p className="text-sm text-gray-600">Total Advance</p>
             <p className="text-xl font-bold text-red-600">
-              Rs.{" "}
-              {(salary.totalAdvance || salary.total_advance_taken || 0).toLocaleString()}
+              Rs. {(salary.totalAdvance || salary.total_advance_taken || 0).toLocaleString()}
             </p>
           </div>
           <div>
             <p className="text-sm text-gray-600">Remaining Salary</p>
             <p className="text-xl font-bold text-green-600">
-              Rs.{" "}
-              {(salary.remainingSalary || salary.remaining_salary || 0).toLocaleString()}
+              Rs. {(salary.remainingSalary || salary.remaining_salary || 0).toLocaleString()}
             </p>
           </div>
         </div>
 
-        {/* Body - No height constraints */}
+        {/* Body */}
         <div className="p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-800">
-              Advance History
-            </h3>
+            <h3 className="text-lg font-semibold text-gray-800">Advance History</h3>
             <button
               onClick={() => setShowAdvanceForm(true)}
               className="flex items-center gap-2 px-4 py-2 text-[#181829] bg-[#d8f276] rounded-lg hover:text-[#d8f276] hover:bg-[#181829] transition-colors"
@@ -294,44 +289,32 @@ const MonthlyWageCard = ({ salary, onClose, onUpdate }) => {
               <form onSubmit={handleAddAdvance} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Date
-                    </label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
                     <input
                       type="date"
                       value={newAdvance.date}
-                      onChange={(e) =>
-                        setNewAdvance((p) => ({ ...p, date: e.target.value }))
-                      }
+                      onChange={(e) => setNewAdvance((p) => ({ ...p, date: e.target.value }))}
                       className="w-full px-3 py-2 border rounded-lg"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Amount
-                    </label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Amount</label>
                     <input
                       type="number"
                       value={newAdvance.amount}
-                      onChange={(e) =>
-                        setNewAdvance((p) => ({ ...p, amount: e.target.value }))
-                      }
+                      onChange={(e) => setNewAdvance((p) => ({ ...p, amount: e.target.value }))}
                       placeholder="Enter amount"
                       className="w-full px-3 py-2 border rounded-lg"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Purpose
-                    </label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Purpose</label>
                     <input
                       type="text"
                       value={newAdvance.purpose}
-                      onChange={(e) =>
-                        setNewAdvance((p) => ({ ...p, purpose: e.target.value }))
-                      }
+                      onChange={(e) => setNewAdvance((p) => ({ ...p, purpose: e.target.value }))}
                       placeholder="Purpose of advance"
                       className="w-full px-3 py-2 border rounded-lg"
                       required
@@ -357,29 +340,19 @@ const MonthlyWageCard = ({ salary, onClose, onUpdate }) => {
             </div>
           )}
 
-          {/* Advances Table - Simple table without scroll containers */}
+          {/* Advances Table */}
           <div className="border rounded-lg overflow-hidden">
             {loadingAdvances ? (
-              <div className="text-center text-gray-500 py-8">
-                Loading advances...
-              </div>
+              <div className="text-center text-gray-500 py-8">Loading advances...</div>
             ) : (
               <>
                 <table className="w-full">
                   <thead className="bg-gray-100">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                        Date
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                        Advance Taken
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                        Purpose
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                        Actions
-                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Advance Taken</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Purpose</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
@@ -415,57 +388,24 @@ const MonthlyWageCard = ({ salary, onClose, onUpdate }) => {
                               />
                             </td>
                             <td className="px-6 py-2 flex gap-2">
-                              <button
-                                onClick={handleEditAdvanceSave}
-                                className="text-green-600 hover:text-green-800 px-2"
-                              >
-                                Save
-                              </button>
-                              <button
-                                onClick={handleEditAdvanceCancel}
-                                className="text-gray-600 hover:text-gray-800 px-2"
-                              >
-                                Cancel
-                              </button>
+                              <button onClick={handleEditAdvanceSave} className="text-green-600 hover:text-green-800 px-2">Save</button>
+                              <button onClick={handleEditAdvanceCancel} className="text-gray-600 hover:text-gray-800 px-2">Cancel</button>
                             </td>
                           </tr>
                         ) : (
                           <tr key={advance.id} className="hover:bg-gray-50">
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                              {advance.date
-                                ? new Date(advance.date).toLocaleDateString(
-                                    "en-CA",
-                                    {
-                                      year: "numeric",
-                                      month: "2-digit",
-                                      day: "2-digit",
-                                    }
-                                  )
-                                : "--"}
+                              {advance.date ? new Date(advance.date).toLocaleDateString("en-CA", { year: "numeric", month: "2-digit", day: "2-digit" }) : "--"}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                               Rs. {advance.amount?.toLocaleString() || 0}
                             </td>
-                            <td className="px-6 py-4 text-sm text-gray-900">
-                              {advance.purpose || "--"}
-                            </td>
+                            <td className="px-6 py-4 text-sm text-gray-900">{advance.purpose || "--"}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 flex gap-2">
-                              <button
-                                type="button"
-                                onClick={() => handleEditAdvance(advance)}
-                                className="text-blue-600 hover:text-blue-800 mr-2"
-                                title="Edit"
-                              >
+                              <button type="button" onClick={() => handleEditAdvance(advance)} className="text-blue-600 hover:text-blue-800 mr-2" title="Edit">
                                 <Edit2 className="w-4 h-4" />
                               </button>
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  handleDeleteAdvance(advance.id)
-                                }
-                                className="text-red-600 hover:text-red-800"
-                                title="Delete"
-                              >
+                              <button type="button" onClick={() => handleDeleteAdvance(advance.id)} className="text-red-600 hover:text-red-800" title="Delete">
                                 <Trash2 className="w-4 h-4" />
                               </button>
                             </td>
@@ -474,19 +414,14 @@ const MonthlyWageCard = ({ salary, onClose, onUpdate }) => {
                       )
                     ) : (
                       <tr>
-                        <td
-                          colSpan="4"
-                          className="px-6 py-8 text-center text-sm text-gray-500"
-                        >
-                          No advances recorded yet
-                        </td>
+                        <td colSpan="4" className="px-6 py-8 text-center text-sm text-gray-500">No advances recorded yet</td>
                       </tr>
                     )}
                   </tbody>
                 </table>
 
-                {/* ✅ PAGINATION - SIMPLE AND ALWAYS VISIBLE */}
-                {totalPages > 1 && (
+                {/* PAGINATION - VISIBLE WHEN AT LEAST 1 PAGE */}
+                {totalPages >= 1 && (
                   <div className="border-t bg-gray-50 px-6 py-4">
                     <div className="flex justify-center items-center gap-4">
                       <button
@@ -497,9 +432,7 @@ const MonthlyWageCard = ({ salary, onClose, onUpdate }) => {
                         <ChevronLeft size={16} />
                         Previous
                       </button>
-                      <span className="text-gray-700 text-sm font-medium">
-                        Page <strong>{currentPage}</strong> of {totalPages}
-                      </span>
+                      <span className="text-gray-700 text-sm font-medium">Page <strong>{currentPage}</strong> of {totalPages}</span>
                       <button
                         className="flex items-center gap-1 px-4 py-2 rounded-md bg-gray-200 hover:bg-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                         disabled={currentPage === totalPages}

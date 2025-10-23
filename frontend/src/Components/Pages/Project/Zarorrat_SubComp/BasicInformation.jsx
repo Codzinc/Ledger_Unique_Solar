@@ -116,9 +116,9 @@ const BasicInformation = ({ formData, handleInputChange, errors }) => {
             className={inputStyle("status")}
           >
             <option value="">Select status</option>
-            <option value="pending">Pending</option>
-            <option value="in_progress">In Progress</option>
-            <option value="complete">Complete</option>
+            <option value="pending">pending</option>
+            <option value="in_progress">in_progress</option>
+            <option value="complete">complete</option>
           </select>
           {errorText("status")}
         </div>

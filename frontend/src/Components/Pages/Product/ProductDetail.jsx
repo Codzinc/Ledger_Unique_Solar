@@ -13,50 +13,62 @@ import {
   Trash2,
   Hash,
 } from "lucide-react";
-import { getProduct } from "../../../ApiComps/Product/ProductList";
+// ❌ OLD: import { getProduct } from "../../../ApiComps/Product/ProductList";
+// ✅ NEW:
+import productService from "../../../ApiComps/Product/ProductService";
 
 const ProductDetail = ({ product, onClose, onEdit, onDelete }) => {
   const [productDetails, setProductDetails] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchDetails = async () => {
-      if (!product || !product.id) {
-        setProductDetails(product);
-        setLoading(false);
-        return;
-      }
+  const fetchDetails = async () => {
+    console.log("🔄 fetchDetails called with product:", product);
 
-      setLoading(true);
-      setError(null);
+    if (!product || !product.id) {
+      console.log("❌ No product or product.id found");
+      setProductDetails(product);
+      setLoading(false);
+      return;
+    }
 
-      const result = await getProduct(product.id);
+    setLoading(true);
+    setError(null);
+
+    try {
+      console.log("📡 Calling getProduct API with ID:", product.id);
+      // ✅ YEH LINE CHANGE KAREIN
+      const result = await productService.getProduct(product.id);
+      console.log("✅ API Response:", result);
 
       if (result.success && result.data) {
+        console.log("📸 Product Images from API:", result.data.images);
+        console.log("🔍 Full product data:", result.data);
+
+        // ✅ YEH LINES CHANGE KAREIN - productService ka mapping use karo
+        const uiProduct = productService.mapAPIToUI(result.data);
         const transformedProduct = {
-          ...result.data,
+          ...uiProduct,
           srNo: product.srNo || result.data.id,
-          product: result.data.name,
-          cName: result.data.customer_name,
-          dateAdded: result.data.date,
-          purchPrice: parseFloat(result.data.purchase_price.toString()),
-          salePrice: parseFloat(result.data.sale_price.toString()),
-          profit: result.data.total_profit,
-          totalPurchaseCost: result.data.total_purchase_cost,
-          totalSaleValue: result.data.total_sale_value,
-          profitPerUnit: result.data.profit_per_unit,
-          profitMarginPercentage: result.data.profit_margin_percentage,
+          // ✅ Images automatically process ho jayengi mapping function se
         };
 
+        console.log("🎯 Transformed Product:", transformedProduct);
         setProductDetails(transformedProduct);
       } else {
-        setError(result.error || 'Failed to fetch product details');
+        console.log("❌ API Error:", result.error);
+        setError(result.error || "Failed to fetch product details");
       }
-
+    } catch (err) {
+      console.log("💥 Fetch error:", err);
+      setError("An unexpected error occurred");
+    } finally {
       setLoading(false);
-    };
+    }
+  };
 
+  useEffect(() => {
+    console.log("🎬 ProductDetail mounted/updated");
     fetchDetails();
   }, [product?.id]);
 
@@ -76,7 +88,9 @@ const ProductDetail = ({ product, onClose, onEdit, onDelete }) => {
             <div className="flex items-center gap-3">
               <Package className="w-7 h-7 text-[#d8f276]" />
               <div>
-                <h2 className="text-2xl font-bold text-gray-800">Product Details</h2>
+                <h2 className="text-2xl font-bold text-gray-800">
+                  Product Details
+                </h2>
                 <p className="text-gray-600">Loading...</p>
               </div>
             </div>
@@ -106,7 +120,9 @@ const ProductDetail = ({ product, onClose, onEdit, onDelete }) => {
             <div className="flex items-center gap-3">
               <Package className="w-7 h-7 text-[#d8f276]" />
               <div>
-                <h2 className="text-2xl font-bold text-gray-800">Product Details</h2>
+                <h2 className="text-2xl font-bold text-gray-800">
+                  Product Details
+                </h2>
                 <p className="text-gray-600">Error</p>
               </div>
             </div>
@@ -139,12 +155,14 @@ const ProductDetail = ({ product, onClose, onEdit, onDelete }) => {
   const purchPrice = productDetails.purchPrice || 0;
   const salePrice = productDetails.salePrice || 0;
   const quantity = productDetails.quantity || 1;
-  const profitPerUnit = productDetails.profitPerUnit || (salePrice - purchPrice);
-  const totalPurchaseCost = productDetails.totalPurchaseCost || (purchPrice * quantity);
-  const totalSaleValue = productDetails.totalSaleValue || (salePrice * quantity);
-  const profit = productDetails.profit || (totalSaleValue - totalPurchaseCost);
-  const profitMarginPercentage = productDetails.profitMarginPercentage ||
-    (purchPrice > 0 ? ((profitPerUnit / purchPrice) * 100) : 0);
+  const profitPerUnit = productDetails.profitPerUnit || salePrice - purchPrice;
+  const totalPurchaseCost =
+    productDetails.totalPurchaseCost || purchPrice * quantity;
+  const totalSaleValue = productDetails.totalSaleValue || salePrice * quantity;
+  const profit = productDetails.profit || totalSaleValue - totalPurchaseCost;
+  const profitMarginPercentage =
+    productDetails.profitMarginPercentage ||
+    (purchPrice > 0 ? (profitPerUnit / purchPrice) * 100 : 0);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -205,7 +223,6 @@ const ProductDetail = ({ product, onClose, onEdit, onDelete }) => {
               </div>
             </div>
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
             <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
               <div className="flex items-center gap-3 mb-3">
@@ -275,7 +292,10 @@ const ProductDetail = ({ product, onClose, onEdit, onDelete }) => {
                 {new Date(productDetails.dateAdded).toLocaleDateString()}
               </p>
               <p className="text-sm text-gray-500">
-                Updated: {new Date(productDetails.updated_at || productDetails.dateAdded).toLocaleDateString()}
+                Updated:{" "}
+                {new Date(
+                  productDetails.updated_at || productDetails.dateAdded
+                ).toLocaleDateString()}
               </p>
             </div>
           </div>
@@ -290,7 +310,7 @@ const ProductDetail = ({ product, onClose, onEdit, onDelete }) => {
                 {productDetails.images.map((image, index) => (
                   <div key={image.id || index} className="relative">
                     <img
-                      src={image.image_url || image.image}
+                      src={image.image} // ✅ Ab yeh properly work karega
                       alt={`Product ${index + 1}`}
                       className="w-full h-32 object-cover rounded-md border border-gray-300"
                     />
@@ -302,7 +322,6 @@ const ProductDetail = ({ product, onClose, onEdit, onDelete }) => {
               </div>
             </div>
           )}
-
           <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-6">
             <h4 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-green-600" />
@@ -335,7 +354,9 @@ const ProductDetail = ({ product, onClose, onEdit, onDelete }) => {
                 <p className="text-sm text-gray-600">Profit Margin</p>
                 <p
                   className={`text-xl font-bold ${
-                    profitMarginPercentage > 0 ? "text-green-600" : "text-red-600"
+                    profitMarginPercentage > 0
+                      ? "text-green-600"
+                      : "text-red-600"
                   }`}
                 >
                   {profitMarginPercentage.toFixed(1)}%

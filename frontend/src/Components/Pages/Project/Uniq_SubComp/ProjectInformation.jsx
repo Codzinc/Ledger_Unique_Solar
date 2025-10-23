@@ -143,9 +143,9 @@ const ProjectInformation = ({ formData, handleInputChange, formErrors }) => {
             className={inputClass("status")}
           >
             <option value="">Select Status</option>
-            <option value="pending">Pending</option>
-            <option value="in_progress">In Progress</option>
-            <option value="complete">Complete</option>
+            <option value="pending">pending</option>
+            <option value="in_progress">in_progress</option>
+            <option value="complete">complete</option>
           </select>
           {errorMsg("status")}
         </div>

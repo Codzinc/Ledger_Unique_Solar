@@ -10,10 +10,8 @@ import {
   TrendingUp,
   Calendar,
   Loader2,
-  AlertCircle
+  AlertCircle,
 } from "lucide-react";
-
-import { updateProduct } from "../../../ApiComps/Product/ProductList";
 
 const ProductList = ({
   products,
@@ -24,7 +22,7 @@ const ProductList = ({
   onDeleteProduct,
   onAddProduct,
   isDeleting,
-  onRetry
+  onRetry,
 }) => {
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -38,10 +36,7 @@ const ProductList = ({
   const dropdownRef = useRef(null);
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target)
-      ) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setActiveDropdown(null);
       }
     };
@@ -54,7 +49,7 @@ const ProductList = ({
     if (!selectedDate) return products;
     const [year, month] = selectedDate.split("-");
     return products.filter((product) => {
-      const productDate = new Date(product.dateAdded);
+      const productDate = new Date(product.dateAdded || product.date);
       return (
         productDate.getFullYear() === parseInt(year) &&
         productDate.getMonth() === parseInt(month) - 1
@@ -62,13 +57,13 @@ const ProductList = ({
     });
   };
 
-  // ✅ Apply filters and search
+  // ✅ Apply filters and search with safe access
   const filteredProducts = filterByDate(
     products.filter(
       (product) =>
-        product.product.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.cName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.category.toLowerCase().includes(searchTerm.toLowerCase())
+        (product.product || product.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (product.cName || product.customer_name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (product.category || "").toLowerCase().includes(searchTerm.toLowerCase())
     )
   );
 
@@ -83,12 +78,12 @@ const ProductList = ({
     if (page >= 1 && page <= totalPages) setCurrentPage(page);
   };
 
-  // ✅ Totals
+  // ✅ SAFE Totals calculation
   const totals = filteredProducts.reduce(
     (acc, product) => ({
-      totalPurchase: acc.totalPurchase + product.totalPurchaseCost,
-      totalSale: acc.totalSale + product.totalSaleValue,
-      totalProfit: acc.totalProfit + product.profit,
+      totalPurchase: acc.totalPurchase + (product.totalPurchaseCost || product.purchPrice * (product.quantity || 1) || 0),
+      totalSale: acc.totalSale + (product.totalSaleValue || product.salePrice * (product.quantity || 1) || 0),
+      totalProfit: acc.totalProfit + (product.profit || 0),
     }),
     { totalPurchase: 0, totalSale: 0, totalProfit: 0 }
   );
@@ -116,6 +111,12 @@ const ProductList = ({
 
   const handleDateChange = (e) => setSelectedDate(e.target.value);
   const clearDateFilter = () => setSelectedDate("");
+
+  // ✅ SAFE number formatting function
+  const safeToLocaleString = (value) => {
+    if (value === undefined || value === null || isNaN(value)) return "0";
+    return Number(value).toLocaleString();
+  };
 
   // ✅ Loading
   if (loading)
@@ -171,7 +172,9 @@ const ProductList = ({
               <Package className="w-7 h-7 text-[#d8f276]" />
               Product
             </h2>
-            <p className="text-gray-600 mt-1">Manage your products efficiently</p>
+            <p className="text-gray-600 mt-1">
+              Manage your products efficiently
+            </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative">
@@ -228,7 +231,9 @@ const ProductList = ({
         <div className="bg-[#181829] rounded-lg p-4 flex items-center justify-between">
           <div>
             <p className="text-sm text-white font-medium">Total Products</p>
-            <p className="text-2xl font-bold text-white">{filteredProducts.length}</p>
+            <p className="text-2xl font-bold text-white">
+              {filteredProducts.length}
+            </p>
           </div>
           <Package className="w-8 h-8 text-[#d8f276]" />
         </div>
@@ -236,7 +241,7 @@ const ProductList = ({
           <div>
             <p className="text-sm text-white font-medium">Total Revenue</p>
             <p className="text-2xl font-bold text-white">
-              {totals.totalSale.toLocaleString()}
+              {safeToLocaleString(totals.totalSale)}
             </p>
           </div>
           <TrendingUp className="w-8 h-8 text-[#d8f276]" />
@@ -245,7 +250,7 @@ const ProductList = ({
           <div>
             <p className="text-sm text-white font-medium">Total Profit</p>
             <p className="text-2xl font-bold text-white">
-              {totals.totalProfit.toLocaleString()}
+              {safeToLocaleString(totals.totalProfit)}
             </p>
           </div>
           <TrendingUp className="w-8 h-8 text-[#d8f276]" />
@@ -289,55 +294,57 @@ const ProductList = ({
                     className="hover:bg-gray-50 transition-colors cursor-pointer"
                     onClick={(e) => {
                       if (
-                        !e.currentTarget.querySelector(".dropdown-container")?.contains(e.target)
+                        !e.currentTarget
+                          .querySelector(".dropdown-container")
+                          ?.contains(e.target)
                       ) {
                         onViewProduct(product);
                       }
                     }}
                   >
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      #{product.srNo}
+                      #{product.srNo || "N/A"}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-900">
-                      <div className="font-medium">{product.product}</div>
+                      <div className="font-medium">{product.product || product.name || "N/A"}</div>
                       <div className="text-gray-500 text-xs flex gap-2">
                         <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
-                          {product.category}
+                          {product.category || "Uncategorized"}
                         </span>
-                        <span>Qty: {product.quantity}</span>
+                        <span>Qty: {product.quantity || 1}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      <div className="font-medium">{product.cName}</div>
+                      <div className="font-medium">{product.cName || product.customer_name || "N/A"}</div>
                       <div className="text-gray-500 text-xs">
-                        {new Date(product.dateAdded).toLocaleDateString()}
+                        {new Date(product.dateAdded || product.date || new Date()).toLocaleDateString()}
                       </div>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-900">
                       <div className="font-medium">
-                        {product.totalPurchaseCost.toLocaleString()}
+                        {safeToLocaleString(product.totalPurchaseCost || (product.purchPrice || 0) * (product.quantity || 1))}
                       </div>
                       <div className="text-gray-500 text-xs">
-                        {product.purchPrice.toLocaleString()} per unit
+                        {safeToLocaleString(product.purchPrice || 0)} per unit
                       </div>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-900">
                       <div className="font-medium">
-                        {product.totalSaleValue.toLocaleString()}
+                        {safeToLocaleString(product.totalSaleValue || (product.salePrice || 0) * (product.quantity || 1))}
                       </div>
                       <div className="text-gray-500 text-xs">
-                        {product.salePrice.toLocaleString()} per unit
+                        {safeToLocaleString(product.salePrice || 0)} per unit
                       </div>
                     </td>
                     <td className="px-6 py-4 text-sm">
                       <span
                         className={`font-medium ${
-                          product.profit >= 0
+                          (product.profit || 0) >= 0
                             ? "text-green-600"
                             : "text-red-600"
                         }`}
                       >
-                        {product.profit.toLocaleString()}
+                        {safeToLocaleString(product.profit || 0)}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-500">
@@ -434,19 +441,19 @@ const ProductList = ({
           <div>
             <p className="text-sm">Total Purchase</p>
             <p className="text-lg font-bold">
-              {totals.totalPurchase.toLocaleString()}
+              {safeToLocaleString(totals.totalPurchase)}
             </p>
           </div>
           <div>
             <p className="text-sm">Total Sale</p>
             <p className="text-lg font-bold">
-              {totals.totalSale.toLocaleString()}
+              {safeToLocaleString(totals.totalSale)}
             </p>
           </div>
           <div>
             <p className="text-sm">Total Profit</p>
             <p className="text-lg font-bold">
-              {totals.totalProfit.toLocaleString()}
+              {safeToLocaleString(totals.totalProfit)}
             </p>
           </div>
         </div>

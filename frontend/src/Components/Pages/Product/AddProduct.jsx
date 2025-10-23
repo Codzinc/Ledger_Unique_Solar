@@ -1,51 +1,73 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Plus, X, Calendar, Image as ImageIcon } from 'lucide-react';
-// ✅ Import both add and update functions
-import { addProduct, updateProduct } from '../../../ApiComps/Product/ProductList';
+import React, { useState, useRef, useEffect } from "react";
+import { Plus, X, Calendar, Image as ImageIcon } from "lucide-react";
+import productService from "../../../ApiComps/Product/ProductService";
 
 const AddProduct = ({ product, onSave, onClose, isEdit = false }) => {
+  console.log("🔄 AddProduct rendered - isEdit:", isEdit, "product:", product);
+
   const getInitialFormData = () => {
     if (!product) {
       return {
-        name: '',
-        brand: '',
-        customer_name: '',
-        purchase_price: '',
-        sale_price: '',
-        description: '',
-        category: '',
-        quantity: '1',
-        date: new Date().toISOString().split('T')[0],
+        name: "",
+        brand: "",
+        customer_name: "",
+        purchase_price: "",
+        sale_price: "",
+        description: "",
+        category: "",
+        quantity: "1",
+        date: new Date().toISOString().split("T")[0],
       };
     }
-    return {
-      name: product.name || product.product || '',
-      brand: product.brand || '',
-      customer_name: product.customer_name || product.cName || '',
-      purchase_price: product.purchase_price?.toString() || product.purchPrice?.toString() || '',
-      sale_price: product.sale_price?.toString() || product.salePrice?.toString() || '',
-      description: product.description || '',
-      category: product.category || '',
-      quantity: product.quantity?.toString() || '1',
-      date: product.date || product.dateAdded || new Date().toISOString().split('T')[0],
+
+    const formData = {
+      name: product.name || product.product || "",
+      brand: product.brand || "",
+      customer_name: product.customer_name || product.cName || "",
+      purchase_price:
+        product.purchase_price?.toString() ||
+        product.purchPrice?.toString() ||
+        "",
+      sale_price:
+        product.sale_price?.toString() || product.salePrice?.toString() || "",
+      description: product.description || "",
+      category: product.category || "",
+      quantity: product.quantity?.toString() || "1",
+      date:
+        product.date ||
+        product.dateAdded ||
+        new Date().toISOString().split("T")[0],
     };
+
+    console.log("📝 Initial Form Data:", formData);
+    return formData;
   };
 
   const [formData, setFormData] = useState(getInitialFormData());
   const [images, setImages] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const fileInputRef = useRef(null);
+  const [existingImages, setExistingImages] = useState([]);
 
   useEffect(() => {
+    console.log("🔄 AddProduct useEffect - product changed:", product);
     setFormData(getInitialFormData());
+
+    if (isEdit && product && product.images) {
+      console.log("📸 Setting existing images:", product.images);
+      setExistingImages(product.images);
+    } else {
+      console.log("🔄 No existing images or not edit mode");
+      setExistingImages([]);
+    }
     setImages([]);
-  }, [product]);
+  }, [product, isEdit]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    if (error) setError('');
+    if (error) setError("");
   };
 
   const handleImageUpload = (e) => {
@@ -63,69 +85,72 @@ const AddProduct = ({ product, onSave, onClose, isEdit = false }) => {
   };
 
   const validateForm = () => {
-    const requiredFields = ['name', 'brand', 'customer_name', 'purchase_price', 'sale_price', 'category', 'date'];
+    const requiredFields = [
+      "name",
+      "brand",
+      "customer_name",
+      "purchase_price",
+      "sale_price",
+      "category",
+      "date",
+    ];
     const missingFields = requiredFields.filter((field) => !formData[field]);
 
     if (missingFields.length > 0) {
-      setError(`Please fill in all required fields: ${missingFields.join(', ')}`);
+      setError(
+        `Please fill in all required fields: ${missingFields.join(", ")}`
+      );
       return false;
     }
 
-    if (parseFloat(formData.purchase_price) < 0 || parseFloat(formData.sale_price) < 0) {
-      setError('Prices cannot be negative');
+    if (
+      parseFloat(formData.purchase_price) < 0 ||
+      parseFloat(formData.sale_price) < 0
+    ) {
+      setError("Prices cannot be negative");
       return false;
     }
 
     return true;
   };
 
-  // ✅ Updated handleSubmit with correct product.id handling
+  // ✅ FINAL UPDATED handleSubmit FUNCTION
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!validateForm()) return;
 
     setIsSubmitting(true);
-    setError('');
-
-    const formDataToSend = new FormData();
-
-    Object.entries(formData).forEach(([key, value]) => {
-      if (key === 'purchase_price' || key === 'sale_price') {
-        formDataToSend.append(key, parseFloat(value).toString());
-      } else if (key === 'quantity') {
-        formDataToSend.append(key, (parseInt(value, 10) || 1).toString());
-      } else {
-        formDataToSend.append(key, value);
-      }
-    });
-
-    images.forEach((image) => {
-      formDataToSend.append('images', image);
-    });
-
-    console.log('Submitting product:', {
-      isEdit,
-      productId: product?.id,
-      formData,
-    });
+    setError("");
 
     try {
-      // ✅ FIXED HERE: include product.id for update calls
-      const result = isEdit
-        ? await updateProduct(product.id, formDataToSend)
-        : await addProduct(formDataToSend);
+      const productData = {
+        ...formData,
+        images: images, // ✅ send only new images
+      };
 
-      console.log('API Response:', result);
+      console.log("Submitting product:", {
+        isEdit,
+        productId: product?.id,
+        productData,
+      });
+
+      const result = isEdit
+        ? await productService.updateProduct(product.id, productData)
+        : await productService.createProduct(productData);
+
+      console.log("API Response:", result);
 
       if (result.success && result.data) {
-        onSave(result.data);
+        const uiProduct = productService.mapAPIToUI(result.data);
+        onSave(uiProduct);
       } else {
-        setError(result.error || `Failed to ${isEdit ? 'update' : 'save'} product`);
+        setError(
+          result.error || `Failed to ${isEdit ? "update" : "save"} product`
+        );
       }
     } catch (error) {
-      console.error('Submission error:', error);
-      setError('An unexpected error occurred. Please try again.');
+      console.error("Submission error:", error);
+      setError("An unexpected error occurred. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -133,20 +158,22 @@ const AddProduct = ({ product, onSave, onClose, isEdit = false }) => {
 
   const profit =
     formData.sale_price && formData.purchase_price
-      ? (parseFloat(formData.sale_price) - parseFloat(formData.purchase_price)).toFixed(2)
-      : '0.00';
+      ? (
+          parseFloat(formData.sale_price) - parseFloat(formData.purchase_price)
+        ).toFixed(2)
+      : "0.00";
 
   const profitMargin =
     formData.sale_price &&
     formData.purchase_price &&
     parseFloat(formData.purchase_price) > 0
       ? (
-          ((parseFloat(formData.sale_price) - parseFloat(formData.purchase_price)) /
+          ((parseFloat(formData.sale_price) -
+            parseFloat(formData.purchase_price)) /
             parseFloat(formData.purchase_price)) *
           100
         ).toFixed(1)
-      : '0.0';
-
+      : "0.0";
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -154,7 +181,7 @@ const AddProduct = ({ product, onSave, onClose, isEdit = false }) => {
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
             <Plus className="w-6 h-6 text-blue-600" />
-            {isEdit ? 'Edit Product' : 'Add New Product'}
+            {isEdit ? "Edit Product" : "Add New Product"}
           </h2>
           <button
             onClick={onClose}
@@ -337,15 +364,47 @@ const AddProduct = ({ product, onSave, onClose, isEdit = false }) => {
 
               {images.length > 0 && (
                 <span className="text-sm text-gray-600">
-                  {images.length} image{images.length !== 1 ? 's' : ''} selected
+                  {images.length} image{images.length !== 1 ? "s" : ""} selected
                 </span>
               )}
             </div>
 
+            {/* EXISTING IMAGES */}
+            {isEdit && existingImages.length > 0 && (
+              <div className="mt-4">
+                <p className="text-sm text-gray-600 mb-2">Existing Images:</p>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {existingImages.map((image, index) => (
+                    <div
+                      key={image.id}
+                      className="relative border rounded-lg overflow-hidden bg-gray-50"
+                    >
+                      <img
+                        src={image.image}
+                        alt={`Existing ${index + 1}`}
+                        className="w-full h-32 object-cover"
+                        onError={(e) => {
+                          console.log("❌ Image failed to load:", image);
+                          e.target.src = "/placeholder-image.png";
+                        }}
+                      />
+                      <div className="p-2 text-xs truncate bg-white">
+                        Existing Image {index + 1}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* NEW IMAGES */}
             {images.length > 0 && (
               <div className="mt-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {images.map((image, index) => (
-                  <div key={index} className="relative border rounded-lg overflow-hidden bg-gray-50">
+                  <div
+                    key={index}
+                    className="relative border rounded-lg overflow-hidden bg-gray-50"
+                  >
                     <img
                       src={URL.createObjectURL(image)}
                       alt={`Preview ${index + 1}`}
@@ -358,26 +417,42 @@ const AddProduct = ({ product, onSave, onClose, isEdit = false }) => {
                     >
                       <X className="w-3 h-3" />
                     </button>
-                    <div className="p-2 text-xs truncate bg-white">{image.name}</div>
+                    <div className="p-2 text-xs truncate bg-white">
+                      {image.name}
+                    </div>
                   </div>
                 ))}
               </div>
             )}
           </div>
 
-          {(formData.purchase_price && formData.sale_price) && (
+          {formData.purchase_price && formData.sale_price && (
             <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-4">
-              <h4 className="font-semibold text-gray-800 mb-3">Profit Analysis</h4>
+              <h4 className="font-semibold text-gray-800 mb-3">
+                Profit Analysis
+              </h4>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
                 <div>
                   <p className="text-sm text-gray-600">Profit Amount</p>
-                  <p className={`text-xl font-bold ${parseFloat(profit) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  <p
+                    className={`text-xl font-bold ${
+                      parseFloat(profit) >= 0
+                        ? "text-green-600"
+                        : "text-red-600"
+                    }`}
+                  >
                     {profit}
                   </p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Profit Margin</p>
-                  <p className={`text-xl font-bold ${parseFloat(profitMargin) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  <p
+                    className={`text-xl font-bold ${
+                      parseFloat(profitMargin) >= 0
+                        ? "text-green-600"
+                        : "text-red-600"
+                    }`}
+                  >
                     {profitMargin}%
                   </p>
                 </div>
@@ -404,12 +479,18 @@ const AddProduct = ({ product, onSave, onClose, isEdit = false }) => {
               disabled={isSubmitting}
               className={`px-6 py-2 text-white rounded-lg ${
                 isSubmitting
-                  ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-[#181829] hover:text-[#181829] hover:bg-[#d8f276]'
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-[#181829] hover:text-[#181829] hover:bg-[#d8f276]"
               } transition-colors flex items-center gap-2`}
             >
               <Plus className="w-4 h-4" />
-              {isSubmitting ? (isEdit ? 'Updating...' : 'Adding...') : (isEdit ? 'Update Product' : 'Add Product')}
+              {isSubmitting
+                ? isEdit
+                  ? "Updating..."
+                  : "Adding..."
+                : isEdit
+                ? "Update Product"
+                : "Add Product"}
             </button>
           </div>
         </form>
