@@ -34,75 +34,57 @@ const ProjectContent = () => {
   const [isLoadingProject, setIsLoadingProject] = useState(false);
 
   const { projects, stats, deleteProject, refreshProjects } = useProjects();
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  // Load full project details when viewing
   // Load full project details when viewing or editing
   const loadFullProjectDetails = async (project) => {
     try {
       setIsLoadingProject(true);
-
       console.log("🔄 LOADING FULL PROJECT DETAILS:", project);
 
       let fullProject;
-      const projectId = project.project_id || project.id; // ✅ unified id handling
+      const projectId = project.project_id || project.id;
 
-      // 🟡 Determine company type
       const isUniqueSolar =
         project.company_name === "UNIQUE SOLAR" ||
         project.company === "UNIQUE SOLAR";
 
       if (isUniqueSolar) {
         console.log("🔍 FETCHING UNIQUE SOLAR PROJECT_ID:", projectId);
-
         fullProject = await getUniqueSolarProjectById(projectId);
         console.log("✅ UNIQUE SOLAR PROJECT LOADED:", fullProject);
 
-        // ✅ Normalize checklist for consistent display
+        // ✅ FIXED CHECKLIST HANDLING
         if (
-          fullProject.checklist_items &&
-          Array.isArray(fullProject.checklist_items)
+          fullProject.checklist &&
+          typeof fullProject.checklist === "object"
         ) {
-          console.log(
-            "✅ CHECKLIST ITEMS FROM BACKEND:",
-            fullProject.checklist_items
-          );
-
-          // Convert checklist items to object format for frontend display
-          const checklistObject = {};
-          fullProject.checklist_items.forEach((item) => {
-            if (item.checklist && item.checklist.item_name) {
-              const key = item.checklist.item_name
-                .toLowerCase()
-                .replace(/\s+/g, "_");
-              checklistObject[key] = true;
-            }
-          });
-
-          fullProject.checklist = checklistObject;
-          console.log("🔄 CONVERTED CHECKLIST FOR DISPLAY:", checklistObject);
+          console.log("✅ CHECKLIST DATA FROM BACKEND:", fullProject.checklist);
+          // Use as is - backend already provides proper format
         } else {
-          console.log("⚠️ NO CHECKLIST ITEMS FOUND");
+          console.log("⚠️ NO CHECKLIST DATA FOUND, SETTING EMPTY");
           fullProject.checklist = {};
         }
-      }
 
-      // 🟢 Zarorrat project
-      else {
-        console.log("🔍 FETCHING ZARORRAT PROJECT_ID:", projectId);
+        // ✅ FIXED PRODUCTS HANDLING
+        if (!fullProject.products || !Array.isArray(fullProject.products)) {
+          console.log("🔄 SETTING DEFAULT PRODUCTS ARRAY");
+          fullProject.products = [];
+        }
 
+        // ✅ FIXED IMAGES HANDLING
+        if (!fullProject.images || !Array.isArray(fullProject.images)) {
+          console.log("🔄 SETTING DEFAULT IMAGES ARRAY");
+          fullProject.images = [];
+        }
+      } else {
+        // Zarorrat project handling (same as before)
         fullProject = await getZarorratProjectById(projectId);
-        console.log("✅ ZARORRAT PROJECT LOADED:", fullProject);
 
-        // ✅ Normalize services list for display
-        // ✅ Handle services data from backend
         if (
           fullProject.selected_services &&
           Array.isArray(fullProject.selected_services)
         ) {
-          console.log(
-            "✅ SERVICES FROM BACKEND:",
-            fullProject.selected_services
-          );
           fullProject.services = fullProject.selected_services
             .map((service) => ({
               id: service.service?.id,
@@ -110,7 +92,6 @@ const ProjectContent = () => {
             }))
             .filter((service) => service.id);
         } else {
-          console.log("⚠️ NO SERVICES DATA FOUND");
           fullProject.services = [];
         }
       }
@@ -119,8 +100,7 @@ const ProjectContent = () => {
       setSelectedProject(fullProject);
     } catch (error) {
       console.error("❌ Error loading project details:", error);
-      console.error("❌ Error details:", error.response?.data);
-      setSelectedProject(project);
+      setSelectedProject(project); // Fallback to basic data
     } finally {
       setIsLoadingProject(false);
     }
@@ -190,6 +170,9 @@ const ProjectContent = () => {
 
         setSelectedProject(null);
         deleteProject(projectId);
+
+        setRefreshTrigger((prev) => prev + 1);
+
         alert("Project deleted successfully!");
       } catch (error) {
         console.error("❌ DELETE ERROR:", error);
@@ -254,6 +237,7 @@ const ProjectContent = () => {
           onViewProject={handleViewProject}
           onEditProject={handleEditProject}
           onDeleteProject={handleDeleteProject}
+          refreshTrigger={refreshTrigger} // ✅ added
         />
 
         {showAddModal && (

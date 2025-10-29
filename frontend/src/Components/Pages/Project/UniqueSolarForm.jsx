@@ -44,10 +44,9 @@ const UniqueSolarForm = ({ onBack, onSubmit, initialData, isEdit = false }) => {
 
   const [checklist, setChecklist] = useState({});
   const [checklistItems, setChecklistItems] = useState([]);
-  const [receiptImage, setReceiptImage] = useState(null);
+  const [images, setImages] = useState([]); // ✅ Yehi use karo
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [apiErrors, setApiErrors] = useState({});
-
   // Load checklist items from API and initialize form data
   useEffect(() => {
     const loadChecklistItems = async () => {
@@ -134,7 +133,7 @@ const UniqueSolarForm = ({ onBack, onSubmit, initialData, isEdit = false }) => {
         installation_amount: initialData.installation_amount || "",
       });
 
-      // Set products if available
+      // ✅ PRODUCTS: Alag condition
       if (initialData.products && initialData.products.length > 0) {
         setProducts(
           initialData.products.map((product) => ({
@@ -148,9 +147,11 @@ const UniqueSolarForm = ({ onBack, onSubmit, initialData, isEdit = false }) => {
         );
       }
 
-      // Set receipt image if available
-      if (initialData.receipt_image) {
-        setReceiptImage(initialData.receipt_image);
+      // ✅ IMAGES: Proper initialization - check if images exist
+      if (initialData.images && initialData.images.length > 0) {
+        setImages(initialData.images);
+      } else {
+        setImages([]); // Ensure it's always an array
       }
     }
   }, [initialData, isEdit]);
@@ -204,17 +205,16 @@ const UniqueSolarForm = ({ onBack, onSubmit, initialData, isEdit = false }) => {
     if (!formData.project_type.trim())
       errors.project_type = "This field is required";
     if (!formData.status.trim()) errors.status = "This field is required";
-    if (!formData.total_payment.trim())
-      errors.total_payment = "This field is required";
-    if (!formData.advance_payment.trim())
-      errors.advance_payment = "This field is required";
 
-    // Installation type validation
+    // ✅ FIXED: Installation type validation
     if (
       formData.installation_type === "standard" ||
       formData.installation_type === "elevated"
     ) {
-      if (!formData.installation_amount || formData.installation_amount <= 0) {
+      if (
+        !formData.installation_amount ||
+        parseFloat(formData.installation_amount) <= 0
+      ) {
         errors.installation_amount = "Installation amount is required";
       }
     }
@@ -307,7 +307,8 @@ const UniqueSolarForm = ({ onBack, onSubmit, initialData, isEdit = false }) => {
     0
   );
   const installationCost =
-    formData.installation_type !== "no_installation"
+    formData.installation_type === "standard" ||
+    formData.installation_type === "elevated"
       ? parseFloat(formData.installation_amount) || 0
       : 0;
   const taxAmount =
@@ -333,18 +334,41 @@ const UniqueSolarForm = ({ onBack, onSubmit, initialData, isEdit = false }) => {
     }
   }, [grandTotal]);
 
-  const handleReceiptUpload = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setReceiptImage(e.target.result);
-      };
-      reader.readAsDataURL(file);
+  const handleReceiptUpload = (files) => {
+    if (files && files.length > 0) {
+      // If it's a FileList, convert to array
+      const filesArray = files instanceof FileList ? Array.from(files) : files;
+
+      // Check total images count
+      if (images.length + filesArray.length > 7) {
+        setFormErrors((prev) => ({
+          ...prev,
+          images: "Maximum 7 images allowed per project",
+        }));
+        return;
+      }
+
+      // Validate file types
+      const validFiles = filesArray.filter((file) => {
+        if (!file.type.startsWith("image/")) {
+          setFormErrors((prev) => ({
+            ...prev,
+            images: "Please select only image files",
+          }));
+          return false;
+        }
+        return true;
+      });
+
+      setImages((prev) => [...prev, ...validFiles]);
+      setFormErrors((prev) => ({ ...prev, images: "" }));
+    } else if (Array.isArray(files)) {
+      // This handles the case when we're removing images
+      setImages(files);
     }
   };
 
-  const handleSubmit = async (e) => {
+ const handleSubmit = async (e) => {
   e.preventDefault();
 
   const errors = validateForm();
@@ -363,118 +387,185 @@ const UniqueSolarForm = ({ onBack, onSubmit, initialData, isEdit = false }) => {
 
   setIsSubmitting(true);
 
-     try {
-    // ✅ CORRECT CHECKLIST FORMAT FOR BACKEND
-    const selectedChecklistItems = Object.keys(checklist).filter(key => checklist[key]);
-    
+  // ✅ Move variables here for proper scoping
+  let selectedChecklistItems, checklistIds, checklistIdsAsIntegers;
+
+  try {
+    // ✅ Create FormData FIRST
+    const submitFormData = new FormData();
+
+    // ✅ CORRECT CHECKLIST FORMAT - Backend expects array of integers
+    selectedChecklistItems = Object.keys(checklist).filter(
+      (key) => checklist[key]
+    );
+
+    console.log("✅ SELECTED CHECKLIST ITEMS:", selectedChecklistItems);
+
     // Get checklist item IDs from checklistItems
-    const checklistIds = selectedChecklistItems.map(checklistKey => {
-      const checklistItem = checklistItems.find(item => 
-        item.item_name.toLowerCase().replace(/\s+/g, "_") === checklistKey
+    checklistIds = selectedChecklistItems
+      .map((checklistKey) => {
+        const checklistItem = checklistItems.find(
+          (item) =>
+            item.item_name.toLowerCase().replace(/\s+/g, "_") === checklistKey
+        );
+        return checklistItem ? checklistItem.id : null;
+      })
+      .filter((id) => id !== null);
+
+    console.log("✅ CHECKLIST IDs:", checklistIds);
+
+    // ✅ FIX: Backend expects array of integers
+    checklistIdsAsIntegers = checklistIds.map((id) => parseInt(id, 10));
+    console.log("✅ CHECKLIST IDs AS INTEGERS:", checklistIdsAsIntegers);
+
+    // ✅ Add basic form data
+    submitFormData.append("customer_name", formData.customer_name);
+    submitFormData.append(
+      "contact_number",
+      formData.contact_number ? formData.contact_number.toString() : ""
+    );
+    submitFormData.append("address", formData.address);
+    submitFormData.append("date", formData.date);
+    submitFormData.append("valid_until", formData.valid_until);
+    submitFormData.append("project_type", formData.project_type);
+    submitFormData.append("installation_type", formData.installation_type);
+    submitFormData.append("tax_percentage", formData.tax_percentage || "0.00");
+    submitFormData.append("advance_payment", formData.advance_payment || "0.00");
+
+    // ✅ CORRECT TOTAL FIELDS - Backend ke hisab se
+    submitFormData.append("total_payment", grandTotal.toFixed(2));
+    submitFormData.append("grand_total", grandTotal.toFixed(2));
+    submitFormData.append("subtotal", subtotal.toFixed(2));
+    submitFormData.append(
+      "completion_payment",
+      (grandTotal - (parseFloat(formData.advance_payment) || 0)).toFixed(2)
+    );
+    submitFormData.append("status", formData.status);
+
+    // ✅ Add installation amount if applicable
+    if (
+      formData.installation_type === "standard" ||
+      formData.installation_type === "elevated"
+    ) {
+      submitFormData.append(
+        "installation_amount",
+        formData.installation_amount.toString()
       );
-      return checklistItem ? checklistItem.id : null;
-    }).filter(id => id !== null);
-
-    console.log('✅ SELECTED CHECKLIST ITEMS:', selectedChecklistItems);
-    console.log('✅ CHECKLIST IDs FOR BACKEND:', checklistIds);
-
-    // ✅ Prepare formatted data for API
-      const apiData = {
-        customer_name: formData.customer_name,
-        contact_number: formData.contact_number.toString(),
-        address: formData.address,
-        date: formData.date,
-        valid_until: formData.valid_until,
-        project_type: formData.project_type,
-        installation_type: formData.installation_type,
-        tax_percentage: formData.tax_percentage || "0.00",
-        advance_payment: formData.advance_payment || "0.00",
-        total_payment: grandTotal.toFixed(2),
-        completion_payment: (
-          grandTotal - (parseFloat(formData.advance_payment) || 0)
-        ).toFixed(2),
-        status: formData.status,
-
-        // 🧾 Products array
-        products: products.map((product, index) => ({
-          product_type: product.product_type,
-          specify_product: product.specify_product || "",
-          quantity: product.quantity.toString(),
-          unit_price: product.unit_price.toString(),
-          line_total: product.line_total.toString(),
-          order: index + 1,
-        })),
-
-        // ✅ CORRECT: Send checklist_ids as array of integers
-      checklist_ids: checklistIds, // ✅ Backend expects this field name
-    };
-
-      // 🏗 Add installation amount if applicable
-      if (
-        formData.installation_type !== "no_installation" &&
-        formData.installation_amount
-      ) {
-        apiData.installation_amount = formData.installation_amount.toString();
-      }
-
-      // 🧾 Attach receipt image if uploaded
-      if (receiptImage) {
-        apiData.receipt_image = receiptImage;
-      }
-
-      console.log("📤 SUBMITTING DATA TO API:", apiData);
-
-      let response;
-      if (isEdit && initialData && initialData.project_id) {
-        // ✅ Use clean project_id directly (no prefix stripping)
-        const projectId = initialData.project_id;
-        console.log("🔄 UPDATING PROJECT WITH ID:", projectId);
-        response = await updateUniqueSolarProject(projectId, apiData);
-      } else {
-        console.log("🆕 CREATING NEW PROJECT");
-        response = await createUniqueSolarProject(apiData);
-      }
-
-      // 🟢 Notify parent component if provided
-      if (onSubmit) {
-        onSubmit(response);
-      }
-
-      alert(`Project ${isEdit ? "updated" : "created"} successfully!`);
-    } catch (error) {
-      console.error("❌ Error submitting form:", error);
-
-      if (error.message?.includes("Validation failed:")) {
-        setApiErrors({ general: error.message });
-      } else {
-        let errorMessage = `Error ${
-          isEdit ? "updating" : "creating"
-        } project. Please try again.`;
-
-        if (error.response) {
-          // Extract field-specific API validation errors
-          const apiErrorData = error.response.data || {};
-          const fieldErrors = {};
-
-          Object.keys(apiErrorData).forEach((field) => {
-            fieldErrors[field] = Array.isArray(apiErrorData[field])
-              ? apiErrorData[field].join(", ")
-              : apiErrorData[field];
-          });
-
-          setApiErrors(fieldErrors);
-          errorMessage = "Please check the form for highlighted errors.";
-        } else if (error.request) {
-          errorMessage =
-            "No response from server. Please check your connection.";
-        }
-
-        setApiErrors({ general: errorMessage });
-      }
-    } finally {
-      setIsSubmitting(false);
     }
-  };
+
+    // ✅ Add products as JSON string - Backend expects JSON array
+    const productsData = products.map((product, index) => ({
+      product_type: product.product_type,
+      specify_product: product.specify_product || "",
+      quantity: product.quantity.toString(),
+      unit_price: product.unit_price.toString(),
+      line_total: product.line_total.toString(),
+      order: index + 1,
+    }));
+
+    console.log("📦 PRODUCTS DATA:", productsData);
+    submitFormData.append("products", JSON.stringify(productsData));
+
+    // ✅ CORRECT CHECKLIST FORMAT: Backend expects individual fields
+    console.log("📋 CHECKLIST IDs FOR BACKEND:", checklistIdsAsIntegers);
+    checklistIdsAsIntegers.forEach((id) => {
+      submitFormData.append("checklist_ids", id.toString());
+    });
+
+    // ✅ Add images - Only new files
+    let newImageCount = 0;
+    images.forEach((image, index) => {
+      if (image instanceof File) {
+        submitFormData.append("images", image);
+        newImageCount++;
+        console.log(`📤 Appending image ${index} as File:`, image.name);
+      } else {
+        console.log(
+          `ℹ️ Image ${index} is existing DB image, skipping:`,
+          image.id || image
+        );
+      }
+    });
+    console.log(`🖼️ Total new images: ${newImageCount}`);
+
+    // ✅ Debug: Log what we're sending
+    console.log("📤 FINAL FORM DATA BEING SENT:");
+    console.log("📍 Checklist IDs:", checklistIdsAsIntegers);
+    console.log("📍 Products count:", productsData.length);
+    console.log("📍 New images:", newImageCount);
+
+    console.log("📦 FORM DATA ENTRIES:");
+    for (let pair of submitFormData.entries()) {
+      if (pair[0] === "checklist_ids") {
+        console.log("checklist_ids:", pair[1]);
+      } else if (pair[0] === "products") {
+        console.log("products:", pair[1].substring(0, 100) + "...");
+      } else if (pair[0] === "images") {
+        console.log("images:", pair[1].name);
+      } else {
+        console.log(pair[0] + ": ", pair[1]);
+      }
+    }
+
+    // ✅ Submit to backend (Create or Update)
+    let response;
+    if (isEdit && initialData && initialData.project_id) {
+      const projectId = initialData.project_id;
+      console.log("🔄 UPDATING PROJECT WITH ID:", projectId);
+      response = await updateUniqueSolarProject(projectId, submitFormData);
+    } else {
+      console.log("🆕 CREATING NEW PROJECT");
+      response = await createUniqueSolarProject(submitFormData);
+    }
+
+    if (onSubmit) {
+      onSubmit(response);
+    }
+
+    alert(`Project ${isEdit ? "updated" : "created"} successfully!`);
+  } catch (error) {
+    console.error("❌ Error submitting form:", error);
+
+    // ✅ Now these variables are accessible
+    if (error.response?.data) {
+      console.error("🔍 BACKEND ERROR RESPONSE:", error.response.data);
+
+      if (error.response.data.error?.includes("Checklist IDs")) {
+        console.error("🎯 CHECKLIST SPECIFIC ERROR:");
+        console.error("- Selected items:", selectedChecklistItems);
+        console.error("- Checklist IDs:", checklistIds);
+        console.error("- Checklist IDs as integers:", checklistIdsAsIntegers);
+      }
+    }
+
+    let errorMessage = `Error ${
+      isEdit ? "updating" : "creating"
+    } project. Please try again.`;
+
+    if (error.response) {
+      const apiErrorData = error.response.data || {};
+      const fieldErrors = {};
+
+      Object.keys(apiErrorData).forEach((field) => {
+        fieldErrors[field] = Array.isArray(apiErrorData[field])
+          ? apiErrorData[field].join(", ")
+          : apiErrorData[field];
+      });
+
+      setApiErrors(fieldErrors);
+      errorMessage = "Please check the form for highlighted errors.";
+    } else if (error.request) {
+      errorMessage = "No response from server. Please check your connection.";
+    } else {
+      errorMessage = error.message;
+    }
+
+    setApiErrors({ general: errorMessage });
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
@@ -530,7 +621,8 @@ const UniqueSolarForm = ({ onBack, onSubmit, initialData, isEdit = false }) => {
             />
             <ReceiptUpload
               handleReceiptUpload={handleReceiptUpload}
-              receiptImage={receiptImage}
+              images={images} // ✅ Yaha images pass karo
+              formErrors={{ ...formErrors, ...apiErrors }}
             />
             <PaymentTerms
               formData={formData}

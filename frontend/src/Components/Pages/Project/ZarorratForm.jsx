@@ -44,9 +44,7 @@ const ZarorratForm = ({ onBack, onSubmit, initialData, isEdit = false }) => {
     loadServices();
   }, []);
 
-  // In ZarorratForm, update the services initialization:
-
-  // Initialize form data when initialData changes (for edit mode)
+  // ✅ CORRECTED FORM INITIALIZATION - REPLACE THE ENTIRE useEffect
   useEffect(() => {
     if (initialData && isEdit) {
       console.log("✏️ ZARORRAT EDIT MODE - INITIAL DATA:", initialData);
@@ -63,30 +61,45 @@ const ZarorratForm = ({ onBack, onSubmit, initialData, isEdit = false }) => {
         status: initialData.status || "",
       });
 
-      // Set selected services if available
-      if (initialData.services && initialData.services.length > 0) {
+      // ✅ CORRECT SERVICE SELECTION LOGIC - MULTIPLE SOURCES
+      let serviceIds = [];
+
+      // Source 1: Check selected_services (main backend response)
+      if (
+        initialData.selected_services &&
+        initialData.selected_services.length > 0
+      ) {
+        console.log(
+          "✅ SETTING SERVICES FROM SELECTED_SERVICES:",
+          initialData.selected_services
+        );
+        serviceIds = initialData.selected_services
+          .map((service) => service.service || service.id)
+          .filter((id) => id !== undefined && id !== null);
+      }
+      // Source 2: Check services array (transformed data)
+      else if (initialData.services && initialData.services.length > 0) {
         console.log(
           "✅ SETTING SERVICES FROM SERVICES ARRAY:",
           initialData.services
         );
-        const serviceIds = initialData.services
+        serviceIds = initialData.services
           .map((service) => service.id || service.service_id)
-          .filter((id) => id !== undefined);
-        setSelectedServices(serviceIds);
-        console.log("🎯 FINAL SELECTED SERVICE IDs:", serviceIds);
-      } else if (
-        initialData.service_ids &&
-        initialData.service_ids.length > 0
-      ) {
+          .filter((id) => id !== undefined && id !== null);
+      }
+      // Source 3: Check service_ids (direct IDs)
+      else if (initialData.service_ids && initialData.service_ids.length > 0) {
         console.log(
           "✅ SETTING SERVICES FROM SERVICE_IDS:",
           initialData.service_ids
         );
-        setSelectedServices(initialData.service_ids);
-      } else {
-        console.log("❌ NO SERVICES DATA FOUND IN INITIAL DATA");
-        setSelectedServices([]);
+        serviceIds = initialData.service_ids.filter(
+          (id) => id !== undefined && id !== null
+        );
       }
+
+      console.log("🎯 FINAL SELECTED SERVICE IDs:", serviceIds);
+      setSelectedServices(serviceIds);
     }
   }, [initialData, isEdit]);
 

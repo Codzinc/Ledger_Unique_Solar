@@ -1,9 +1,13 @@
 import api from "../Config";
 
-export const createUniqueSolarProject = async (projectData) => {
+export const createUniqueSolarProject = async (formData) => {
   try {
-    console.log('Sending project data to API:', projectData);
-    const response = await api.post("/project/unique-solar-projects/create/", projectData);
+    console.log('📤 Sending project data with images to API');
+    const response = await api.post("/project/unique-solar-projects/create/", formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
     return response.data;
   } catch (error) {
     console.error('Error creating project:', error);
@@ -87,13 +91,29 @@ export const getUniqueSolarProjects = async () => {
 };
 
 // ✅ Corrected getUniqueSolarProjectById
+// UniqueSolarApi.js - getUniqueSolarProjectById update karo
 export const getUniqueSolarProjectById = async (projectId) => {
   try {
-    console.log('🔍 FETCHING UNIQUE SOLAR PROJECT BY project_id:', projectId);
     const response = await api.get(`/project/unique-solar-projects/${projectId}/`);
     const project = response.data;
 
-    console.log('✅ UNIQUE SOLAR PROJECT DATA:', project);
+    console.log('🔍 COMPLETE PROJECT DATA FROM API:', project);
+    
+    // ✅ TEMPORARY FIX: Agar checklist nahi hai to empty object set karo
+    let checklistData = project.checklist || {};
+    
+    // Agar checklist_items hai but checklist nahi hai
+    if (!project.checklist && project.checklist_items) {
+      checklistData = {};
+      project.checklist_items.forEach(item => {
+        if (item.checklist && item.checklist.item_name) {
+          const key = item.checklist.item_name.toLowerCase().replace(/\s+/g, '_');
+          checklistData[key] = true;
+        }
+      });
+    }
+
+    console.log('🎯 FINAL CHECKLIST DATA:', checklistData);
 
     return {
       ...project,
@@ -102,24 +122,45 @@ export const getUniqueSolarProjectById = async (projectId) => {
       total_amount: parseFloat(project.total_amount || project.grand_total || 0),
       paid: parseFloat(project.paid || project.advance_payment || 0),
       pending: parseFloat(project.pending || project.completion_payment || 0),
-      contact_number: project.contact_number || project.contact_no || "-",
+      contact_number: project.contact_number || "-",
       project_id: project.project_id,
-      id: project.project_id, // frontend reference consistency
+      id: project.project_id,
+      checklist: checklistData, // ✅ YEH ADD KARNA BOHOT IMPORTANT HAI
     };
   } catch (error) {
-    console.error('❌ Error fetching Unique Solar project:', error);
+    console.error('❌ Error fetching project:', error);
     throw error;
   }
 };
-
 // ✅ Corrected update function
-export const updateUniqueSolarProject = async (projectId, projectData) => {
+export const updateUniqueSolarProject = async (projectId, formData) => {
   try {
-    console.log('🔄 UPDATING UNIQUE SOLAR PROJECT:', projectId, projectData);
-    const response = await api.put(`/project/unique-solar-projects/${projectId}/`, projectData);
+    console.log('🔄 UPDATING UNIQUE SOLAR PROJECT WITH IMAGES:', projectId);
+    
+    // ✅ ADD DETAILED DEBUG
+    console.log('📦 UPDATE FORM DATA ENTRIES:');
+    for (let pair of formData.entries()) {
+      if (pair[0] === 'images') {
+        console.log(`🖼️ ${pair[0]}: [File - ${pair[1].name}]`);
+      } else if (pair[0] === 'products' || pair[0] === 'checklist_ids') {
+        console.log(`📋 ${pair[0]}:`, JSON.parse(pair[1]));
+      } else {
+        console.log(`${pair[0]}:`, pair[1]);
+      }
+    }
+    
+    const response = await api.put(`/project/unique-solar-projects/${projectId}/`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
     return response.data;
   } catch (error) {
-    console.error('❌ Error updating Unique Solar project:', error);
+    console.error('❌ FULL ERROR DETAILS:', error);
+    console.error('❌ ERROR RESPONSE DATA:', error.response?.data);
+    console.error('❌ ERROR STATUS:', error.response?.status);
+    console.error('❌ ERROR HEADERS:', error.response?.headers);
+    
     throw error;
   }
 };

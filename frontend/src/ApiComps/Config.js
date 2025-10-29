@@ -1,10 +1,26 @@
 // Config.js
 import axios from "axios";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api";
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api",
-  withCredentials: false, // JWT ke liye false
+  baseURL: API_BASE_URL,
+  withCredentials: false,
 });
+
+// ✅ ADD: Image base URL for media files
+export const getFullImageUrl = (imagePath) => {
+  if (!imagePath) return '';
+  
+  // If it's already a full URL, return as is
+  if (imagePath.startsWith('http')) {
+    return imagePath;
+  }
+  
+  // If it's a relative path, construct full URL
+  const baseUrl = API_BASE_URL.replace('/api', '');
+  return `${baseUrl}${imagePath}`;
+};
 
 // Request interceptor
 api.interceptors.request.use(
@@ -37,15 +53,13 @@ api.interceptors.response.use(
 
     if (!error.response) return Promise.reject(error);
 
-    // ✅ Agar request me Authorization header hi nahi tha (jaise login request)
-    // to refresh token logic skip karo
     const isAuthRequest = !!originalRequest?.headers?.Authorization;
 
     if (
       error.response.status === 401 &&
       originalRequest &&
       !originalRequest._retry &&
-      isAuthRequest // ✅ sirf token-based requests ke liye retry hoga
+      isAuthRequest
     ) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {

@@ -14,6 +14,7 @@ import {
   Package,
   CheckCircle,
 } from "lucide-react";
+import { getFullImageUrl } from "../../../ApiComps/Config";
 
 const ViewProject = ({ project, onClose, onEdit, onDelete }) => {
   if (!project) return null;
@@ -72,6 +73,15 @@ const ViewProject = ({ project, onClose, onEdit, onDelete }) => {
   console.log("👀 VIEW PROJECT RENDERED WITH DATA:", project);
   console.log("👀 CHECKLIST DATA:", project?.checklist);
   console.log("👀 SERVICES DATA:", project?.services);
+
+  console.log("👀 PROJECT DATA IN VIEW:", project);
+  console.log("👀 SELECTED_SERVICES:", project.selected_services);
+  console.log("👀 SERVICES ARRAY:", project.services);
+
+  const servicesToShow =
+    project.services && project.services.length > 0
+      ? project.services
+      : project.selected_services || [];
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -269,77 +279,144 @@ const ViewProject = ({ project, onClose, onEdit, onDelete }) => {
             </div>
           )}
           {/* Services Section - Zarorrat Only */}
-          {isZarorrat && project.services && project.services.length > 0 && (
+          {isZarorrat && (
             <div className="border border-gray-200 rounded-lg overflow-hidden">
               <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
                 <h4 className="font-semibold text-gray-800 flex items-center gap-2">
                   <CheckCircle className="w-5 h-5 text-blue-600" />
                   Services Provided
+                  <span className="text-sm text-gray-500 ml-2">
+                    ({servicesToShow.length} services)
+                  </span>
                 </h4>
               </div>
               <div className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {project.services.map((service, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg border border-blue-200"
-                    >
-                      <CheckCircle className="w-4 h-4 text-blue-600 flex-shrink-0" />
-                      <span className="text-sm font-medium text-gray-800">
-                        {service.name || service.service_name}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-          {/* Checklist Section - Unique Solar Only */}
-          {/* // Update the checklist section in ViewProject: */}
-          {isUniqueSolar &&
-            project.checklist &&
-            Object.keys(project.checklist).length > 0 && (
-              <div className="border border-gray-200 rounded-lg overflow-hidden">
-                <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
-                  <h4 className="font-semibold text-gray-800 flex items-center gap-2">
-                    <ClipboardList className="w-5 h-5 text-green-600" />
-                    Project Checklist
-                  </h4>
-                </div>
-                <div className="p-6">
+                {servicesToShow.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {Object.entries(project.checklist).map(([key, value]) => (
-                      <div key={key} className="flex items-center gap-3">
-                        <input
-                          type="checkbox"
-                          checked={value}
-                          readOnly
-                          className="h-4 w-4 text-green-600 rounded focus:ring-green-500"
-                        />
-                        <label className="text-sm text-gray-700 capitalize">
-                          {key.replace(/_/g, " ")}
-                        </label>
+                    {servicesToShow.map((service, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg border border-blue-200"
+                      >
+                        <CheckCircle className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                        <span className="text-sm font-medium text-gray-800">
+                          {service.name ||
+                            service.service_name ||
+                            `Service ${service.id}`}
+                        </span>
                       </div>
                     ))}
                   </div>
-                </div>
+                ) : (
+                  <p className="text-gray-500 text-center py-4">
+                    No services selected
+                  </p>
+                )}
               </div>
-            )}
-          {/* Receipt Image */}
-          {project.receipt_image && (
+            </div>
+          )}
+
+          {/* Checklist Section - Unique Solar Only */}
+          {isUniqueSolar && (
+            <div className="border border-gray-200 rounded-lg overflow-hidden">
+              <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                <h4 className="font-semibold text-gray-800 flex items-center gap-2">
+                  <ClipboardList className="w-5 h-5 text-green-600" />
+                  Project Checklist
+                  <span className="text-sm text-gray-500 ml-2">
+                    (
+                    {project.checklist
+                      ? Object.keys(project.checklist).filter(
+                          (k) => project.checklist[k]
+                        ).length
+                      : 0}{" "}
+                    items checked)
+                  </span>
+                </h4>
+              </div>
+              <div className="p-6">
+                {project.checklist &&
+                Object.keys(project.checklist).length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {Object.entries(project.checklist)
+                      .filter(([key, value]) => value === true)
+                      .map(([key, value]) => (
+                        <div key={key} className="flex items-center gap-3">
+                          <input
+                            type="checkbox"
+                            checked={true}
+                            readOnly
+                            className="h-4 w-4 text-green-600 rounded focus:ring-green-500"
+                          />
+                          <label className="text-sm text-gray-700 capitalize">
+                            {key.replace(/_/g, " ")}
+                          </label>
+                        </div>
+                      ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-500 text-center py-4">
+                    No checklist items checked
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+          {/* Receipt/Images Section */}
+          {project.images && project.images.length > 0 && (
             <div className="border border-gray-200 rounded-lg overflow-hidden">
               <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
                 <h4 className="font-semibold text-gray-800 flex items-center gap-2">
                   <ReceiptText className="w-5 h-5 text-teal-600" />
-                  Receipt
+                  Project Images ({project.images.length})
                 </h4>
               </div>
               <div className="p-6">
-                <img
-                  src={project.receipt_image}
-                  alt="Receipt"
-                  className="max-w-md rounded-lg border border-gray-300 shadow-sm"
-                />
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {project.images.map((image, index) => {
+                    // ✅ FIX: Get image path and convert to full URL
+                    const imagePath = image.image || image.url || image;
+                    const imageUrl = getFullImageUrl(imagePath);
+
+                    console.log(
+                      `👀 View Image ${index}:`,
+                      image,
+                      "Path:",
+                      imagePath,
+                      "Full URL:",
+                      imageUrl
+                    );
+
+                    return (
+                      <div key={index} className="relative">
+                        <img
+                          src={imageUrl}
+                          alt={`Project Image ${index + 1}`}
+                          className="w-full h-64 object-contain bg-gray-100 rounded-lg border border-gray-300 shadow-sm"
+                          onError={(e) => {
+                            console.error(
+                              `❌ View Image ${index} failed:`,
+                              imageUrl
+                            );
+                            e.target.src =
+                              "https://via.placeholder.com/300x200?text=Image+Not+Found";
+                            e.target.className =
+                              "w-full h-64 object-contain bg-gray-200 rounded-lg border";
+                          }}
+                          onLoad={(e) => {
+                            console.log(
+                              `✅ View Image ${index} loaded:`,
+                              imageUrl
+                            );
+                          }}
+                        />
+                        <div className="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded">
+                          Image {index + 1}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           )}

@@ -135,6 +135,15 @@ class UniqueSolarProject(models.Model):
         choices=INSTALLATION_TYPE_CHOICES,
         default='no_installation'
     )
+      # ✅ YAHAN PE ADD KARO - installation_type ke baad
+    installation_amount = models.DecimalField(
+        max_digits=12, 
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal('0.00'))],
+        default=0,
+        blank=True,
+        null=True
+    )
     subtotal = models.DecimalField(
         max_digits=12, 
         decimal_places=2,
@@ -199,24 +208,30 @@ class UniqueSolarProject(models.Model):
         return f"US-{current_year}-{next_number:04d}"
     
     def calculate_totals(self):
-        """Calculate subtotal, tax, and grand total"""
+        """Calculate subtotal, tax, and grand total - CORRECTED VERSION"""
         self.subtotal = sum(item.line_total for item in self.products.all())
-        tax_amount = (self.subtotal * self.tax_percentage) / 100
-        self.grand_total = self.subtotal + tax_amount
+        
+        # ✅ CORRECT: Installation cost ko tax base me include karo
+        installation_cost = self.installation_amount or 0
+        tax_base = self.subtotal + installation_cost
+        tax_amount = (tax_base * self.tax_percentage) / 100
+        
+        # ✅ CORRECT: Installation cost + tax sab include karo
+        self.grand_total = tax_base + tax_amount
         self.total_payment = self.grand_total
         self.completion_payment = self.total_payment - self.advance_payment
     
     def save(self, *args, **kwargs):
-       # Generate project ID if not exists
+        # Generate project ID if not exists
         if not self.project_id:
             self.project_id = self.generate_project_id()
-    
+        
         super().save(*args, **kwargs)
-    
-    # Recalculate totals after product changes
+        
+        # Recalculate totals after product changes
         self.calculate_totals()
-    
-    # Save only the totals fields to avoid recursion
+        
+        # Save only the totals fields to avoid recursion
         super().save(update_fields=['subtotal', 'grand_total', 'total_payment', 'completion_payment'])
         
     

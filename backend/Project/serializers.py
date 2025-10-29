@@ -7,63 +7,78 @@ from .models import (
     UniqueSolarProjectImage,
     UniqueSolarChecklist,
     UniqueSolarProjectProduct,
-    UniqueSolarProjectChecklist
+    UniqueSolarProjectChecklist,
 )
+
 
 class ZarorratServiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = ZarorratService
-        fields = '__all__'
+        fields = "__all__"
+
 
 class ZarorratProjectServiceSerializer(serializers.ModelSerializer):
-    service_name = serializers.CharField(source='service.name', read_only=True)
-    
+    service_name = serializers.CharField(source="service.name", read_only=True)
+
     class Meta:
         model = ZarorratProjectService
-        fields = ['id', 'service', 'service_name', 'created_at']
+        fields = ["id", "service", "service_name", "created_at"]
+
 
 class ZarorratProjectSerializer(serializers.ModelSerializer):
     selected_services = ZarorratProjectServiceSerializer(many=True, read_only=True)
     service_ids = serializers.ListField(
-        child=serializers.IntegerField(),
-        write_only=True,
-        required=False
+        child=serializers.IntegerField(), write_only=True, required=False
     )
+
+    # ✅ ADD THIS FIELD FOR FRONTEND DISPLAY
+    services = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ZarorratProject
+        fields = "__all__"
+        read_only_fields = ["project_id", "created_at", "updated_at"]
+
+    def get_services(self, obj):
+        """Return services in frontend-friendly format"""
+        return [
+            {
+                "id": service.service.id,
+                "name": service.service.name,
+                "service_id": service.service.id,
+            }
+            for service in obj.selected_services.all()
+        ]
+
     company_name = serializers.SerializerMethodField()
-    
+
     # ✅ ADD THESE COMPUTED FIELDS FOR FRONTEND
     paid = serializers.DecimalField(
-        source='advance_received', 
-        max_digits=12, 
-        decimal_places=2,
-        read_only=True
+        source="advance_received", max_digits=12, decimal_places=2, read_only=True
     )
     total_amount = serializers.DecimalField(
-        source='amount', 
-        max_digits=12, 
-        decimal_places=2,
-        read_only=True
+        source="amount", max_digits=12, decimal_places=2, read_only=True
     )
     pending = serializers.SerializerMethodField()
 
     class Meta:
         model = ZarorratProject
-        fields = '__all__'
-        read_only_fields = ['project_id', 'created_at', 'updated_at']
-    
+        fields = "__all__"
+        read_only_fields = ["project_id", "created_at", "updated_at"]
+
     def get_company_name(self, obj):
-        return 'ZARORRAT.COM'
-    
+        return "ZARORRAT.COM"
+
     def get_pending(self, obj):
         """Calculate pending amount"""
         amount = obj.amount or 0
         advance_received = obj.advance_received or 0
         return amount - advance_received
-    
+
     def create(self, validated_data):
-        service_ids = validated_data.pop('service_ids', [])
+        service_ids = validated_data.pop("service_ids", [])
         project = ZarorratProject.objects.create(**validated_data)
-        
+
         # Create service relationships
         for service_id in service_ids:
             try:
@@ -71,97 +86,113 @@ class ZarorratProjectSerializer(serializers.ModelSerializer):
                 ZarorratProjectService.objects.create(project=project, service=service)
             except ZarorratService.DoesNotExist:
                 pass
-        
+
         return project
-    
+
     def update(self, instance, validated_data):
-        service_ids = validated_data.pop('service_ids', None)
-        
+        service_ids = validated_data.pop("service_ids", None)
+
         # Update project fields
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
-        
+
         # Update services if provided
         if service_ids is not None:
             instance.selected_services.all().delete()
             for service_id in service_ids:
                 try:
                     service = ZarorratService.objects.get(id=service_id)
-                    ZarorratProjectService.objects.create(project=instance, service=service)
+                    ZarorratProjectService.objects.create(
+                        project=instance, service=service
+                    )
                 except ZarorratService.DoesNotExist:
                     pass
-        
-        return instance
 
+        return instance
 
 
 class UniqueSolarChecklistSerializer(serializers.ModelSerializer):
     class Meta:
         model = UniqueSolarChecklist
-        fields = '__all__'
-        read_only_fields = ['created_at']
+        fields = "__all__"
+        read_only_fields = ["created_at"]
 
 
 class UniqueSolarProjectChecklistSerializer(serializers.ModelSerializer):
     class Meta:
         model = UniqueSolarProjectChecklist
-        fields = '__all__'
-        read_only_fields = ['created_at']
+        fields = "__all__"
+        read_only_fields = ["created_at"]
+
 
 class UniqueSolarProjectImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = UniqueSolarProjectImage
-        fields = '__all__'
-        read_only_fields = ['created_at']
-    
+        fields = "__all__"
+        read_only_fields = ["created_at"]
+
     def validate(self, data):
         """Validate that the project doesn't exceed 7 images"""
-        project = data.get('project')
+        project = data.get("project")
         if project:
-            existing_count = UniqueSolarProjectImage.objects.filter(project=project).count()
+            existing_count = UniqueSolarProjectImage.objects.filter(
+                project=project
+            ).count()
             if existing_count >= 7:
-                raise serializers.ValidationError("Maximum of 7 images allowed per project")
+                raise serializers.ValidationError(
+                    "Maximum of 7 images allowed per project"
+                )
         return data
+
 
 class UniqueSolarProjectProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = UniqueSolarProjectProduct
-        fields = '__all__'
-        read_only_fields = ['created_at']
+        fields = "__all__"
+        read_only_fields = ["created_at"]
+
 
 class UniqueSolarProjectSerializer(serializers.ModelSerializer):
     images = UniqueSolarProjectImageSerializer(many=True, read_only=True)
     products = UniqueSolarProjectProductSerializer(many=True, read_only=True)
     checklist_items = UniqueSolarProjectChecklistSerializer(many=True, read_only=True)
+    # ✅ ADD THIS FIELD - Checklist as simple object for frontend
+    checklist = serializers.SerializerMethodField()
+
     image_count = serializers.SerializerMethodField()
 
-  # ✅ Add these computed fields for frontend
+    # ✅ Add these computed fields for frontend
     paid = serializers.DecimalField(
-        source='advance_payment', 
-        max_digits=12, 
-        decimal_places=2,
-        read_only=True
+        source="advance_payment", max_digits=12, decimal_places=2, read_only=True
     )
     total_amount = serializers.DecimalField(
-        source='grand_total', 
-        max_digits=12, 
-        decimal_places=2,
-        read_only=True
+        source="grand_total", max_digits=12, decimal_places=2, read_only=True
     )
     pending = serializers.DecimalField(
-        source='completion_payment', 
-        max_digits=12, 
-        decimal_places=2,
-        read_only=True
+        source="completion_payment", max_digits=12, decimal_places=2, read_only=True
     )
-    
+
     class Meta:
         model = UniqueSolarProject
-        fields = '__all__'
-    
+        fields = "__all__"
+
     def get_image_count(self, obj):
         """Return the number of images for this project"""
         return obj.images.count()
 
-
+    # ✅ ADD THIS METHOD - Transform checklist to frontend format
+    def get_checklist(self, obj):
+        checklist_data = {}
+        try:
+            # ✅ USE CORRECT RELATED NAME - 'checklist' not 'checklist_items'
+            checklist_items = (
+                obj.checklist.all()
+            )  # This uses the related_name='checklist'
+            for item in checklist_items:
+                if item.checklist and item.checklist.item_name:
+                    key = item.checklist.item_name.lower().replace(" ", "_")
+                    checklist_data[key] = True
+        except Exception as e:
+            print(f"Checklist error: {e}")
+        return checklist_data

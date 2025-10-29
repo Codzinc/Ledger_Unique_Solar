@@ -53,6 +53,7 @@ export const ProjectProvider = ({ children }) => {
             id: project.id || project.project_id,
           })
         ),
+        // ✅ UPDATE THE ZARORRAT PROJECT TRANSFORMATION IN ProjectContext.js
         ...(zarorratProjects.results || zarorratProjects).map((project) => ({
           ...project,
           company: "ZARORRAT.COM",
@@ -63,6 +64,14 @@ export const ProjectProvider = ({ children }) => {
             parseFloat(project.amount || 0) -
             parseFloat(project.advance_received || 0),
           id: project.id || project.project_id,
+          // ✅ ADD SERVICES FOR LIST VIEW TOO
+          services: project.selected_services
+            ? project.selected_services.map((service) => ({
+                id: service.service,
+                name: service.service_name,
+                service_id: service.service,
+              }))
+            : [],
         })),
       ];
 

@@ -61,17 +61,38 @@ export const getZarorratProjects = async () => {
   }
 };
 
-// ✅ Corrected Zarorrat Project by ID
+// ✅ CORRECTED getZarorratProjectById function
 export const getZarorratProjectById = async (projectId) => {
   try {
     console.log('🔍 FETCHING ZARORRAT PROJECT BY project_id:', projectId);
     const response = await api.get(`/project/zarorrat-projects/${projectId}/`);
     const project = response.data;
 
-    console.log('✅ ZARORRAT PROJECT DATA:', project);
+    console.log('✅ ZARORRAT PROJECT RAW DATA:', project);
+
+    // ✅ FIX SERVICES DATA FOR FRONTEND - MULTIPLE SOURCES CHECK
+    let services = [];
+    
+    // Check selected_services first (main source)
+    if (project.selected_services && Array.isArray(project.selected_services)) {
+      console.log("✅ USING SELECTED_SERVICES:", project.selected_services);
+      services = project.selected_services.map(service => ({
+        id: service.service,
+        name: service.service_name,
+        service_id: service.service
+      }));
+    }
+    // Fallback to services array if exists
+    else if (project.services && Array.isArray(project.services)) {
+      console.log("✅ USING SERVICES ARRAY:", project.services);
+      services = project.services;
+    }
+    
+    console.log("🎯 FINAL SERVICES FOR FRONTEND:", services);
 
     return {
       ...project,
+      services: services, // ✅ ADD SERVICES ARRAY FOR DISPLAY
       company_name: "ZARORRAT.COM",
       project_type: "Service",
       total_amount: parseFloat(project.total_amount || project.amount || 0),
