@@ -12,7 +12,14 @@ export const salaryApi = {
 
   createDailyWage: async (data) => {
     try {
-      const response = await api.post('/salary/daily-wage/', data);
+      const backendData = {
+        employee: data.employeeName || data.employee,
+        date: data.date,
+        description: data.serviceDescription || data.description,
+        wage_type: 'Daily'
+      };
+      
+      const response = await api.post('/salary/daily-wage/', backendData);
       return response.data;
     } catch (error) {
       throw error.response?.data || error.message;
@@ -21,38 +28,59 @@ export const salaryApi = {
 
   createMonthlySalary: async (data) => {
     try {
-      // Ensure data is properly formatted before sending
-      const formattedData = {
-        ...data,
+      const backendData = {
+        employee: data.employeeName || data.employee,
         date: data.date || `${data.month}-01`,
-        salary_amount: parseFloat(data.salary_amount),
-        total_advance_taken: parseFloat(data.total_advance_taken) || 0,
-        remaining_salary: parseFloat(data.remaining_salary) || parseFloat(data.salary_amount),
-        status: data.status || "Active",
-        month: data.month || data.date?.substring(0, 7)
+        month: data.month || data.date?.substring(0, 7),
+        salary_amount: data.salary_amount || data.baseSalary,
+        description: data.description || '',
+        wage_type: 'Monthly'
       };
 
-      const response = await api.post('/salary/monthly-salary/', formattedData);
+      const response = await api.post('/salary/monthly-salary/', backendData);
       return response.data;
     } catch (error) {
       throw error.response?.data || error;
     }
   },
 
-updateSalary: async (id, data) => {
-  try {
-    const response = await api.put(`/salary/${id}/`, data);
-    return response.data;
-  } catch (error) {
-    throw error.response?.data || error.message;
-  }
-},
-
+  updateSalary: async (id, data) => {
+    try {
+      const backendData = {
+        employee: data.employeeName || data.employee,
+        date: data.date,
+        month: data.month,
+        amount: data.amount,
+        total_paid: data.total_paid,
+        salary_amount: data.salary_amount,
+        description: data.description,
+        wage_type: data.wageType || data.wage_type
+      };
+      
+      const response = await api.put(`/salary/${id}/`, backendData);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
 
   deleteSalary: async (id) => {
     try {
       await api.delete(`/salary/${id}/`);
       return true;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  getEmployeeSalarySummary: async (employeeName, month, year) => {
+    try {
+      const params = {};
+      if (month) params.month = month;
+      if (year) params.year = year;
+      
+      const response = await api.get(`/salary/employee/${employeeName}/summary/`, { params });
+      return response.data;
     } catch (error) {
       throw error.response?.data || error.message;
     }

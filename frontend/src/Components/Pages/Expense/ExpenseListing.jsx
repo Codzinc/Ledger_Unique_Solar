@@ -32,7 +32,6 @@ const ExpenseListing = ({
     setSelectedDate(e.target.value);
   };
 
-  // ✅ Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (!e.target.closest(".dropdown-container")) {
@@ -43,7 +42,6 @@ const ExpenseListing = ({
     return () => window.removeEventListener("click", handleClickOutside);
   }, []);
 
-  // Filter valid expenses
   const validExpenses = expenses.filter(
     (expense) =>
       expense &&
@@ -53,7 +51,6 @@ const ExpenseListing = ({
         (typeof expense.amount === "string" && expense.amount !== ""))
   );
 
-  // Filtered results
   const filteredExpenses = validExpenses.filter((expense) => {
     const title = expense.title || "";
     const description = expense.description || "";
@@ -85,7 +82,6 @@ const ExpenseListing = ({
     return matchesSearch && matchesCategory && matchesUtilizer && matchesDate;
   });
 
-  // ✅ Pagination logic
   const totalPages = Math.ceil(filteredExpenses.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedExpenses = filteredExpenses.slice(
@@ -374,9 +370,7 @@ const ExpenseListing = ({
           </div>
           <div className="text-center">
             <p className="text-sm">Total Amount</p>
-            <p className="text-lg font-bold">
-              {totalAmount.toLocaleString()}
-            </p>
+            <p className="text-lg font-bold">{totalAmount.toLocaleString()}</p>
           </div>
         </div>
       </div>

@@ -4,10 +4,8 @@ class ExpenseService {
   async getAllExpenses() {
     try {
       const response = await api.get('/expense/');
-      console.log("Raw API expenses data:", response.data); // Debug
       return response.data;
     } catch (error) {
-      console.error('Error fetching expenses:', error.response?.data || error.message);
       throw new Error('Failed to fetch expenses');
     }
   }
@@ -31,7 +29,6 @@ class ExpenseService {
 
       return response.data;
     } catch (error) {
-      console.error('Error creating expense:', error.response?.data || error.message);
       throw new Error(error.response?.data?.message || 'Failed to create expense');
     }
   }
@@ -55,7 +52,6 @@ class ExpenseService {
 
       return response.data;
     } catch (error) {
-      console.error('Error updating expense:', error.response?.data || error.message);
       throw new Error(error.response?.data?.message || 'Failed to update expense');
     }
   }
@@ -65,7 +61,6 @@ class ExpenseService {
       await api.delete(`/expense/${id}/`);
       return true;
     } catch (error) {
-      console.error('Error deleting expense:', error.response?.data || error.message);
       throw new Error(error.response?.data?.message || 'Failed to delete expense');
     }
   }
@@ -81,28 +76,19 @@ class ExpenseService {
     image1: uiData.receiptImage instanceof File ? uiData.receiptImage : null,
   };
 
-
-
-    console.log('Mapped UI to API data:', apiData);
     return apiData;
   }
 
   mapAPIToUI(apiData, index = 0) {
-    console.log("Mapping API to UI - Raw API data:", apiData); // Debug
-    
-    // ✅ Image URL properly handle karo
-    let receiptImage = null;
+      let receiptImage = null;
     
     if (apiData.image1) {
-      // Agar image1 full URL hai
       if (typeof apiData.image1 === 'string' && apiData.image1.startsWith('http')) {
         receiptImage = apiData.image1;
       }
-      // Agar image1 relative path hai
       else if (typeof apiData.image1 === 'string') {
         receiptImage = `http://localhost:8000${apiData.image1}`;
       }
-      // Agar image1 object hai (Django mein aisa hota hai)
       else if (apiData.image1 && typeof apiData.image1 === 'object') {
         receiptImage = `http://localhost:8000${apiData.image1.url || apiData.image1.image || ''}`;
       }
@@ -120,7 +106,6 @@ class ExpenseService {
       receiptImage: receiptImage,
     };
     
-    console.log("Mapped UI Expense:", uiExpense); // Debug
     return uiExpense;
   }
 }

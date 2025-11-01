@@ -41,17 +41,14 @@ const Product = () => {
     setLoading(false);
   };
 
-  // ✅ FIXED: Remove double calculation
   const handleAddOrUpdateProduct = (savedProduct) => {
-    // ✅ savedProduct already has all calculated fields from productService.mapAPIToUI
     const transformedProduct = {
       ...savedProduct,
-      srNo: 0, // This will be set based on position
+      srNo: 0,
     };
 
     setProducts((prevProducts) => {
       if (selectedProduct && selectedProduct.id === savedProduct.id) {
-        // Update existing product
         return prevProducts.map((product) => {
           if (product.id === savedProduct.id) {
             return { ...transformedProduct, srNo: product.srNo };
@@ -59,7 +56,6 @@ const Product = () => {
           return product;
         });
       } else {
-        // Add new product - insert at beginning
         const newProducts = [
           { ...transformedProduct, srNo: 1 },
           ...prevProducts.map((p) => ({ ...p, srNo: p.srNo + 1 })),

@@ -10,44 +10,30 @@ const ReceiptUpload = ({ handleReceiptUpload, images, formErrors }) => {
     }
   };
 
-  // Function to remove individual image
   const removeImage = (indexToRemove) => {
     const newImages = images.filter((_, index) => index !== indexToRemove);
     handleReceiptUpload(newImages);
   };
 
-  // ✅ FIX: Backend image format handling with full URL
   const getImageUrl = (image) => {
-    console.log("🖼️ IMAGE OBJECT:", image);
-    
-    let imagePath = '';
-    
-    // Case 1: Backend se aayi hui image (object with image field)
+    let imagePath = "";
+
     if (image && image.image) {
       imagePath = image.image;
-    }
-    // Case 2: Direct URL string
-    else if (typeof image === 'string') {
+    } else if (typeof image === "string") {
       imagePath = image;
-    }
-    // Case 3: New uploaded File
-    else if (image instanceof File) {
+    } else if (image instanceof File) {
       return URL.createObjectURL(image);
-    }
-    // Case 4: Backend image with url field
-    else if (image && image.url) {
+    } else if (image && image.url) {
       imagePath = image.url;
     }
-    
-    // ✅ Convert relative path to full URL
+
     if (imagePath) {
       const fullUrl = getFullImageUrl(imagePath);
-      console.log(`🖼️ Converted URL: ${imagePath} -> ${fullUrl}`);
       return fullUrl;
     }
-    
-    console.error("❌ Unknown image format:", image);
-    return '';
+
+    return "";
   };
 
   return (
@@ -90,8 +76,6 @@ const ReceiptUpload = ({ handleReceiptUpload, images, formErrors }) => {
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
             {images.map((image, index) => {
               const imageUrl = getImageUrl(image);
-              console.log(`🖼️ Image ${index}:`, image, "URL:", imageUrl);
-              
               return (
                 <div key={index} className="relative group">
                   <img
@@ -99,9 +83,14 @@ const ReceiptUpload = ({ handleReceiptUpload, images, formErrors }) => {
                     alt={`Preview ${index + 1}`}
                     className="h-48 w-full object-contain bg-gray-100 rounded-md border shadow-sm"
                     onError={(e) => {
-                      console.error(`❌ Image ${index} failed to load:`, imageUrl);
-                      e.target.src = 'https://via.placeholder.com/200x200?text=Image+Error';
-                      e.target.className = "h-48 w-full object-contain bg-gray-200 rounded-md border";
+                      console.error(
+                        `❌ Image ${index} failed to load:`,
+                        imageUrl
+                      );
+                      e.target.src =
+                        "https://via.placeholder.com/200x200?text=Image+Error";
+                      e.target.className =
+                        "h-48 w-full object-contain bg-gray-200 rounded-md border";
                     }}
                     onLoad={(e) => {
                       console.log(`✅ Image ${index} loaded:`, imageUrl);

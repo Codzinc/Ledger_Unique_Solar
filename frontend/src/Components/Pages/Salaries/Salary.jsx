@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { salaryApi } from "../../../ApiComps/Salary/AddSalary";
-import { SampleSalaries } from "./SampleSalaries";
 import SalaryHeader from "./SalaryHeader";
 import SalaryStats from "./SalaryStats";
 import SalaryListing from "./SalaryListing";
@@ -17,11 +16,11 @@ const SalaryContent = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSalary, setSelectedSalary] = useState(null);
   const [dateFilter, setDateFilter] = useState("");
-  const [salaries, setSalaries] = useState(SampleSalaries);
+  const [salaries, setSalaries] = useState([]);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch salaries on mount
   useEffect(() => {
     fetchSalaries();
   }, []);
@@ -30,10 +29,10 @@ const SalaryContent = () => {
     try {
       setLoading(true);
       const response = await salaryApi.getAllSalaries();
-      setSalaries(response.results);
+      const data = Array.isArray(response?.results) ? response.results : [];
+      setSalaries(data);
     } catch (err) {
       setError("Failed to fetch salaries");
-      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -41,9 +40,13 @@ const SalaryContent = () => {
 
   const stats = {
     totalEmployees: Array.isArray(salaries) ? salaries.length : 0,
-    totalSalaries: Array.isArray(salaries)
-      ? salaries.reduce((sum, salary) => sum + Number(salary.salary), 0)
-      : 0,
+    // totalSalaries: Array.isArray(salaries)
+    // ? salaries.reduce(
+    //       (sum, salary) =>
+    //         sum + Number(salary.salary || salary.salary_amount || 0),
+    //       0
+    //     )
+    //   : 0,
     monthlyWageEmployees: Array.isArray(salaries)
       ? salaries.filter((s) => s.wageType === "Monthly").length
       : 0,
@@ -113,23 +116,20 @@ const SalaryContent = () => {
         setSelectedSalary(null);
         setSelectedWageType("");
       } catch (err) {
-        console.error(err);
         alert("Failed to delete salary record");
       }
     }
   };
 
-  // ✅ UPDATED handleSalarySubmit with edit mode logic
   const handleSalarySubmit = async (formData, isEditMode) => {
     try {
-      // Ensure month is converted to valid date format for backend
       const safeMonth =
         formData.month?.length === 7 ? `${formData.month}-01` : formData.month;
 
       const apiData = {
         ...formData,
         date: formData.date || safeMonth,
-        month: safeMonth, // ✅ make sure both are YYYY-MM-DD
+        month: safeMonth,
         salary_amount: parseFloat(formData.salary_amount) || 0,
         total_advance_taken: parseFloat(formData.total_advance_taken) || 0,
         remaining_salary:
@@ -144,33 +144,35 @@ const SalaryContent = () => {
       if (isEditMode) {
         response = await salaryApi.updateSalary(formData.id, apiData);
         setSalaries((prev) =>
-          prev.map((sal) => (sal.id === formData.id ? response : sal))
+          (Array.isArray(prev) ? prev : []).map((sal) =>
+            sal.id === formData.id ? response : sal
+          )
         );
       } else {
-        // ✅ Create new salary record
         if (formData.wage_type === "Daily" || formData.wageType === "Daily") {
           response = await salaryApi.createDailyWage(apiData);
         } else {
           response = await salaryApi.createMonthlySalary(apiData);
         }
 
-        setSalaries((prev) => [...prev, response.data]);
+        const newSalary = response?.data || response;
+        setSalaries((prev) => [
+          ...(Array.isArray(prev) ? prev : []),
+          newSalary,
+        ]);
       }
+
+      await fetchSalaries();
 
       handleBackToSalaries();
     } catch (err) {
-      console.error("API Error:", err.response?.data || err);
-      const errorMessage =
-        err.response?.data?.message ||
-        Object.values(err.response?.data || {})[0]?.[0] ||
-        "Failed to save salary record";
-      alert(errorMessage);
+      alert(err.response?.data?.message || "Failed to save salary record");
     }
   };
 
   const handleCardUpdate = (updatedSalary) => {
     setSalaries((prev) =>
-      prev.map((salary) =>
+      (Array.isArray(prev) ? prev : []).map((salary) =>
         salary.id === updatedSalary.id ? updatedSalary : salary
       )
     );
@@ -224,8 +226,9 @@ const SalaryContent = () => {
         <SalaryHeader
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
+          dateFilter={dateFilter}
+          onDateFilterChange={setDateFilter}
           onAddSalary={handleAddSalary}
-          onDateFilterChange={handleDateFilterChange}
         />
 
         <SalaryStats salaries={salaries} />

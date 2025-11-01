@@ -5,8 +5,6 @@ import { useAuth } from "./Auth/AuthProvider";
 const Profile = ({ open, onClose, onLogout }) => {
   const sidebarRef = useRef(null);
   const { user } = useAuth();
-
-  // Close sidebar on outside click
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (sidebarRef.current && !sidebarRef.current.contains(event.target)) {
@@ -50,7 +48,9 @@ const Profile = ({ open, onClose, onLogout }) => {
               <div className="text-sm text-gray-500">
                 {user?.username || ""}
               </div>
-              <div className="text-xs text-gray-400 mt-1">{user?.role || ""}</div>
+              <div className="text-xs text-gray-400 mt-1">
+                {user?.role || ""}
+              </div>
             </div>
           </div>
           <button

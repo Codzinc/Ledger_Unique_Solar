@@ -13,8 +13,6 @@ import {
   Trash2,
   Hash,
 } from "lucide-react";
-// ❌ OLD: import { getProduct } from "../../../ApiComps/Product/ProductList";
-// ✅ NEW:
 import productService from "../../../ApiComps/Product/ProductService";
 
 const ProductDetail = ({ product, onClose, onEdit, onDelete }) => {
@@ -23,10 +21,7 @@ const ProductDetail = ({ product, onClose, onEdit, onDelete }) => {
   const [error, setError] = useState(null);
 
   const fetchDetails = async () => {
-    console.log("🔄 fetchDetails called with product:", product);
-
     if (!product || !product.id) {
-      console.log("❌ No product or product.id found");
       setProductDetails(product);
       setLoading(false);
       return;
@@ -36,31 +31,19 @@ const ProductDetail = ({ product, onClose, onEdit, onDelete }) => {
     setError(null);
 
     try {
-      console.log("📡 Calling getProduct API with ID:", product.id);
-      // ✅ YEH LINE CHANGE KAREIN
       const result = await productService.getProduct(product.id);
-      console.log("✅ API Response:", result);
-
       if (result.success && result.data) {
-        console.log("📸 Product Images from API:", result.data.images);
-        console.log("🔍 Full product data:", result.data);
-
-        // ✅ YEH LINES CHANGE KAREIN - productService ka mapping use karo
         const uiProduct = productService.mapAPIToUI(result.data);
         const transformedProduct = {
           ...uiProduct,
           srNo: product.srNo || result.data.id,
-          // ✅ Images automatically process ho jayengi mapping function se
         };
 
-        console.log("🎯 Transformed Product:", transformedProduct);
         setProductDetails(transformedProduct);
       } else {
-        console.log("❌ API Error:", result.error);
         setError(result.error || "Failed to fetch product details");
       }
     } catch (err) {
-      console.log("💥 Fetch error:", err);
       setError("An unexpected error occurred");
     } finally {
       setLoading(false);
@@ -68,7 +51,6 @@ const ProductDetail = ({ product, onClose, onEdit, onDelete }) => {
   };
 
   useEffect(() => {
-    console.log("🎬 ProductDetail mounted/updated");
     fetchDetails();
   }, [product?.id]);
 

@@ -36,12 +36,9 @@ const ProjectContent = () => {
   const { projects, stats, deleteProject, refreshProjects } = useProjects();
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  // Load full project details when viewing or editing
   const loadFullProjectDetails = async (project) => {
     try {
       setIsLoadingProject(true);
-      console.log("🔄 LOADING FULL PROJECT DETAILS:", project);
-
       let fullProject;
       const projectId = project.project_id || project.id;
 
@@ -50,35 +47,23 @@ const ProjectContent = () => {
         project.company === "UNIQUE SOLAR";
 
       if (isUniqueSolar) {
-        console.log("🔍 FETCHING UNIQUE SOLAR PROJECT_ID:", projectId);
         fullProject = await getUniqueSolarProjectById(projectId);
-        console.log("✅ UNIQUE SOLAR PROJECT LOADED:", fullProject);
-
-        // ✅ FIXED CHECKLIST HANDLING
         if (
           fullProject.checklist &&
           typeof fullProject.checklist === "object"
         ) {
-          console.log("✅ CHECKLIST DATA FROM BACKEND:", fullProject.checklist);
-          // Use as is - backend already provides proper format
         } else {
-          console.log("⚠️ NO CHECKLIST DATA FOUND, SETTING EMPTY");
           fullProject.checklist = {};
         }
 
-        // ✅ FIXED PRODUCTS HANDLING
         if (!fullProject.products || !Array.isArray(fullProject.products)) {
-          console.log("🔄 SETTING DEFAULT PRODUCTS ARRAY");
           fullProject.products = [];
         }
 
-        // ✅ FIXED IMAGES HANDLING
         if (!fullProject.images || !Array.isArray(fullProject.images)) {
-          console.log("🔄 SETTING DEFAULT IMAGES ARRAY");
           fullProject.images = [];
         }
       } else {
-        // Zarorrat project handling (same as before)
         fullProject = await getZarorratProjectById(projectId);
 
         if (
@@ -96,11 +81,9 @@ const ProjectContent = () => {
         }
       }
 
-      console.log("🎯 FINAL PROJECT DATA FOR VIEW/EDIT:", fullProject);
       setSelectedProject(fullProject);
     } catch (error) {
-      console.error("❌ Error loading project details:", error);
-      setSelectedProject(project); // Fallback to basic data
+      setSelectedProject(project);
     } finally {
       setIsLoadingProject(false);
     }
@@ -114,7 +97,7 @@ const ProjectContent = () => {
     setSelectedProjectType(type);
     setShowAddModal(false);
     setShowProjectForm(true);
-    setSelectedProject(null); // Clear any selected project when creating new
+    setSelectedProject(null);
   };
 
   const handleBackToProjects = () => {
@@ -132,7 +115,6 @@ const ProjectContent = () => {
     await loadFullProjectDetails(project);
   };
 
-  // Handle edit project - CORRECT ID USAGE
   const handleEditProject = async (project) => {
     await loadFullProjectDetails(project);
     setSelectedProjectType(
@@ -144,7 +126,6 @@ const ProjectContent = () => {
     setShowProjectForm(true);
   };
 
-  // ProjectContent.js mein delete function update karein
   const handleDeleteProject = async (project) => {
     if (
       window.confirm(
@@ -152,19 +133,14 @@ const ProjectContent = () => {
       )
     ) {
       try {
-        console.log("🗑️ DELETING PROJECT:", project);
-
-        // ✅ USE project_id DIRECTLY
         const projectId = project.project_id || project.id;
 
         if (
           project.company_name === "UNIQUE SOLAR" ||
           project.company === "UNIQUE SOLAR"
         ) {
-          console.log("🔍 DELETING UNIQUE SOLAR WITH PROJECT_ID:", projectId);
           await deleteUniqueSolarProject(projectId);
         } else {
-          console.log("🔍 DELETING ZARORRAT WITH PROJECT_ID:", projectId);
           await deleteZarorratProject(projectId);
         }
 
@@ -175,8 +151,6 @@ const ProjectContent = () => {
 
         alert("Project deleted successfully!");
       } catch (error) {
-        console.error("❌ DELETE ERROR:", error);
-        console.error("❌ DELETE ERROR DETAILS:", error.response?.data);
         alert(
           "Error deleting project: " +
             (error.response?.data?.detail || error.message)
@@ -237,7 +211,7 @@ const ProjectContent = () => {
           onViewProject={handleViewProject}
           onEditProject={handleEditProject}
           onDeleteProject={handleDeleteProject}
-          refreshTrigger={refreshTrigger} // ✅ added
+          refreshTrigger={refreshTrigger}
         />
 
         {showAddModal && (

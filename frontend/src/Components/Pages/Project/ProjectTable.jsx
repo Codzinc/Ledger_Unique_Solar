@@ -117,7 +117,7 @@ const StatusBadge = ({ status }) => {
     complete: "complete",
     draft: "Draft",
   };
-  
+
   const baseClasses = "px-3 py-1 rounded-full text-xs font-medium";
   const statusClass =
     statusClasses[status?.toLowerCase()] || statusClasses.draft;
@@ -151,16 +151,18 @@ const ProjectTable = ({
   const [error, setError] = useState(null);
   const itemsPerPage = 10;
 
-    useEffect(() => {
+  useEffect(() => {
     const handleClickOutside = (e) => {
-      if (!e.target.closest(".dropdown-container") && !e.target.closest("button")) {
+      if (
+        !e.target.closest(".dropdown-container") &&
+        !e.target.closest("button")
+      ) {
         setActiveDropdown(null);
       }
     };
     window.addEventListener("click", handleClickOutside);
     return () => window.removeEventListener("click", handleClickOutside);
   }, []);
-  
 
   // ✅ Local helper for refreshing project list after delete
   const refreshProjects = async () => {
@@ -201,37 +203,30 @@ const ProjectTable = ({
 
       setProjects(allProjects);
     } catch (err) {
-      console.error("❌ Error loading projects:", err);
       setError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  // ✅ Load on mount + whenever refreshTrigger changes
   useEffect(() => {
     refreshProjects();
   }, [refreshTrigger]);
 
-  // ✅ Delete handler (removes project instantly from table)
   const handleProjectDelete = async (project) => {
     try {
-      await onDeleteProject(project); // run delete logic from parent (API + context)
+      await onDeleteProject(project);
       setProjects((prev) =>
         prev.filter(
           (p) => p.project_id !== project.project_id && p.id !== project.id
         )
       );
-    } catch (err) {
-      console.error("❌ Local delete failed:", err);
-    }
+    } catch (err) {}
   };
 
   const handleSort = (key) => {
     const direction =
-      sortConfig.key === key && sortConfig.direction === "asc"
-        ? "desc"
-        : "asc";
+      sortConfig.key === key && sortConfig.direction === "asc" ? "desc" : "asc";
     setSortConfig({ key, direction });
   };
 
@@ -245,7 +240,6 @@ const ProjectTable = ({
     else if (action === "edit") onEditProject(project);
     else if (action === "delete") handleProjectDelete(project);
   };
-
 
   const filteredProjects = useMemo(() => {
     if (!projects.length) return [];

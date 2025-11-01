@@ -64,7 +64,6 @@ export const ProjectProvider = ({ children }) => {
             parseFloat(project.amount || 0) -
             parseFloat(project.advance_received || 0),
           id: project.id || project.project_id,
-          // ✅ ADD SERVICES FOR LIST VIEW TOO
           services: project.selected_services
             ? project.selected_services.map((service) => ({
                 id: service.service,
@@ -77,14 +76,11 @@ export const ProjectProvider = ({ children }) => {
 
       setProjects(transformedProjects);
     } catch (error) {
-      console.error("Error loading projects:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  // Delete project
-  // Delete project instantly from UI (no duplicate API call)
   const deleteProject = (projectId) => {
     setProjects((prevProjects) =>
       prevProjects.filter(
@@ -93,12 +89,10 @@ export const ProjectProvider = ({ children }) => {
     );
   };
 
-  // Load projects on component mount
   useEffect(() => {
     loadProjects();
   }, []);
 
-  // Update stats whenever projects change
   useEffect(() => {
     const newStats = {
       totalProjects: projects.length,

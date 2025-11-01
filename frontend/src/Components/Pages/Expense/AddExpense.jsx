@@ -30,29 +30,25 @@ const AddExpense = ({
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
-  // ✅ EditExpense change par formData update karo
- useEffect(() => {
-  if (editExpense) {
-    console.log("Editing expense data:", editExpense); // Debug
-    
-    setFormData({
-      title: editExpense?.title || "",
-      category: editExpense?.category || "",
-      utilizer: editExpense?.utilizer || "",
-      amount: editExpense?.amount || "",
-      description: editExpense?.description || "",
-      date: editExpense?.date || new Date().toISOString().split("T")[0],
-      receiptImage: editExpense?.receiptImage || null,
-    });
-    
-    // ✅ Image preview properly set karo
-    if (editExpense?.receiptImage) {
-      setImagePreview(editExpense.receiptImage);
-    } else {
-      setImagePreview(null);
+  useEffect(() => {
+    if (editExpense) {
+      setFormData({
+        title: editExpense?.title || "",
+        category: editExpense?.category || "",
+        utilizer: editExpense?.utilizer || "",
+        amount: editExpense?.amount || "",
+        description: editExpense?.description || "",
+        date: editExpense?.date || new Date().toISOString().split("T")[0],
+        receiptImage: editExpense?.receiptImage || null,
+      });
+
+      if (editExpense?.receiptImage) {
+        setImagePreview(editExpense.receiptImage);
+      } else {
+        setImagePreview(null);
+      }
     }
-  }
-}, [editExpense]);
+  }, [editExpense]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -72,21 +68,18 @@ const AddExpense = ({
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
-    // ✅ Create preview for new file
     const previewUrl = URL.createObjectURL(file);
     setImagePreview(previewUrl);
-    
+
     setFormData((prev) => ({
       ...prev,
       receiptImage: file,
     }));
   };
 
-  // ✅ Cleanup URL object when component unmounts
   useEffect(() => {
     return () => {
-      if (imagePreview && imagePreview.startsWith('blob:')) {
+      if (imagePreview && imagePreview.startsWith("blob:")) {
         URL.revokeObjectURL(imagePreview);
       }
     };
@@ -127,26 +120,20 @@ const AddExpense = ({
 
       await onAddExpense(expenseData, editExpense ? "edit" : "add");
     } catch (error) {
-      console.error("Error saving expense:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  // ✅ Get image source safely
   const getImageSrc = () => {
     if (!formData.receiptImage) return null;
-    
-    // Agar receiptImage string hai (existing image URL/base64)
-    if (typeof formData.receiptImage === 'string') {
+    if (typeof formData.receiptImage === "string") {
       return formData.receiptImage;
     }
-    
-    // Agar receiptImage File object hai
     if (formData.receiptImage instanceof File) {
       return URL.createObjectURL(formData.receiptImage);
     }
-    
+
     return null;
   };
 
@@ -302,7 +289,6 @@ const AddExpense = ({
                 )}
               </div>
 
-              {/* ✅ Fixed image display - safely handle both File objects and strings */}
               {imageSrc && (
                 <div className="mt-2">
                   <img

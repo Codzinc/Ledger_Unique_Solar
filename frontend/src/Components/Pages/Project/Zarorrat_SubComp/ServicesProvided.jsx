@@ -1,7 +1,11 @@
 import React from "react";
 import SectionHeading from "./SectionHeading";
 
-const ServicesProvided = ({ selectedServices, handleServiceChange, availableServices }) => {
+const ServicesProvided = ({
+  selectedServices,
+  handleServiceChange,
+  availableServices,
+}) => {
   return (
     <div>
       <SectionHeading title="Services Provided" />

@@ -48,15 +48,19 @@ const InstallationType = ({ formData, handleInputChange, formErrors }) => {
                   className="mt-1 text-[#181829] focus:ring-[#d8f276]"
                 />
                 <div className="ml-3">
-                  <span className="block font-medium text-gray-900">{label}</span>
+                  <span className="block font-medium text-gray-900">
+                    {label}
+                  </span>
                 </div>
               </div>
             </label>
           ))}
         </div>
-        
+
         {formErrors.installation_type && (
-          <div className="text-red-600 text-sm mt-1">{formErrors.installation_type}</div>
+          <div className="text-red-600 text-sm mt-1">
+            {formErrors.installation_type}
+          </div>
         )}
 
         {/* Custom installation amount input if standard or elevated is selected */}

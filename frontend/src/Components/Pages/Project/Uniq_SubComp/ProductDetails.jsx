@@ -8,7 +8,7 @@ const ProductDetails = ({
   handleProductChange,
   addProduct,
   removeProduct,
-  formErrors
+  formErrors,
 }) => {
   const inputClass = (field, productId) => {
     const errorKey = `products[${productId}].${field}`;
@@ -19,8 +19,10 @@ const ProductDetails = ({
 
   const errorMsg = (field, productId) => {
     const errorKey = `products[${productId}].${field}`;
-    return formErrors[errorKey] && (
-      <p className="text-sm text-red-600 mt-1">{formErrors[errorKey]}</p>
+    return (
+      formErrors[errorKey] && (
+        <p className="text-sm text-red-600 mt-1">{formErrors[errorKey]}</p>
+      )
     );
   };
 
@@ -47,7 +49,11 @@ const ProductDetails = ({
               <select
                 value={product.product_type}
                 onChange={(e) =>
-                  handleProductChange(product.id, "product_type", e.target.value)
+                  handleProductChange(
+                    product.id,
+                    "product_type",
+                    e.target.value
+                  )
                 }
                 className={inputClass("product_type", product.id)}
               >
@@ -61,16 +67,18 @@ const ProductDetails = ({
                   "turnkey_activities",
                   "earthing_boring",
                   "net_metering",
-                  "others"
+                  "others",
                 ].map((type) => (
                   <option key={type} value={type}>
-                    {type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                    {type
+                      .replace(/_/g, " ")
+                      .replace(/\b\w/g, (l) => l.toUpperCase())}
                   </option>
                 ))}
               </select>
               {errorMsg("product_type", product.id)}
             </div>
-            
+
             {product.product_type === "others" && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -80,7 +88,11 @@ const ProductDetails = ({
                   type="text"
                   value={product.specify_product}
                   onChange={(e) =>
-                    handleProductChange(product.id, "specify_product", e.target.value)
+                    handleProductChange(
+                      product.id,
+                      "specify_product",
+                      e.target.value
+                    )
                   }
                   className={inputClass("specify_product", product.id)}
                   placeholder="Specify product"

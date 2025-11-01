@@ -8,7 +8,7 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
-import { getDashboardData } from "../../../ApiComps/Dasbhoard/dashboardService";
+import { getDashboardData } from "../../../ApiComps/Dasbhoard/dashboardDataService";
 
 const AllTimePaymentsChart = () => {
   const [data, setData] = useState([]);
@@ -41,9 +41,7 @@ const AllTimePaymentsChart = () => {
       <div className="bg-white rounded-lg shadow p-4 w-full">Loading...</div>
     );
   if (error)
-    return (
-      <div className="bg-white rounded-lg shadow p-4 w-full">{error}</div>
-    );
+    return <div className="bg-white rounded-lg shadow p-4 w-full">{error}</div>;
 
   return (
     <div className="bg-white rounded-lg shadow p-4 w-full">

@@ -13,26 +13,24 @@ import {
 const ViewExpense = ({ expense, onClose, onEdit }) => {
   if (!expense) return null;
 
-  // ✅ Image URL properly handle karo
   const getImageUrl = () => {
     if (!expense.receiptImage) return null;
-    
-    // Agar receiptImage full URL hai
-    if (typeof expense.receiptImage === 'string' && expense.receiptImage.startsWith('http')) {
+
+    if (
+      typeof expense.receiptImage === "string" &&
+      expense.receiptImage.startsWith("http")
+    ) {
       return expense.receiptImage;
     }
-    
-    // Agar receiptImage relative path hai
-    if (typeof expense.receiptImage === 'string') {
-      // Server base URL add karo (adjust according to your backend)
+
+    if (typeof expense.receiptImage === "string") {
       return `http://localhost:8000${expense.receiptImage}`;
     }
-    
-    // Agar File object hai
+
     if (expense.receiptImage instanceof File) {
       return URL.createObjectURL(expense.receiptImage);
     }
-    
+
     return null;
   };
 
@@ -75,7 +73,7 @@ const ViewExpense = ({ expense, onClose, onEdit }) => {
                   </span>
                 </div>
                 <p className="text-gray-600 leading-relaxed">
-                  {expense.description || 'No description provided'}
+                  {expense.description || "No description provided"}
                 </p>
               </div>
               <div className="text-right">
@@ -145,7 +143,7 @@ const ViewExpense = ({ expense, onClose, onEdit }) => {
                     src={imageUrl}
                     alt="Receipt"
                     className="w-full max-w-xs rounded-md border border-gray-300 cursor-pointer hover:shadow-lg transition-shadow"
-                    onClick={() => window.open(imageUrl, '_blank')}
+                    onClick={() => window.open(imageUrl, "_blank")}
                   />
                 </div>
               ) : (

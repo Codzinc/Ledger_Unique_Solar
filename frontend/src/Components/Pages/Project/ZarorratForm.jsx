@@ -30,7 +30,6 @@ const ZarorratForm = ({ onBack, onSubmit, initialData, isEdit = false }) => {
   const [availableServices, setAvailableServices] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Load services from API and initialize form data
   useEffect(() => {
     const loadServices = async () => {
       try {
@@ -44,11 +43,8 @@ const ZarorratForm = ({ onBack, onSubmit, initialData, isEdit = false }) => {
     loadServices();
   }, []);
 
-  // ✅ CORRECTED FORM INITIALIZATION - REPLACE THE ENTIRE useEffect
   useEffect(() => {
     if (initialData && isEdit) {
-      console.log("✏️ ZARORRAT EDIT MODE - INITIAL DATA:", initialData);
-
       setFormData({
         customer_name: initialData.customer_name || "",
         contact_number: initialData.contact_number || "",
@@ -61,44 +57,28 @@ const ZarorratForm = ({ onBack, onSubmit, initialData, isEdit = false }) => {
         status: initialData.status || "",
       });
 
-      // ✅ CORRECT SERVICE SELECTION LOGIC - MULTIPLE SOURCES
       let serviceIds = [];
 
-      // Source 1: Check selected_services (main backend response)
       if (
         initialData.selected_services &&
         initialData.selected_services.length > 0
       ) {
-        console.log(
-          "✅ SETTING SERVICES FROM SELECTED_SERVICES:",
-          initialData.selected_services
-        );
         serviceIds = initialData.selected_services
           .map((service) => service.service || service.id)
           .filter((id) => id !== undefined && id !== null);
-      }
-      // Source 2: Check services array (transformed data)
-      else if (initialData.services && initialData.services.length > 0) {
-        console.log(
-          "✅ SETTING SERVICES FROM SERVICES ARRAY:",
-          initialData.services
-        );
+      } else if (initialData.services && initialData.services.length > 0) {
         serviceIds = initialData.services
           .map((service) => service.id || service.service_id)
           .filter((id) => id !== undefined && id !== null);
-      }
-      // Source 3: Check service_ids (direct IDs)
-      else if (initialData.service_ids && initialData.service_ids.length > 0) {
-        console.log(
-          "✅ SETTING SERVICES FROM SERVICE_IDS:",
-          initialData.service_ids
-        );
+      } else if (
+        initialData.service_ids &&
+        initialData.service_ids.length > 0
+      ) {
         serviceIds = initialData.service_ids.filter(
           (id) => id !== undefined && id !== null
         );
       }
 
-      console.log("🎯 FINAL SELECTED SERVICE IDs:", serviceIds);
       setSelectedServices(serviceIds);
     }
   }, [initialData, isEdit]);
@@ -155,15 +135,11 @@ const ZarorratForm = ({ onBack, onSubmit, initialData, isEdit = false }) => {
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
-
-    // ✅ Validate fields before submission
     if (!validate()) return;
-
     setIsSubmitting(true);
     setApiErrors({});
 
     try {
-      // ✅ Correct API data structure
       const submitData = {
         customer_name: formData.customer_name,
         contact_number: formData.contact_number?.toString() || "",
@@ -177,30 +153,21 @@ const ZarorratForm = ({ onBack, onSubmit, initialData, isEdit = false }) => {
         service_ids: selectedServices || [],
       };
 
-      console.log("📤 SUBMITTING ZARORRAT DATA:", submitData);
-
       let response;
 
       if (isEdit && initialData && initialData.project_id) {
-        // ✅ Use backend’s project_id directly
         const projectId = initialData.project_id;
-        console.log("🔄 UPDATING ZARORRAT PROJECT WITH ID:", projectId);
         response = await updateZarorratProject(projectId, submitData);
       } else {
-        console.log("🆕 CREATING NEW ZARORRAT PROJECT");
         response = await createZarorratProject(submitData);
       }
 
-      // ✅ Callback to parent or UI refresh
       if (onSubmit) {
         onSubmit(response);
       }
 
       alert(`Zarorrat project ${isEdit ? "updated" : "created"} successfully!`);
     } catch (error) {
-      console.error("❌ Error submitting Zarorrat form:", error);
-
-      // 🧩 API Validation or Network Error Handling
       if (error.message?.includes("Validation failed:")) {
         setApiErrors({ general: error.message });
       } else {
@@ -209,7 +176,6 @@ const ZarorratForm = ({ onBack, onSubmit, initialData, isEdit = false }) => {
         } project. Please try again.`;
 
         if (error.response) {
-          // 🧾 Parse backend validation errors
           const apiErrorData = error.response.data || {};
           const fieldErrors = {};
 

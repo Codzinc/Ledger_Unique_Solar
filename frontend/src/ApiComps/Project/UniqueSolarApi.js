@@ -2,7 +2,6 @@ import api from "../Config";
 
 export const createUniqueSolarProject = async (formData) => {
   try {
-    console.log('📤 Sending project data with images to API');
     const response = await api.post("/project/unique-solar-projects/create/", formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
@@ -10,7 +9,6 @@ export const createUniqueSolarProject = async (formData) => {
     });
     return response.data;
   } catch (error) {
-    console.error('Error creating project:', error);
 
     if (error.response) {
       const errorData = error.response.data;
@@ -55,17 +53,11 @@ export const createUniqueSolarProject = async (formData) => {
   }
 };
 
-// ✅ Fetch all projects
-// UniqueSolarApi.js mein getUniqueSolarProjects function update karein
 export const getUniqueSolarProjects = async () => {
   try {
     const response = await api.get("/project/unique-solar-projects/");
     const projects = response.data;
-
-    console.log('📋 RAW UNIQUE SOLAR PROJECTS FROM API:', projects);
-
     const transformedProjects = (projects.results || projects).map(project => {
-      // ✅ CORRECT ID MAPPING
       const projectData = {
         ...project,
         company_name: "UNIQUE SOLAR",
@@ -74,35 +66,26 @@ export const getUniqueSolarProjects = async () => {
         paid: parseFloat(project.paid || project.advance_payment || 0),
         pending: parseFloat(project.pending || project.completion_payment || 0),
         contact_number: project.contact_number || project.contact_no || "-",
-        // ✅ Use project_id as the primary identifier
         project_id: project.project_id,
-        id: project.project_id, // Same as project_id for consistency
+        id: project.project_id, 
       };
 
-      console.log(`🔄 TRANSFORMED PROJECT: ${project.project_id}`, projectData);
       return projectData;
     });
 
     return transformedProjects;
   } catch (error) {
-    console.error('❌ Error fetching projects:', error);
     throw error;
   }
 };
 
-// ✅ Corrected getUniqueSolarProjectById
-// UniqueSolarApi.js - getUniqueSolarProjectById update karo
 export const getUniqueSolarProjectById = async (projectId) => {
   try {
     const response = await api.get(`/project/unique-solar-projects/${projectId}/`);
     const project = response.data;
 
-    console.log('🔍 COMPLETE PROJECT DATA FROM API:', project);
-    
-    // ✅ TEMPORARY FIX: Agar checklist nahi hai to empty object set karo
     let checklistData = project.checklist || {};
     
-    // Agar checklist_items hai but checklist nahi hai
     if (!project.checklist && project.checklist_items) {
       checklistData = {};
       project.checklist_items.forEach(item => {
@@ -112,8 +95,6 @@ export const getUniqueSolarProjectById = async (projectId) => {
         }
       });
     }
-
-    console.log('🎯 FINAL CHECKLIST DATA:', checklistData);
 
     return {
       ...project,
@@ -125,54 +106,35 @@ export const getUniqueSolarProjectById = async (projectId) => {
       contact_number: project.contact_number || "-",
       project_id: project.project_id,
       id: project.project_id,
-      checklist: checklistData, // ✅ YEH ADD KARNA BOHOT IMPORTANT HAI
+      checklist: checklistData, 
     };
   } catch (error) {
-    console.error('❌ Error fetching project:', error);
-    throw error;
-  }
-};
-// ✅ Corrected update function
-export const updateUniqueSolarProject = async (projectId, formData) => {
-  try {
-    console.log('🔄 UPDATING UNIQUE SOLAR PROJECT WITH IMAGES:', projectId);
-    
-    // ✅ ADD DETAILED DEBUG
-    console.log('📦 UPDATE FORM DATA ENTRIES:');
-    for (let pair of formData.entries()) {
-      if (pair[0] === 'images') {
-        console.log(`🖼️ ${pair[0]}: [File - ${pair[1].name}]`);
-      } else if (pair[0] === 'products' || pair[0] === 'checklist_ids') {
-        console.log(`📋 ${pair[0]}:`, JSON.parse(pair[1]));
-      } else {
-        console.log(`${pair[0]}:`, pair[1]);
-      }
-    }
-    
-    const response = await api.put(`/project/unique-solar-projects/${projectId}/`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-    return response.data;
-  } catch (error) {
-    console.error('❌ FULL ERROR DETAILS:', error);
-    console.error('❌ ERROR RESPONSE DATA:', error.response?.data);
-    console.error('❌ ERROR STATUS:', error.response?.status);
-    console.error('❌ ERROR HEADERS:', error.response?.headers);
-    
     throw error;
   }
 };
 
-// ✅ Corrected delete function
+export const updateUniqueSolarProject = async (projectId, formData) => {
+  try {
+    const response = await api.put(
+      `/project/unique-solar-projects/${projectId}/`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const deleteUniqueSolarProject = async (projectId) => {
   try {
-    console.log('🗑️ DELETING UNIQUE SOLAR PROJECT:', projectId);
     const response = await api.delete(`/project/unique-solar-projects/${projectId}/`);
     return response.data;
   } catch (error) {
-    console.error('❌ Error deleting Unique Solar project:', error);
     throw error;
   }
 };
@@ -182,7 +144,6 @@ export const getChecklistItems = async () => {
     const response = await api.get("/project/unique-solar-checklist/");
     return response.data;
   } catch (error) {
-    console.error('Error fetching checklist items:', error);
     throw error;
   }
 };

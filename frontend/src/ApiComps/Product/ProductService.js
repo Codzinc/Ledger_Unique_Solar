@@ -1,18 +1,15 @@
-// ProductService.js - COMPLETE FIXED VERSION
 import api from "../Config";
 
 class ProductService {
   async getAllProducts() {
     try {
       const response = await api.get('/product/list/');
-      console.log("Raw API products data:", response.data);
       
       return {
         success: true,
         data: response.data,
       };
     } catch (error) {
-      console.error('Error fetching products:', error.response?.data || error.message);
       
       return {
         success: false,
@@ -24,14 +21,12 @@ class ProductService {
   async getProduct(id) {
     try {
       const response = await api.get(`/product/get-product/${id}/`);
-      console.log("Raw API single product data:", response.data);
       
       return {
         success: true,
         data: response.data,
       };
     } catch (error) {
-      console.error('Error fetching product:', error.response?.data || error.message);
       
       return {
         success: false,
@@ -48,7 +43,6 @@ class ProductService {
       Object.keys(apiData).forEach(key => {
         if (apiData[key] !== null && apiData[key] !== undefined) {
           if (key === 'images') {
-            // Multiple images handle karo
             apiData[key].forEach(image => {
               formData.append('images', image);
             });
@@ -70,7 +64,6 @@ class ProductService {
         message: 'Product added successfully!'
       };
     } catch (error) {
-      console.error('Error creating product:', error.response?.data || error.message);
       
       return {
         success: false,
@@ -107,7 +100,6 @@ class ProductService {
         data: response.data,
       };
     } catch (error) {
-      console.error('Error updating product:', error.response?.data || error.message);
       
       return {
         success: false,
@@ -125,7 +117,6 @@ class ProductService {
         data: response.data,
       };
     } catch (error) {
-      console.error('Error deleting product:', error.response?.data || error.message);
       
       return {
         success: false,
@@ -134,7 +125,6 @@ class ProductService {
     }
   }
 
-  // ✅ UI se API format mapping
   mapUIToAPI(uiData) {
     const apiData = {
       name: uiData.name,
@@ -146,31 +136,24 @@ class ProductService {
       category: uiData.category,
       quantity: (parseInt(uiData.quantity, 10) || 1).toString(),
       date: uiData.date,
-      images: uiData.images || [], // File objects for new images
+      images: uiData.images || [], 
     };
 
-    console.log('Mapped UI to API data:', apiData);
     return apiData;
   }
 
-  // ✅ API se UI format mapping with PROFIT CALCULATION
   mapAPIToUI(apiData, index = 0) {
-    console.log("Mapping API to UI - Raw API data:", apiData);
     
-    // ✅ Image URLs properly handle karo
     const processedImages = (apiData.images || []).map(image => {
       let imageUrl = '';
       
       if (image && image.image) {
-        // Agar image full URL hai
         if (typeof image.image === 'string' && image.image.startsWith('http')) {
           imageUrl = image.image;
         }
-        // Agar image relative path hai
         else if (typeof image.image === 'string') {
           imageUrl = `http://localhost:8000${image.image}`;
         }
-        // Agar image object hai (Django mein aisa hota hai)
         else if (image.image && typeof image.image === 'object') {
           imageUrl = `http://localhost:8000${image.image.url || image.image.image || ''}`;
         }
@@ -183,7 +166,6 @@ class ProductService {
       };
     });
 
-    // ✅ PROFIT CALCULATIONS - YAHAN ADD KARO
     const purchPrice = parseFloat(apiData.purchase_price || 0);
     const salePrice = parseFloat(apiData.sale_price || 0);
     const quantity = parseInt(apiData.quantity, 10) || 1;
@@ -212,8 +194,6 @@ class ProductService {
       date: apiData.date,
       dateAdded: apiData.date,
       images: processedImages,
-      
-      // ✅ PROFIT FIELDS ADD KARO - YEH IMPORTANT HAI
       profit: totalProfit,
       totalPurchaseCost: totalPurchaseCost,
       totalSaleValue: totalSaleValue,
@@ -221,7 +201,6 @@ class ProductService {
       profitMarginPercentage: profitMarginPercentage,
     };
 
-    console.log("Mapped UI Product with profit:", uiProduct);
     return uiProduct;
   }
 }

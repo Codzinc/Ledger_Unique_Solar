@@ -27,12 +27,8 @@ const ProductList = ({
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
-
-  // ✅ Pagination states
   const itemsPerPage = 10;
   const [currentPage, setCurrentPage] = useState(1);
-
-  // ✅ Dropdown close on outside click
   const dropdownRef = useRef(null);
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -44,7 +40,6 @@ const ProductList = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // ✅ Filter products by date
   const filterByDate = (products) => {
     if (!selectedDate) return products;
     const [year, month] = selectedDate.split("-");
@@ -57,17 +52,21 @@ const ProductList = ({
     });
   };
 
-  // ✅ Apply filters and search with safe access
   const filteredProducts = filterByDate(
     products.filter(
       (product) =>
-        (product.product || product.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (product.cName || product.customer_name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (product.category || "").toLowerCase().includes(searchTerm.toLowerCase())
+        (product.product || product.name || "")
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        (product.cName || product.customer_name || "")
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        (product.category || "")
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase())
     )
   );
 
-  // ✅ Pagination logic
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
   const paginatedProducts = filteredProducts.slice(
     (currentPage - 1) * itemsPerPage,
@@ -78,11 +77,18 @@ const ProductList = ({
     if (page >= 1 && page <= totalPages) setCurrentPage(page);
   };
 
-  // ✅ SAFE Totals calculation
   const totals = filteredProducts.reduce(
     (acc, product) => ({
-      totalPurchase: acc.totalPurchase + (product.totalPurchaseCost || product.purchPrice * (product.quantity || 1) || 0),
-      totalSale: acc.totalSale + (product.totalSaleValue || product.salePrice * (product.quantity || 1) || 0),
+      totalPurchase:
+        acc.totalPurchase +
+        (product.totalPurchaseCost ||
+          product.purchPrice * (product.quantity || 1) ||
+          0),
+      totalSale:
+        acc.totalSale +
+        (product.totalSaleValue ||
+          product.salePrice * (product.quantity || 1) ||
+          0),
       totalProfit: acc.totalProfit + (product.profit || 0),
     }),
     { totalPurchase: 0, totalSale: 0, totalProfit: 0 }
@@ -112,13 +118,11 @@ const ProductList = ({
   const handleDateChange = (e) => setSelectedDate(e.target.value);
   const clearDateFilter = () => setSelectedDate("");
 
-  // ✅ SAFE number formatting function
   const safeToLocaleString = (value) => {
     if (value === undefined || value === null || isNaN(value)) return "0";
     return Number(value).toLocaleString();
   };
 
-  // ✅ Loading
   if (loading)
     return (
       <div className="bg-white rounded-xl shadow-lg">
@@ -137,7 +141,6 @@ const ProductList = ({
       </div>
     );
 
-  // ✅ Error
   if (error)
     return (
       <div className="bg-white rounded-xl shadow-lg">
@@ -306,7 +309,9 @@ const ProductList = ({
                       #{product.srNo || "N/A"}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-900">
-                      <div className="font-medium">{product.product || product.name || "N/A"}</div>
+                      <div className="font-medium">
+                        {product.product || product.name || "N/A"}
+                      </div>
                       <div className="text-gray-500 text-xs flex gap-2">
                         <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
                           {product.category || "Uncategorized"}
@@ -315,14 +320,21 @@ const ProductList = ({
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      <div className="font-medium">{product.cName || product.customer_name || "N/A"}</div>
+                      <div className="font-medium">
+                        {product.cName || product.customer_name || "N/A"}
+                      </div>
                       <div className="text-gray-500 text-xs">
-                        {new Date(product.dateAdded || product.date || new Date()).toLocaleDateString()}
+                        {new Date(
+                          product.dateAdded || product.date || new Date()
+                        ).toLocaleDateString()}
                       </div>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-900">
                       <div className="font-medium">
-                        {safeToLocaleString(product.totalPurchaseCost || (product.purchPrice || 0) * (product.quantity || 1))}
+                        {safeToLocaleString(
+                          product.totalPurchaseCost ||
+                            (product.purchPrice || 0) * (product.quantity || 1)
+                        )}
                       </div>
                       <div className="text-gray-500 text-xs">
                         {safeToLocaleString(product.purchPrice || 0)} per unit
@@ -330,7 +342,10 @@ const ProductList = ({
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-900">
                       <div className="font-medium">
-                        {safeToLocaleString(product.totalSaleValue || (product.salePrice || 0) * (product.quantity || 1))}
+                        {safeToLocaleString(
+                          product.totalSaleValue ||
+                            (product.salePrice || 0) * (product.quantity || 1)
+                        )}
                       </div>
                       <div className="text-gray-500 text-xs">
                         {safeToLocaleString(product.salePrice || 0)} per unit

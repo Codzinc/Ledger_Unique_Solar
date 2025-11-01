@@ -1,18 +1,15 @@
 import React from "react";
 import { Users, DollarSign, Clock, Calendar } from "lucide-react";
 
-// ✅ Helper function: har salary ka total amount nikalta hai
 const getTotalPaid = (salary) => {
   if (!salary) return 0;
 
   const type = (salary.wageType || salary.wage_type || "").toLowerCase();
 
-  // Daily wage → sum of wages array
   if (type === "daily" && Array.isArray(salary.wages)) {
     return salary.wages.reduce((sum, w) => sum + (Number(w.amount) || 0), 0);
   }
 
-  // Monthly wage → direct salary_amount ya salary
   if (type === "monthly") {
     return Number(salary.salary_amount) || Number(salary.salary) || 0;
   }
@@ -43,10 +40,10 @@ const SalaryStats = ({ salaries = [] }) => {
   // Stats calculation
   const totalEmployees = salaries.length;
 
-  const totalSalaries = salaries.reduce(
-    (sum, sal) => sum + getTotalPaid(sal),
-    0
-  );
+  // const totalSalaries = salaries.reduce(
+  //   (sum, sal) => sum + getTotalPaid(sal),
+  //   0
+  // );
 
   const monthlyWageEmployees = salaries.filter(
     (s) => (s.wageType || s.wage_type || "").toLowerCase() === "monthly"
@@ -59,7 +56,7 @@ const SalaryStats = ({ salaries = [] }) => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
       <StatCard title="Total Employees" value={totalEmployees} icon={Users} />
-      <StatCard title="Total Amount" value={totalSalaries} icon={DollarSign} />
+      {/* <StatCard title="Total Amount" value={totalSalaries} icon={DollarSign} /> */}
       <StatCard
         title="Monthly Wage Employees"
         value={monthlyWageEmployees}

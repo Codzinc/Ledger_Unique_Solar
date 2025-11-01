@@ -3,55 +3,59 @@ import { ArrowLeft, HelpCircle } from "lucide-react";
 import DailyWageCard from "./DailyWageCard";
 
 const DailyWageForm = ({ onBack, onSubmit, initialData }) => {
-  const isEditMode = !!initialData; // ✅ detect if editing existing record
+  const isEditMode = !!initialData;
 
   const [formData, setFormData] = useState({
-    id: initialData?.id || null, // ✅ keep track of id for updates 
-    employeeName: initialData?.employeeName || "",
+    id: initialData?.id || null,
+    employeeName: initialData?.employee || initialData?.employeeName || "",
     date: initialData?.date
-  ? new Date(initialData.date).toISOString().split("T")[0]
-  : new Date().toISOString().split("T")[0],
-    serviceDescription: initialData?.serviceDescription || "",
-    wageType: initialData?.wageType || "Daily",
+      ? new Date(initialData.date).toISOString().split("T")[0]
+      : new Date().toISOString().split("T")[0],
+    serviceDescription:
+      initialData?.description || initialData?.serviceDescription || "",
+    wageType: initialData?.wage_type || "Daily",
   });
 
   const [errors, setErrors] = useState({});
   const [showWageCard, setShowWageCard] = useState(false);
   const [currentSalary, setCurrentSalary] = useState(null);
 
+  /** ✅ Handle input change */
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: null }));
   };
 
+  /** ✅ Validate inputs before submission */
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.employeeName)
+    if (!formData.employeeName.trim()) {
       newErrors.employeeName = "Employee name is required";
-    if (!formData.date) newErrors.date = "Date is required";
+    }
+    if (!formData.date) {
+      newErrors.date = "Date is required";
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
+  /** ✅ Submit formatted data to parent */
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!validateForm()) return;
 
     const submitData = {
-      id: formData.id, // ✅ include id for editing
-      employee: formData.employeeName,
+      id: formData.id,
+      employee: formData.employeeName.trim(),
       date: formData.date,
-      month: formData.date.substring(0, 7), // ✅ derive month from full date
-      description: formData.serviceDescription || "",
-      wage_type: "Daily",
-      salary_amount: initialData?.salary_amount || 0,
+      month: formData.date.substring(0, 7),
+      description: formData.serviceDescription.trim(),
+      wage_type: formData.wageType,
       status: "Active",
-      total_advance_taken: initialData?.total_advance_taken || 0,
-      remaining_salary: initialData?.remaining_salary || 0,
     };
 
-    onSubmit(submitData, isEditMode); // ✅ pass edit flag
+    onSubmit(submitData, isEditMode);
   };
 
   const handleWageCardUpdate = (updatedData) => {
@@ -80,15 +84,14 @@ const DailyWageForm = ({ onBack, onSubmit, initialData }) => {
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
-          <h2 className="text-xl font-semibold">
-            {isEditMode ? "EDIT DAILY WAGE" : "DAILY WAGE SETUP"}
+          <h2 className="text-xl font-semibold tracking-wide">
+            {isEditMode ? "EDIT DAILY WAGE" : "CREATE DAILY WAGE"}
           </h2>
         </div>
 
         {/* Form Body */}
         <div className="p-6">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Employee Name + Date */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Employee Name */}
               <div className="space-y-2">
@@ -100,17 +103,17 @@ const DailyWageForm = ({ onBack, onSubmit, initialData }) => {
                   type="text"
                   value={formData.employeeName}
                   onChange={handleChange}
+                  placeholder="Enter employee name"
                   className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#d8f276] focus:border-transparent ${
                     errors.employeeName ? "border-red-500" : "border-gray-300"
                   }`}
-                  placeholder="Enter employee name"
                 />
                 {errors.employeeName && (
                   <p className="text-red-500 text-sm">{errors.employeeName}</p>
                 )}
               </div>
 
-              {/* Full Date */}
+              {/* Date */}
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700">
                   Date *
@@ -148,10 +151,10 @@ const DailyWageForm = ({ onBack, onSubmit, initialData }) => {
             {/* Card Preview */}
             <div className="bg-gray-50 rounded-lg p-6 space-y-4">
               <h3 className="font-medium text-gray-800">Card Preview</h3>
-              <div className="space-y-2">
+              <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Type:</span>
-                  <span className="font-medium">Daily Wage</span>
+                  <span className="font-medium">{formData.wageType}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Employee:</span>
@@ -177,7 +180,7 @@ const DailyWageForm = ({ onBack, onSubmit, initialData }) => {
                   <span className="font-medium">
                     {isEditMode
                       ? "Loaded from existing record"
-                      : "Empty - Ready for wage entries"}
+                      : "Ready for wage entry"}
                   </span>
                 </div>
               </div>
@@ -187,13 +190,16 @@ const DailyWageForm = ({ onBack, onSubmit, initialData }) => {
             <div className="bg-blue-50 rounded-lg p-4">
               <div className="flex items-center gap-2 mb-2">
                 <HelpCircle className="w-5 h-5 text-blue-600" />
-                <h4 className="font-medium text-blue-800">How it Works</h4>
+                <h4 className="font-medium text-blue-800">How It Works</h4>
               </div>
-              <ul className="space-y-2 text-sm text-blue-700">
+              <ul className="space-y-1 text-sm text-blue-700">
                 <li>• Use this form once per employee per day.</li>
-                <li>• After creating, use "Add More Wage" or "Add More Advance" inside the card.</li>
-                <li>• Prevents duplicate daily entries and keeps salary records accurate.</li>
-                <li>• Matches real-life daily wage entry workflow.</li>
+                <li>
+                  • After saving, you can add more wage or advance entries
+                  inside the card.
+                </li>
+                <li>• Prevents duplicate entries for the same date.</li>
+                <li>• Keeps salary records aligned with daily workflow.</li>
               </ul>
             </div>
 
@@ -210,7 +216,9 @@ const DailyWageForm = ({ onBack, onSubmit, initialData }) => {
                 type="submit"
                 className="px-6 py-2 text-[#181829] bg-[#d8f276] rounded-lg hover:bg-[#181829] hover:text-[#d8f276] transition-colors"
               >
-                {isEditMode ? "Update Daily Wage Card" : "Create Daily Wage Card"}
+                {isEditMode
+                  ? "Update Daily Wage Card"
+                  : "Create Daily Wage Card"}
               </button>
             </div>
           </form>

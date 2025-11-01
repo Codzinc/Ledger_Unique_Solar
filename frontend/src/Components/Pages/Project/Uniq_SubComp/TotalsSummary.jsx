@@ -13,7 +13,6 @@ const TotalsSummary = ({
       <div className="flex justify-between items-center text-gray-600">
         <span>Subtotal:</span>
         <span className="font-medium text-gray-900">
-          
           {subtotal.toLocaleString(undefined, {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
@@ -30,7 +29,7 @@ const TotalsSummary = ({
         </div>
       )}
 
- <div className="flex justify-between items-center text-gray-600">
+      <div className="flex justify-between items-center text-gray-600">
         <span>Tax (Optional):</span>
         <div className="flex items-center gap-2">
           <input
@@ -51,7 +50,6 @@ const TotalsSummary = ({
             Grand Total:
           </span>
           <span className="font-bold text-lg text-[#181829]">
-            
             {grandTotal.toLocaleString(undefined, {
               minimumFractionDigits: 2,
               maximumFractionDigits: 2,

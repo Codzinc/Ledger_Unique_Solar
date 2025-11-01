@@ -1,4 +1,3 @@
-// Zarorrat_SubComp/ActionButtons.jsx
 import React from "react";
 
 const ActionButtons = ({ onBack, isSubmitting, isEdit = false }) => {
@@ -16,7 +15,11 @@ const ActionButtons = ({ onBack, isSubmitting, isEdit = false }) => {
         disabled={isSubmitting}
         className="px-6 py-2 bg-[#181829] text-white rounded-lg hover:bg-[#d8f276] hover:text-[#181829] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
-        {isSubmitting ? "Saving..." : (isEdit ? "Update Project" : "Save Project")}
+        {isSubmitting
+          ? "Saving..."
+          : isEdit
+          ? "Update Project"
+          : "Save Project"}
       </button>
     </div>
   );

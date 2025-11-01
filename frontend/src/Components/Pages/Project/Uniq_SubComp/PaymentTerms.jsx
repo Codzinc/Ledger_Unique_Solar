@@ -73,7 +73,9 @@ const PaymentTerms = ({ formData, handleInputChange, formErrors = {} }) => {
           <div className="text-sm text-gray-700">
             <div className="flex justify-between">
               <span>Total:</span>
-              <span>{(parseFloat(formData.total_payment) || 0).toFixed(2)}</span>
+              <span>
+                {(parseFloat(formData.total_payment) || 0).toFixed(2)}
+              </span>
             </div>
             <div className="flex justify-between">
               <span>Advance:</span>

@@ -27,7 +27,6 @@ export const getAllProjects = async () => {
       zarorrat: zarorratProjects
     };
   } catch (error) {
-    console.error('Error fetching all projects:', error);
     throw error;
   }
 };

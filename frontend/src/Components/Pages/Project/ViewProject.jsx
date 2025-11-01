@@ -69,15 +69,6 @@ const ViewProject = ({ project, onClose, onEdit, onDelete }) => {
     return `${parseFloat(amount || 0).toLocaleString("en-IN")}`;
   };
 
-  // Add this at the beginning of your ViewProject component
-  console.log("👀 VIEW PROJECT RENDERED WITH DATA:", project);
-  console.log("👀 CHECKLIST DATA:", project?.checklist);
-  console.log("👀 SERVICES DATA:", project?.services);
-
-  console.log("👀 PROJECT DATA IN VIEW:", project);
-  console.log("👀 SELECTED_SERVICES:", project.selected_services);
-  console.log("👀 SERVICES ARRAY:", project.services);
-
   const servicesToShow =
     project.services && project.services.length > 0
       ? project.services
@@ -374,18 +365,8 @@ const ViewProject = ({ project, onClose, onEdit, onDelete }) => {
               <div className="p-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {project.images.map((image, index) => {
-                    // ✅ FIX: Get image path and convert to full URL
                     const imagePath = image.image || image.url || image;
                     const imageUrl = getFullImageUrl(imagePath);
-
-                    console.log(
-                      `👀 View Image ${index}:`,
-                      image,
-                      "Path:",
-                      imagePath,
-                      "Full URL:",
-                      imageUrl
-                    );
 
                     return (
                       <div key={index} className="relative">

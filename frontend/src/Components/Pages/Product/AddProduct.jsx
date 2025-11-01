@@ -3,8 +3,6 @@ import { Plus, X, Calendar, Image as ImageIcon } from "lucide-react";
 import productService from "../../../ApiComps/Product/ProductService";
 
 const AddProduct = ({ product, onSave, onClose, isEdit = false }) => {
-  console.log("🔄 AddProduct rendered - isEdit:", isEdit, "product:", product);
-
   const getInitialFormData = () => {
     if (!product) {
       return {
@@ -39,7 +37,6 @@ const AddProduct = ({ product, onSave, onClose, isEdit = false }) => {
         new Date().toISOString().split("T")[0],
     };
 
-    console.log("📝 Initial Form Data:", formData);
     return formData;
   };
 
@@ -51,14 +48,11 @@ const AddProduct = ({ product, onSave, onClose, isEdit = false }) => {
   const [existingImages, setExistingImages] = useState([]);
 
   useEffect(() => {
-    console.log("🔄 AddProduct useEffect - product changed:", product);
     setFormData(getInitialFormData());
 
     if (isEdit && product && product.images) {
-      console.log("📸 Setting existing images:", product.images);
       setExistingImages(product.images);
     } else {
-      console.log("🔄 No existing images or not edit mode");
       setExistingImages([]);
     }
     setImages([]);
@@ -114,7 +108,6 @@ const AddProduct = ({ product, onSave, onClose, isEdit = false }) => {
     return true;
   };
 
-  // ✅ FINAL UPDATED handleSubmit FUNCTION
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
@@ -125,20 +118,12 @@ const AddProduct = ({ product, onSave, onClose, isEdit = false }) => {
     try {
       const productData = {
         ...formData,
-        images: images, // ✅ send only new images
+        images: images,
       };
-
-      console.log("Submitting product:", {
-        isEdit,
-        productId: product?.id,
-        productData,
-      });
 
       const result = isEdit
         ? await productService.updateProduct(product.id, productData)
         : await productService.createProduct(productData);
-
-      console.log("API Response:", result);
 
       if (result.success && result.data) {
         const uiProduct = productService.mapAPIToUI(result.data);
@@ -149,7 +134,6 @@ const AddProduct = ({ product, onSave, onClose, isEdit = false }) => {
         );
       }
     } catch (error) {
-      console.error("Submission error:", error);
       setError("An unexpected error occurred. Please try again.");
     } finally {
       setIsSubmitting(false);
@@ -384,7 +368,6 @@ const AddProduct = ({ product, onSave, onClose, isEdit = false }) => {
                         alt={`Existing ${index + 1}`}
                         className="w-full h-32 object-cover"
                         onError={(e) => {
-                          console.log("❌ Image failed to load:", image);
                           e.target.src = "/placeholder-image.png";
                         }}
                       />

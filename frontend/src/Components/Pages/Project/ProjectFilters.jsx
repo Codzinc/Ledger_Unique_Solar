@@ -8,8 +8,6 @@ const ProjectFilters = ({ filters, onFiltersChange }) => {
     status: ["All Status", "pending", "in_progress", "complete"],
   };
 
-  
-
   const handleFilterChange = (filterType, value) => {
     onFiltersChange({
       ...filters,

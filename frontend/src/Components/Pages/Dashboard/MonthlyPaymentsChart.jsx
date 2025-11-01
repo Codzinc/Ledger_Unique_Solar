@@ -47,9 +47,7 @@ const MonthlyPaymentsChart = () => {
       <div className="bg-white rounded-lg shadow p-4 w-full">Loading...</div>
     );
   if (error)
-    return (
-      <div className="bg-white rounded-lg shadow p-4 w-full">{error}</div>
-    );
+    return <div className="bg-white rounded-lg shadow p-4 w-full">{error}</div>;
 
   return (
     <div className="bg-white rounded-lg shadow p-4 w-full">

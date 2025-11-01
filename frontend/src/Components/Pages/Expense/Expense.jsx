@@ -15,7 +15,6 @@ const Expense = () => {
   const [editingExpense, setEditingExpense] = useState(null);
 
   useEffect(() => {
-    // Try to load from localStorage first
     const localExpenses = localStorage.getItem("expenses");
     if (localExpenses) {
       try {
@@ -23,14 +22,11 @@ const Expense = () => {
         setExpenses(parsed);
         setLoading(false);
         return;
-      } catch (e) {
-        // fallback to API if parsing fails
-      }
+      } catch (e) {}
     }
     loadExpenses();
   }, []);
 
-  // Save to localStorage whenever expenses change
   useEffect(() => {
     if (!loading) {
       localStorage.setItem("expenses", JSON.stringify(expenses));
@@ -42,31 +38,35 @@ const Expense = () => {
       setLoading(true);
       setError(null);
       const apiExpenses = await expenseService.getAllExpenses();
-      
-      const uiExpenses = Array.isArray(apiExpenses) 
-        ? apiExpenses.map((expense, index) => expenseService.mapAPIToUI(expense, index))
+
+      const uiExpenses = Array.isArray(apiExpenses)
+        ? apiExpenses.map((expense, index) =>
+            expenseService.mapAPIToUI(expense, index)
+          )
         : [expenseService.mapAPIToUI(apiExpenses, 0)];
-      
+
       setExpenses(uiExpenses);
     } catch (err) {
       setError(err.message);
-      console.error('Failed to load expenses:', err);
     } finally {
       setLoading(false);
     }
   };
 
- const handleAddExpense = async (expenseData, action) => {
+  const handleAddExpense = async (expenseData, action) => {
     try {
       setError(null);
-      
+
       if (action === "edit") {
-        const updatedExpense = await expenseService.updateExpense(expenseData.id, expenseData);
+        const updatedExpense = await expenseService.updateExpense(
+          expenseData.id,
+          expenseData
+        );
         const uiExpense = expenseService.mapAPIToUI(updatedExpense);
-        
-        setExpenses(prevExpenses => 
-          prevExpenses.map((expense, index) => 
-            expense.id === expenseData.id 
+
+        setExpenses((prevExpenses) =>
+          prevExpenses.map((expense, index) =>
+            expense.id === expenseData.id
               ? { ...uiExpense, srNo: expense.srNo }
               : expense
           )
@@ -74,15 +74,17 @@ const Expense = () => {
         setEditingExpense(null);
       } else {
         const newExpense = await expenseService.createExpense(expenseData);
-        const uiExpense = expenseService.mapAPIToUI(newExpense, expenses.length);
-        
-        setExpenses(prevExpenses => [...prevExpenses, uiExpense]);
+        const uiExpense = expenseService.mapAPIToUI(
+          newExpense,
+          expenses.length
+        );
+
+        setExpenses((prevExpenses) => [...prevExpenses, uiExpense]);
       }
-      
+
       setShowAddExpense(false);
     } catch (err) {
       setError(err.message);
-      console.error('Failed to save expense:', err);
     }
   };
 
@@ -91,30 +93,26 @@ const Expense = () => {
     setShowExpenseDetail(true);
   };
 
- // Aur handleEditExpense mein
-const handleEditExpense = (expense) => {
-  console.log("Edit button clicked for:", expense);
-  setEditingExpense(expense);
-  setShowAddExpense(true);
-  // Clear other states
-  setSelectedExpense(null);
-  setShowExpenseDetail(false);
-};
+  const handleEditExpense = (expense) => {
+    setEditingExpense(expense);
+    setShowAddExpense(true);
+    setSelectedExpense(null);
+    setShowExpenseDetail(false);
+  };
 
   const handleDeleteExpense = async (expenseId) => {
     if (window.confirm("Are you sure you want to delete this expense?")) {
       try {
         setError(null);
         await expenseService.deleteExpense(expenseId);
-        
-        setExpenses(prevExpenses => 
+
+        setExpenses((prevExpenses) =>
           prevExpenses
-            .filter(expense => expense.id !== expenseId)
+            .filter((expense) => expense.id !== expenseId)
             .map((expense, index) => ({ ...expense, srNo: index + 1 }))
         );
       } catch (err) {
         setError(err.message);
-        console.error('Failed to delete expense:', err);
       }
     }
   };
@@ -130,8 +128,16 @@ const handleEditExpense = (expense) => {
       <div className="flex items-center justify-between">
         <div className="flex items-center">
           <div className="flex-shrink-0">
-            <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+            <svg
+              className="h-5 w-5 text-red-400"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                clipRule="evenodd"
+              />
             </svg>
           </div>
           <div className="ml-3">
@@ -167,12 +173,7 @@ const handleEditExpense = (expense) => {
   return (
     <div className="min-h-screen bg-gray-100 p-4">
       <div className="max-w-7xl mx-auto">
-        {error && (
-          <ErrorMessage 
-            message={error} 
-            onRetry={loadExpenses}
-          />
-        )}
+        {error && <ErrorMessage message={error} onRetry={loadExpenses} />}
 
         <ExpenseListing
           expenses={expenses}

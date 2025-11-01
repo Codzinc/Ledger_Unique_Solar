@@ -32,7 +32,7 @@ export default function SignIn() {
     setLoading(true);
     try {
       const data = await login(formData);
-      toast.success(`Welcome ${data.user?.first_name || "User"}!`);
+      toast.success(`Welcome ${data.user?.username || "User"}!`);
     } catch (err) {
       toast.error("Invalid username or password");
       setErrors({ general: "Invalid username or password" });
@@ -115,4 +115,3 @@ export default function SignIn() {
     </div>
   );
 }
-        
