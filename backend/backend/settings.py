@@ -25,7 +25,12 @@ SECRET_KEY = 'django-insecure-mn&j4%_v(-y+pjztcz$k!d3t1o2-750z_+8^eqs0@5)u9h@)w^
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = [
+    'ledger.uniquesolar.pk',
+    'apiledger.uniquesolar.pk',
+    'localhost',
+    '127.0.0.1',
+]
 
 
 # Application definition
@@ -165,6 +170,8 @@ REST_FRAMEWORK = {
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",  # React dev server ka URL (hammad)
+    "https://ledger.uniquesolar.pk",  # Production frontend
+    "https://apiledger.uniquesolar.pk",  # Production API
 ]
 
 # JWT Settings
